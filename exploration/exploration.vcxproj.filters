@@ -3,4 +3,14 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="utilities">
+      <UniqueIdentifier>{16467c37-4309-4d93-89ec-6d360efda5dc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="utilities\logger.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
