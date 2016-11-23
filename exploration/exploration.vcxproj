@@ -71,10 +71,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>C:\Program Files\OpenGL\glew\include;C:\Program Files\OpenGL\glfw\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files\OpenGL\glew\lib\Release\Win32;C:\Program Files\OpenGL\glfw\lib-vc2015\Win32;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir).build\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>.build\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\Program Files\OpenGL\glew\include;C:\Program Files\OpenGL\glfw\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Program Files\OpenGL\glew\lib;C:\Program Files\OpenGL\glfw\lib;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir).build\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>.build\$(Configuration)\$(Platform)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir).build\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>.build\$(Configuration)\$(Platform)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir).build\$(Configuration)\$(Platform)\</OutDir>
+    <IntDir>.build\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
