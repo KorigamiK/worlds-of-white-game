@@ -1,9 +1,0 @@
-create logger class
-create shader class
-create program class
-install glm
-create camera
-create simple model for loading
-create eventbus class
-get input
-reorgainze build paths
