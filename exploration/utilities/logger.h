@@ -3,10 +3,7 @@
 #define WILT_LOGGER_H
 
 #include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <ctime>
-#include <cassert>
+#include <vector>
 
 namespace wilt
 {
@@ -22,43 +19,32 @@ namespace wilt
         WARN,
         ERROR,
         FATAL
-      }; // enum level
+      };
 
     private:
-      std::ostream* os;
-      Level min;
-
-      Logger(Level min, std::ostream* os) : os{ os }, min{ min } { }
-
-      void log_(Level level, const char* component, const char* message)
+      struct Message
       {
-        if (!os || level < min)
-          return;
-
-        static char levels[] = "DIWEF";
-
-        std::time_t time = std::time(nullptr);
-        std::tm tm;
-        gmtime_s(&tm, &time);
-        *os << std::put_time(&tm, "%FT%TZ") << " [" << levels[level] << "] " << component << ": " << message << '\n';
-      }
+        std::time_t time;
+        Level level;
+        const char* component;
+        const char* message;
+      };
 
     private:
-      static Logger* instance;
+      static std::ostream* stream_;
+      static Level level_;
+      static std::vector<Message> queue_;
+
+      Logger() = delete;
 
     public:
-      static void init(Level level = Level::INFO, std::ostream* o = nullptr)
-      {
-        static Logger logger(level, o);
-        instance = &logger;
-      }
+      // STATIC FUNCTIONS
 
-      static void log(Level level, const char* component, const char* message)
-      {
-        assert(instance);
+      static void setLevel(Level level) { level_ = level; }
+      static void setStream(std::ostream& stream) { stream_ = &stream; }
 
-        instance->log_(level, component, message);
-      }
+      static void process();
+      static void log(Level level, const char* component, const char* message);
 
       static void debug(const char* component, const char* message) { log(Level::DEBUG, component, message); }
       static void info (const char* component, const char* message) { log(Level::INFO,  component, message); }
@@ -69,7 +55,5 @@ namespace wilt
     }; // class Logger
   } // namespace common
 } // namespace wilt
-
-wilt::Logger* wilt::Logger::instance = nullptr;
 
 #endif // !WILT_LOGGER_H

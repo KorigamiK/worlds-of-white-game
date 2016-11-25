@@ -138,6 +138,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="utilities\logger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utilities\logger.h" />
