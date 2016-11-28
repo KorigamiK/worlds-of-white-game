@@ -34,26 +34,33 @@ namespace wilt
       };
 
     private:
-      static std::ostream* stream_;
-      static Level level_;
-      static wilt::Ring<Message> queue_;
-
-      Logger() = delete;
+      std::ostream* stream_;
+      Level level_;
+      wilt::Ring<Message> queue_;
 
     public:
+      Logger(std::ostream* stream = nullptr, Level level = Level::WARN)
+        : stream_(stream)
+        , level_(level)
+        , queue_(512)
+      { }
+
+      void setLevel(Level level) { level_ = level; }
+      void setStream(std::ostream& stream) { stream_ = &stream; }
+
+      void process();
+      bool log(Level level, const char* component, const char* message);
+
+    public:
+      // SINGLETON INSTANCE
+      static Logger instance;
+
       // STATIC FUNCTIONS
-
-      static void setLevel(Level level) { level_ = level; }
-      static void setStream(std::ostream& stream) { stream_ = &stream; }
-
-      static void process();
-      static void log(Level level, const char* component, const char* message);
-
-      static void debug(const char* component, const char* message) { log(Level::DEBUG, component, message); }
-      static void info (const char* component, const char* message) { log(Level::INFO,  component, message); }
-      static void warn (const char* component, const char* message) { log(Level::WARN,  component, message); }
-      static void error(const char* component, const char* message) { log(Level::ERROR, component, message); }
-      static void fatal(const char* component, const char* message) { log(Level::FATAL, component, message); }
+      static void debug(const char* component, const char* message) { instance.log(Level::DEBUG, component, message); }
+      static void info (const char* component, const char* message) { instance.log(Level::INFO,  component, message); }
+      static void warn (const char* component, const char* message) { instance.log(Level::WARN,  component, message); }
+      static void error(const char* component, const char* message) { instance.log(Level::ERROR, component, message); }
+      static void fatal(const char* component, const char* message) { instance.log(Level::FATAL, component, message); }
 
     }; // class Logger
   } // namespace common
