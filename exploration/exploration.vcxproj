@@ -139,9 +139,11 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="utilities\logger.cpp" />
+    <ClCompile Include="utilities\ring.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utilities\logger.h" />
+    <ClInclude Include="utilities\ring.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

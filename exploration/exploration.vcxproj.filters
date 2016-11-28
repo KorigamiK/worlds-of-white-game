@@ -5,6 +5,9 @@
     <ClCompile Include="utilities\logger.cpp">
       <Filter>utilities</Filter>
     </ClCompile>
+    <ClCompile Include="utilities\ring.cpp">
+      <Filter>utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -13,6 +16,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="utilities\logger.h">
+      <Filter>utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\ring.h">
       <Filter>utilities</Filter>
     </ClInclude>
   </ItemGroup>
