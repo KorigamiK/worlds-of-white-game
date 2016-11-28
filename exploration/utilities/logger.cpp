@@ -1,18 +1,19 @@
 #include "logger.h"
 
 #include <iomanip>
-#include <ctime>
 
 using wilt::Logger;
 
 std::ostream* Logger::stream_ = nullptr;
 Logger::Level Logger::level_ = Logger::Level::WARN;
+wilt::Ring<Logger::Message> Logger::queue_ = wilt::Ring<Logger::Message>(512);
 
 void Logger::process()
 {
   static char levels[] = "DIWEF";
 
-  for (const auto& msg : queue_)
+  Logger::Message msg;
+  while (queue_.try_read(msg))
   {
     std::tm tm;
     gmtime_s(&tm, &msg.time);
@@ -28,7 +29,5 @@ void Logger::process()
 void Logger::log(Logger::Level level, const char* component, const char* message)
 {
   if (level >= level_ && stream_ != nullptr)
-  {
-    queue_.push_back({std::time(nullptr), level, component, message});
-  }
+    queue_.write({std::time(nullptr), level, component, message});
 }

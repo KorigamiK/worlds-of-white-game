@@ -2,8 +2,11 @@
 #ifndef WILT_LOGGER_H
 #define WILT_LOGGER_H
 
+#include <ctime>
 #include <iostream>
 #include <vector>
+
+#include "ring.h"
 
 namespace wilt
 {
@@ -33,7 +36,7 @@ namespace wilt
     private:
       static std::ostream* stream_;
       static Level level_;
-      static std::vector<Message> queue_;
+      static wilt::Ring<Message> queue_;
 
       Logger() = delete;
 
