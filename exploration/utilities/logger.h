@@ -15,7 +15,7 @@ namespace wilt
     class Logger
     {
     public:
-      enum Level
+      enum class Level
       {
         DEBUG,
         INFO,
@@ -45,6 +45,13 @@ namespace wilt
         , queue_(512)
       { }
 
+      ~Logger()
+      {
+        process();
+        if (stream_)
+          stream_->flush();
+      }
+
       void setLevel(Level level) { level_ = level; }
       void setStream(std::ostream& stream) { stream_ = &stream; }
 
@@ -53,14 +60,14 @@ namespace wilt
 
     public:
       // SINGLETON INSTANCE
-      static Logger instance;
+      static Logger* instance;
 
       // STATIC FUNCTIONS
-      static void debug(const char* component, const char* message) { instance.log(Level::DEBUG, component, message); }
-      static void info (const char* component, const char* message) { instance.log(Level::INFO,  component, message); }
-      static void warn (const char* component, const char* message) { instance.log(Level::WARN,  component, message); }
-      static void error(const char* component, const char* message) { instance.log(Level::ERROR, component, message); }
-      static void fatal(const char* component, const char* message) { instance.log(Level::FATAL, component, message); }
+      static void debug(const char* component, const char* message) { instance->log(Level::DEBUG, component, message); }
+      static void info (const char* component, const char* message) { instance->log(Level::INFO,  component, message); }
+      static void warn (const char* component, const char* message) { instance->log(Level::WARN,  component, message); }
+      static void error(const char* component, const char* message) { instance->log(Level::ERROR, component, message); }
+      static void fatal(const char* component, const char* message) { instance->log(Level::FATAL, component, message); }
 
     }; // class Logger
   } // namespace common

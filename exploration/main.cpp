@@ -1,10 +1,25 @@
 #include <iostream>
+#include <fstream>
 
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 
+#include "utilities\logger.h"
+
+bool initLogger()
+{
+  static std::ofstream file("log.txt");
+  static wilt::Logger logger(&file, wilt::Logger::Level::DEBUG);
+
+  wilt::Logger::instance = &logger;
+
+  return true;
+}
+
 int main()
 {
+  initLogger();
+
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);

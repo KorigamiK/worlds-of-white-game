@@ -4,7 +4,7 @@
 
 using wilt::Logger;
 
-Logger Logger::instance = Logger();
+Logger* Logger::instance = nullptr;
 
 void Logger::process()
 {
@@ -21,7 +21,7 @@ void Logger::process()
 
     // YYYY-MM-DD HH:MM:SS [LEVEL] component: message
     *stream_ << std::put_time(&tm, "%F %T");
-    *stream_ << " [" << levels[msg.level] << "] ";
+    *stream_ << " [" << levels[(int)msg.level] << "] ";
     *stream_ << msg.component << ": ";
     *stream_ << msg.message << '\n';
   }
