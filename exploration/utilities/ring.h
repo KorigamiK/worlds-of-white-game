@@ -226,7 +226,7 @@ inline namespace common
     // No move assignment. I'm lazy
     Ring& operator= (Ring_&&)      = delete;
 
-    // Deallocates the buffer, destructs stored data.
+    // Deallocates the buffer, clears stored data.
     ~Ring();
 
   public:

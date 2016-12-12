@@ -19,6 +19,7 @@ bool initLogger()
 int main()
 {
   initLogger();
+  wilt::Logger::info("core", "initialized logger");
 
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -29,7 +30,7 @@ int main()
   GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", nullptr, nullptr);
   if (window == nullptr)
   {
-    std::cout << "Failed to create GLFW window" << std::endl;
+    wilt::Logger::fatal("graphics", "failed to create GLFW window");
     glfwTerminate();
     return -1;
   }
@@ -38,7 +39,7 @@ int main()
   glewExperimental = GL_TRUE;
   if (glewInit() != GLEW_OK)
   {
-    std::cout << "Failed to initialize GLEW" << std::endl;
+    wilt::Logger::fatal("graphics", "Failed to initialize GLEW");
     return -1;
   }
 
