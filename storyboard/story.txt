@@ -29,7 +29,7 @@ Mira Dorammada means Guide of Mira in old Margladesh; the name comes from the ex
 ...............................................
 
 1. Garda: Founded in 1192 by Gardamando Mira, the oldest and most developed city with high trading activity. 
-2. Brimli: Founded in 1194, the primary farming hub on the island from the numerous fields and fertile land with climate good for wheat, corn, and gourds. 
+2. Brimli: Founded in 1194, the primary farming hub on the island from the numerous fields and fertile land with climate good for wheat, corn, potatoes,  and gourds. 
 3. Parla Cordova: Founded in 1201, a navy and military port for the United Mareda Nations though is only used as a port and small fort and has very little effect on the islanders. 
 4. Bronla: Founded in 1198, a large fishing city, many fishin villages exist along the northern border because the fast warm current to the north aside the calm waters nearer to the island bring many fish. However, the easiest mountain pass exists just south of Bronla making it the most significant. 
 5. Vernada: The town founded by criminals and vagabonds that exists on an island to the southeast. The town exists largely outside the law on Mira. 
@@ -39,8 +39,21 @@ Mira Dorammada means Guide of Mira in old Margladesh; the name comes from the ex
 
 The People of Arda
 -------------------------------------------------------------------------------
+All creatures in Arda are anthropomorphic though have characteristics leaning towards respective
+
 Crow
+  - Live in flocks of up to 30 members, though individuals exist. Are very intelligent but sneaky and selfish but not aggressive. Most are distrustful of them, even other crows. They tend to keep to themselves and are typically self-sustaining. 
+  - Flocks generally have a loose hierarchy but generally rely on healthy adults to handle basic survival (gathering food, protection) whereas elders handle more politic and long-term problems (interactions, migrations, law).
+  - There only exist one distinct flock of crows on Mira and they inhabit a pine forest to the northwest along the coast just south of the island. Their only interactions with others is their sparse trading to people along that coast up to Bronla. They are proficient in fishing, jewelry, and are rarely contracted out for engineering work and often trade for cloth, spices, and other luxuries. 
+  - Fairly small. Arms are wings with feathers extending downward when they stand. Have a large, wide feather tail. Legs are full until the knee where they become mostly bone. Typically wear minimal clothing (shorts and sleeveless shirts, no shoes, headwear or styled plumes are common). 
+
 Pig
-Cardinal
+  - Live in families of 3-6 typically. Slowest and most glutonous, though the are also the most hospitable, friendly, and generous group. Prefer open air as opposed to forests or cities, so they generally tend to farms and sometimes fishing. But, they have the best noses and therefore many work as cooks. 
+  - Most live in homes scattered thoughout the lower plains though can be found nearly everywhere. 
+  - 
+
+Sparrow
+  - Smallest species
+
 Goat
 Bear
