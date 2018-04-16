@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -21,32 +21,32 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D6757022-85BB-4955-A9C7-3B6EC8D07E4A}</ProjectGuid>
     <RootNamespace>exploration</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -69,14 +69,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Program Files\OpenGL\glew\include;C:\Program Files\OpenGL\glfw\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files\OpenGL\glew\lib\Release\Win32;C:\Program Files\OpenGL\glfw\lib-vc2015\Win32;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)libraries\glfw\include;$(ProjectDir)libraries\glm\include;$(ProjectDir)libraries\cimg\include;$(ProjectDir)libraries\libjpeg\include;$(ProjectDir)libraries\glad\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)libraries\glfw\lib;$(ProjectDir)libraries\libjpeg\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir).build\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>.build\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Program Files\OpenGL\glew\include;C:\Program Files\OpenGL\glfw\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files\OpenGL\glew\lib;C:\Program Files\OpenGL\glfw\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)libraries\glfw\include;$(ProjectDir)libraries\glm\include;$(ProjectDir)libraries\cimg\include;$(ProjectDir)libraries\libjpeg\include;$(ProjectDir)libraries\glad\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)libraries\glfw\lib;$(ProjectDir)libraries\libjpeg\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir).build\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>.build\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
@@ -96,7 +96,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;jpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -107,7 +107,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;jpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -137,6 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="libraries\glad\src\glad.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="utilities\logger.cpp" />
     <ClCompile Include="utilities\ring.cpp" />

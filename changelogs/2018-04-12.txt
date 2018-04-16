@@ -1,0 +1,36 @@
+Changelog (2018-04-12)
+
+
+Updated Model Format
+
+  The models were previously structured with faces and lines stored in different files, vertices and all. Those have now been consolidated to a single file that includes the set of vertices and then separate index arrays for faces and lines. The Blender export script was consolidated into one call.
+
+
+Lines-Adjacency Instead of Lines
+
+  The lines were previously structured to include a separate vector with each vertex that would indicate the direction of the adjacent face. However, it is much more economical to have the additional information be the actual vertex of the faces that intersect at that edge. This changed the OpenGL drawing to use LINES_ADJACENCY using vertex 0, and 3 as the extra points.
+
+
+Flexible Vertex Manipluation
+
+  The improvements to the model format and drawing method means that now any manipulation of the vertices would not mess up the is-edge calculation. The vertex shader could then be updated to add variation to the vertex points on the screen, which adds more variation to the overall drawing than just the line variation alone.
+
+
+New Test Model
+
+  The bird-boy head model was completed (1000 vertices) and was used to test the updated export script and drawing. The modeling also exposed some problems with this design that may need another look at. 
+
+  A blocky humanoid model was created to test Blender animation in preparation for exporting. A simple walking animation was created but the exporting of the animation nor the code the apply the animation has not been completed.
+
+
+Magic System
+
+  Finally got around to putting the magic mechanics down and solidifying how different parts act and interact as well as how they would play into the game mechanics. This also gave me some opportunity to think about the main conflict in a way that works within the magic of the world and I think I've got a pretty good idea in mind.
+
+
+Future Work
+
+- animation implementation
+- model texturing
+- project cleanup
+- more worldbuilding (conflict, society, quests, game storyline)

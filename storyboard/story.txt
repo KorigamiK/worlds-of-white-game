@@ -4,7 +4,7 @@ The Island of Mira Dorammada
 -------------------------------------------------------------------------------
 The world of the game takes place on the Island of Mira Dorammada. Mira is a volcanic island though the only active mountains are in the northeast part of the island. Mountains cover most of the north with rolling hills and temperate forests throughout the island. Flat fields can be found along the southern coast and most cities lie on the coasts near fields and rivers. 
 
-Mira Dorammada means Guide of Mira in old Margladesh; the name comes from the explorer Gardamando Mira who discovered the island in 1163 and was used as a navigation guide and future port for trading. 
+Mira Dorammada means Guide of Mira in old Marglandish; the name comes from the explorer Gardamando Mira who discovered the island in 1163 and was used as a navigation guide and future port for trading. 
 
 ...............................................
 ..........__...................................
@@ -25,7 +25,7 @@ Mira Dorammada means Guide of Mira in old Margladesh; the name comes from the ex
 ..../         __/............../\..../  5__/...
 ....\    ____/........__.......\/....\__/......
 .....\__/.............\/.......................
-............................. _ = 0.5 miles ...
+............................. _ = 1.0 miles ...
 ...............................................
 
 1. Garda: Founded in 1192 by Gardamando Mira, the oldest and most developed city with high trading activity. 
@@ -39,21 +39,57 @@ Mira Dorammada means Guide of Mira in old Margladesh; the name comes from the ex
 
 The People of Arda
 -------------------------------------------------------------------------------
-All creatures in Arda are anthropomorphic though have characteristics leaning towards respective
+All creatures in Arda are anthropomorphic though have characteristics leaning towards their respective species
 
 Crow
-  - Live in flocks of up to 30 members, though individuals exist. Are very intelligent but sneaky and selfish but not aggressive. Most are distrustful of them, even other crows. They tend to keep to themselves and are typically self-sustaining. 
-  - Flocks generally have a loose hierarchy but generally rely on healthy adults to handle basic survival (gathering food, protection) whereas elders handle more politic and long-term problems (interactions, migrations, law).
-  - There only exist one distinct flock of crows on Mira and they inhabit a pine forest to the northwest along the coast just south of the island. Their only interactions with others is their sparse trading to people along that coast up to Bronla. They are proficient in fishing, jewelry, and are rarely contracted out for engineering work and often trade for cloth, spices, and other luxuries. 
-  - Fairly small. Arms are wings with feathers extending downward when they stand. Have a large, wide feather tail. Legs are full until the knee where they become mostly bone. Typically wear minimal clothing (shorts and sleeveless shirts, no shoes, headwear or styled plumes are common). 
+  PHYSICAL
+    - 3.5-4.5 ft tall, 50-65 lbs
+    - Arms are wings with feathers extending downward when they stand. Have a large, wide feather tail. Legs are only full until just past the hip where they become mostly bone.
+    - Black or very, very dark gray feathers throughout, 
+    - Typically wear minimal clothing: sleeveless shirts that do not obstruct their wings, shorts with a wide slit for their tail, never wear shoes, headbands and styled plumes are common. 
+    - They are omnivores but their diets typically consist of nuts and fruits. 
+  CULTURE
+    - Crows live in flocks of up to 30 members, though individuals can live on their own. They are very intelligent but are known to be sneaky and selfish but never aggressive aggressive. Most other species are distrustful of them, even crows are distrustful of other flocks. Because of this, they tend to keep to themselves and are typically self-sustaining: making their own food, clothing, and homes. 
+    - Flocks generally have a loose hierarchy but generally rely on healthy adults to handle basic survival (gathering food, protection) whereas elders handle more politic and long-term problems (interactions, migrations, law). Strongest middle-aged adult male is typically seen as the leader.
+    - Their homes and other structures are usually very minimal structures built up in trees. They don't use any catwalks (due to them flying and gliding from tree to tree), but they typically have a large platform for eating, festivals, and visitors. 
+  EXTRA
+    - There only exist one distinct flock of crows on Mira and they inhabit a pine forest to the northwest along the coast just south of the island. Their only interactions with others is their sparse trading to people along that coast up to Bronla. They are proficient in fishing, jewelry, and are rarely contracted out for engineering work and often trade for cloth, spices, and other luxuries. 
+    - The customary proceedure for a winged visitor is to fly above and circle the village 3-5 times and then land. For walking visitors, there is typically a method to get up to the main platform from the ground. 
+    - When attacking, they typically adorn claws to their feet in order to swoop and gouge the enemy. They are also very skilled at archery. Nets are commonly used against aerial opponents. They are capable of of other forms of combat though not proficient. 
 
 Pig
-  - Live in families of 3-6 typically. Slowest and most glutonous, though the are also the most hospitable, friendly, and generous group. Prefer open air as opposed to forests or cities, so they generally tend to farms and sometimes fishing. But, they have the best noses and therefore many work as cooks. 
-  - Most live in homes scattered thoughout the lower plains though can be found nearly everywhere. 
+  PHYSICAL
+    - 4.8-5.8 ft tall, 150-250 lbs
+    - Generally regarded as fat due to their size and appetite, they are actually quite strong
+    - Very slow
+  CULTURE
+    - Live in families of 3-6 typically. Slowest and most glutonous, though the are also the most hospitable, friendly, and generous group; it is rare for a pig to get angry. Prefer open air as opposed to forests or cities, so they generally tend to farms and sometimes fishing. But, they have the best noses and therefore many work as cooks. 
+    - Most live in homes scattered thoughout the lower plains and in cities though can be found nearly everywhere. 
+    - They celebrate festivals and other events heavily and 
   - 
 
 Sparrow
-  - Smallest species
+  - Smallest, lightest, and one of the fastest species. They are generally meek and shy due to their size. Because of their speed and versatility in the air, they are often chosen for delivering messeges and 
 
 Goat
 Bear
+
+Wild animals: turtles, rabbits, fish, deer
+___
+ | Bear
+ |      ___     ___
+ |       | Pig   | Goat ___
+ |       |       |       | Crow ___
+ |       |       |       |       | Sparrow
+ |  | = 1 ft     |       |       |
+ |       |       |       |       |
+
+
+- Simple life
+- While out on excursion to northen island, gets attacked and cursed which causes him to lose the feathers on his wings
+- No amount of healing can remove the curse, he is very useless in his flock without the ability to fly
+- Decides to leave his flock to try to find a new purpose
+- On his way to Bronla, he injures himself and falls unconscious but is picked up by a witch (Herza Shanaza) 
+- He asks but she tells him the curse cannot be lifted
+- After he is asleep again, she reads his fortune and sees that he can face the impending doom she has forseen. She gives him a gem pendant and a note and magically transports him to the other side of the mountains. 
+- He awakes from a nightmare in a valley that he doesn't recognize. 

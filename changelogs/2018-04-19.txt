@@ -1,0 +1,19 @@
+Changelog (2018-04-19)
+
+
+Updated Project
+
+  Moved codebase from tutorial project to original source-controlled project. This made it more clear and gave me more control over the imported libraries. It of course also allows future changes to be added to source control. This is also an opportunity to add my use my own project structure more freely without having to worry about the tutorial project's build process.
+
+
+Image Loading
+
+  With the new project, I was able to add the CImg library for uniformly loading images. I've so far added libjpeg as a format, so I can now load .jpg files with the possibility of adding .png and .tiff support in the future. I had to build libjpeg from scratch to use it with the VS 2017 runtime library. 
+
+
+Always-Draw Edges
+
+  The Blender export script has been updated so that edges can be marked as "always-draw" by assigning them to a named vertex group. This would make the script export the line using the original edge indexes instead of the corresponding face indexes. This ensures that the edge is always drawn regardless of edge-ness (still guarded by depth though). The idea is that facial features (like eye-borders, eyebrows, and mouths) could be always be drawn. Using vertex groups for this purpose also means that nearby always-draw edges must have a buffer vertex between them.
+
+
+

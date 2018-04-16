@@ -8,6 +8,7 @@
     <ClCompile Include="utilities\ring.cpp">
       <Filter>utilities</Filter>
     </ClCompile>
+    <ClCompile Include="libraries\glad\src\glad.c" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">

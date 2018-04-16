@@ -1,0 +1,37 @@
+Magic
+
+I'd like the magic system to be based on elemental-like spirits. These spirits would be simple floating-orb looking things, about golf-ball sized. 
+
+Three different types of spirits:
+  earth: green, likes rocks and trees
+  water: blue, likes water
+  air  : white, likes high-clouds
+
+These spirits would be things that can be affected by physical means, but could fade in and out of their corresponding element. Earth spirits can merge into most things, water spirits dissolving into liquids, air being the most elusive because they can simply fade into the air without a trace. They do not become their element, they simply absorb themselves into their elements even if its slightly smaller (i.e. a water spirit cannot make water, not even turn into water their size but an earth spirit can hide in a pebble around half its size)
+
+Spirits are friendly with other spirits but will mostly keep to their own kind, mostly due to the differences in preferred environments. Some spirits would prefer to inhabit their element exclusively while others may prefer to explore outside their element, just depending on the temprament or mood of the spirit in particular. They'll also be somewhat defensive if someone tries to affect their environment in a way they don't like or if they mistreat any other spirit. 
+
+- The earth spirits been the most prevailent particularly in my story because the game world is a volcanic island. This means the earth spirits there are very active and relatively young. Other areas would have older, slower, indifferent spirits by comparison. Most activity would be around the mountains, especially the volcanic ones. 
+
+- The water spirits are more rare because many enjoy the deep ocean but some can be seen along coast lines and rivers. However, they are comparatively abundant around the island due to it being surrounded by ocean. 
+
+- The air spirits are the most elusive and are fairly rare, mostly because they inhabit the high atmosphere. They are also most unlikely to become attached to someone. They can be seen in clouds, and might be seen on windy days. 
+
+These spirits don't talk but can interact non-vocally via movements, size-dilation, and light intensity. They're usually docile and will usually avoid people, mostly enjoying their environments. While they are normally loners, they can become attached to someone and might then follow and help them. They'll usually seek out people of good will; shamen, healers, what have you. Having a spirit attached to you would signify to others that you can be trusted. Spirits are very unlikely to change their attachments.
+
+The spirits have a way to understand the will, nature, and destiny of people. They can sense deceit, hatred, and greed as well as kindness, honesty, and generousity. They'd use this inate feeling to determine who they might want to attach to. Likewise, there're rare people who seem to be able to understand the will of the spirits. These people would often become spiritual leaders and both help the spirits and encourage them to help other people.
+
+There would exist shrines to such spirits that would be built around areas of spiritual activity. Some would worship at or pray at these shrines for a good harvest, a sunny day, good fortune, etc. The spirits however would mostly keep doing what they were already doing, potentially helping people they thought were worthy. 
+
+Game mechanics
+
+Each of the spirit types have different ways they can empower things:
+  earth: can empower physical things or plants
+  water: can empower liquids
+  air  : can affect the weather
+
+These allow multiple mechanics throughout the game in a consistent way. Earth spirits can empower weapons like swords or arrows. Water spirits could be used to make healing, stamina, or strength potions. Certain shrines could provide ways for upgrades or spiritual leaders might teach new abilities. 
+
+The basis for the mechanics will be that three earth spirits have attached to the main character. The player would then be able to bind the spirits to player's sword or arrows in order to do more damage. These attacks would have a cooldown before being able to be used again. However, this would be able to be segmented between the spirits, meaning you could power up an arrow with one spirit and immediately power up a sword attack with the others while the one is on cooldown. This means the player would have options between many smaller attacks or one large attack (or anything in between), most likely would end up being dependent on the type of enemy.
+
+Throughout the story, defeating enemies or doing certain quests might yeild another spirit that wants to join you. Visiting shrines or spiritual leaders would be a mechanism for some abilities. Having spirits attached to the main character would provide an avenue for NPCs giving quests (thinking this guy would get it done). 
