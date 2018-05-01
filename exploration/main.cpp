@@ -15,187 +15,12 @@
 #include <vector>
 #include <sstream>
 
-class Shader
-{
-public:
-  unsigned int ID;
-  // constructor generates the shader on the fly
-  // ------------------------------------------------------------------------
-  Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath = nullptr)
-  {
-    // 1. retrieve the vertex/fragment source code from filePath
-    std::string vertexCode;
-    std::string fragmentCode;
-    std::string geometryCode;
-    std::ifstream vShaderFile;
-    std::ifstream fShaderFile;
-    std::ifstream gShaderFile;
-    // ensure ifstream objects can throw exceptions:
-    vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    try
-    {
-      // open files
-      vShaderFile.open(vertexPath);
-      fShaderFile.open(fragmentPath);
-      std::stringstream vShaderStream, fShaderStream;
-      // read file's buffer contents into streams
-      vShaderStream << vShaderFile.rdbuf();
-      fShaderStream << fShaderFile.rdbuf();
-      // close file handlers
-      vShaderFile.close();
-      fShaderFile.close();
-      // convert stream into string
-      vertexCode = vShaderStream.str();
-      fragmentCode = fShaderStream.str();
-      // if geometry shader path is present, also load a geometry shader
-      if (geometryPath != nullptr)
-      {
-        gShaderFile.open(geometryPath);
-        std::stringstream gShaderStream;
-        gShaderStream << gShaderFile.rdbuf();
-        gShaderFile.close();
-        geometryCode = gShaderStream.str();
-      }
-    }
-    catch (std::ifstream::failure e)
-    {
-      std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-    }
-    const char* vShaderCode = vertexCode.c_str();
-    const char * fShaderCode = fragmentCode.c_str();
-    // 2. compile shaders
-    unsigned int vertex, fragment;
-    int success;
-    char infoLog[512];
-    // vertex shader
-    vertex = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex, 1, &vShaderCode, NULL);
-    glCompileShader(vertex);
-    checkCompileErrors(vertex, "VERTEX");
-    // fragment Shader
-    fragment = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment, 1, &fShaderCode, NULL);
-    glCompileShader(fragment);
-    checkCompileErrors(fragment, "FRAGMENT");
-    // if geometry shader is given, compile geometry shader
-    unsigned int geometry;
-    if (geometryPath != nullptr)
-    {
-      const char * gShaderCode = geometryCode.c_str();
-      geometry = glCreateShader(GL_GEOMETRY_SHADER);
-      glShaderSource(geometry, 1, &gShaderCode, NULL);
-      glCompileShader(geometry);
-      checkCompileErrors(geometry, "GEOMETRY");
-    }
-    // shader Program
-    ID = glCreateProgram();
-    glAttachShader(ID, vertex);
-    glAttachShader(ID, fragment);
-    if (geometryPath != nullptr)
-      glAttachShader(ID, geometry);
-    glLinkProgram(ID);
-    checkCompileErrors(ID, "PROGRAM");
-    // delete the shaders as they're linked into our program now and no longer necessery
-    glDeleteShader(vertex);
-    glDeleteShader(fragment);
-    if (geometryPath != nullptr)
-      glDeleteShader(geometry);
-
-  }
-  // activate the shader
-  // ------------------------------------------------------------------------
-  void use()
-  {
-    glUseProgram(ID);
-  }
-  // utility uniform functions
-  // ------------------------------------------------------------------------
-  void setBool(const std::string &name, bool value) const
-  {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
-  }
-  // ------------------------------------------------------------------------
-  void setInt(const std::string &name, int value) const
-  {
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
-  }
-  // ------------------------------------------------------------------------
-  void setFloat(const std::string &name, float value) const
-  {
-    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
-  }
-  // ------------------------------------------------------------------------
-  void setVec2(const std::string &name, const glm::vec2 &value) const
-  {
-    glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
-  }
-  void setVec2(const std::string &name, float x, float y) const
-  {
-    glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
-  }
-  // ------------------------------------------------------------------------
-  void setVec3(const std::string &name, const glm::vec3 &value) const
-  {
-    glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
-  }
-  void setVec3(const std::string &name, float x, float y, float z) const
-  {
-    glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
-  }
-  // ------------------------------------------------------------------------
-  void setVec4(const std::string &name, const glm::vec4 &value) const
-  {
-    glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
-  }
-  void setVec4(const std::string &name, float x, float y, float z, float w)
-  {
-    glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
-  }
-  // ------------------------------------------------------------------------
-  void setMat2(const std::string &name, const glm::mat2 &mat) const
-  {
-    glUniformMatrix2fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-  }
-  // ------------------------------------------------------------------------
-  void setMat3(const std::string &name, const glm::mat3 &mat) const
-  {
-    glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-  }
-  // ------------------------------------------------------------------------
-  void setMat4(const std::string &name, const glm::mat4 &mat) const
-  {
-    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-  }
-
-private:
-  // utility function for checking shader compilation/linking errors.
-  // ------------------------------------------------------------------------
-  void checkCompileErrors(GLuint shader, std::string type)
-  {
-    GLint success;
-    GLchar infoLog[1024];
-    if (type != "PROGRAM")
-    {
-      glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-      if (!success)
-      {
-        glGetShaderInfoLog(shader, 1024, NULL, infoLog);
-        std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-      }
-    }
-    else
-    {
-      glGetProgramiv(shader, GL_LINK_STATUS, &success);
-      if (!success)
-      {
-        glGetProgramInfoLog(shader, 1024, NULL, infoLog);
-        std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
-      }
-    }
-  }
-};
+#include "logging/LoggingManager.h"
+#include "logging/loggers/StreamLogger.h"
+#include "graphics/program.h"
+#include "graphics/texture.h"
+#include "graphics/framebuffer.h"
+#include "utilities/narray/narray.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -204,56 +29,151 @@ void processInput(GLFWwindow *window);
 unsigned int SCR_WIDTH = 1280;
 unsigned int SCR_HEIGHT = 720;
 bool paused = false;
-float camera_distance = 2.5f;
-float camera_rotation = 0.0f;
+float camera_distance = 8.0f;
+float camera_rotation = 1.5f;
 
-unsigned int color_texture;
-unsigned int depth_texture;
+float character_scale = 1.0f;
+float character_speed = 0.01f;
+glm::vec3 character_vel{ 0, 0, -1 };
 
-std::vector<float> read_line_model(std::string path)
+Framebuffer faceFramebuffer;
+Framebuffer lineFramebuffer;
+
+constexpr int MAX_JOINTS = 15;
+
+struct Joint
 {
-  std::ifstream file(path);
+  int parent_index;
+  glm::vec3 location;
+  glm::quat rotation;
+  glm::mat4 localTransform;
 
-  int count = 0;
-  file >> count;
+  void calcLocalTransform()
+  {
+    glm::mat4 rotationTransform = (glm::mat4)glm::quat(rotation.w, rotation.x, -rotation.z, rotation.y);
+    glm::mat4 locationTransform = glm::translate(glm::mat4(), { location.x, -location.z, location.y });
 
-  // two vertices of position and normal
-  std::vector<float> ret(count * 2 * 6);
-  for (int i = 0; i < ret.size(); ++i)
-    file >> ret[i];
+    this->localTransform = locationTransform * rotationTransform;
+  }
+};
 
-  return ret;
-}
-
-std::vector<float> read_face_model(std::string path)
+struct AnimatedJoint
 {
-  std::ifstream file(path);
+  glm::vec3 location;
+  glm::quat rotation;
 
-  int count = 0;
-  file >> count;
+  glm::mat4 getLocalTransform()
+  {
+    glm::mat4 locationTransform = glm::translate(glm::mat4(), { location.x, -location.z, location.y });
+    glm::mat4 rotationTransform = (glm::mat4)glm::quat(rotation.w, rotation.x, -rotation.z, rotation.y);
 
-  // three vertices of position
-  std::vector<float> ret(count * 3 * 3);
-  for (int i = 0; i < ret.size(); ++i)
-    file >> ret[i];
+    return locationTransform * rotationTransform;
+  }
+};
 
-  return ret;
+glm::mat4 getInterpolatedTransform(const AnimatedJoint& joint1, const AnimatedJoint& joint2, float interp)
+{
+  glm::vec3 location = glm::mix(joint1.location, joint2.location, interp);
+  glm::quat rotation = glm::mix(joint1.rotation, joint2.rotation, interp);
+
+  glm::mat4 locationTransform = glm::translate(glm::mat4(), { location.x, -location.z, location.y });
+  glm::mat4 rotationTransform = (glm::mat4)glm::quat(rotation.w, rotation.x, -rotation.z, rotation.y);
+
+  return locationTransform * rotationTransform;
 }
 
 struct Model
 {
   std::vector<float> vertexData;
-  std::vector<unsigned int> faceIndexes;
+  std::vector<float> faceData;
   std::vector<unsigned int> lineIndexes;
   unsigned int vertexDataVBO;
   unsigned int vertexDataVAO;
-  unsigned int faceIndexesID;
+  unsigned int faceDataVBO;
+  unsigned int faceDataVAO;
   unsigned int lineIndexesID;
+  wilt::NArray<unsigned char, 3> textureData;
+  Texture texture;
+  glm::mat4 transform;
+  std::vector<Joint> joints;
 };
 
-Model read_model(std::string path)
+class IAnimator;
+
+struct ModelInstance
 {
-  std::ifstream file(path);
+  Model* model;
+  glm::vec3 position;
+  float rotation;
+  IAnimator* animator;
+};
+
+class IAnimator
+{
+public:
+  virtual void applyAnimation(Program& program, float time, ModelInstance& instance) = 0;
+};
+
+class StaticAnimator : public IAnimator
+{
+public:
+  void applyAnimation(Program& program, float time, ModelInstance& instance) override
+  {
+    glm::mat4 joints[MAX_JOINTS];
+    glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(joints[0]));
+  }
+};
+
+class LoopAnimator : public IAnimator
+{
+public:
+  std::vector<std::vector<AnimatedJoint>> animation;
+  float framesPerSecond;
+
+public:
+  LoopAnimator(std::vector<std::vector<AnimatedJoint>> animation, float fps = 24.0f)
+    : animation{ animation }
+    , framesPerSecond{ fps }
+  { }
+
+public:
+  void applyAnimation(Program& program, float time, ModelInstance& instance) override
+  {
+    auto& joints = instance.model->joints;
+
+    float frame_pos = std::fmod(time * framesPerSecond, animation.size());
+    int frame1 = (int)frame_pos;
+    int frame2 = (frame1 + 1) % animation.size();
+    float interlop = frame_pos - frame1;
+
+    std::vector<glm::mat4> animatedTransforms(animation[0].size());
+    std::vector<glm::mat4> forwardTransforms(animation[0].size());
+    std::vector<glm::mat4> backwardTransforms(animation[0].size());
+
+    for (int i = 0; i < animation[0].size(); ++i)
+    {
+      auto p = joints[i].parent_index;
+      auto forward = (p != -1) ? forwardTransforms[p] : glm::mat4();
+      auto backward = (p != -1) ? backwardTransforms[p] : glm::mat4();
+
+      glm::mat4 interpolatedTransform = getInterpolatedTransform(animation[frame1][i], animation[frame2][i], interlop);
+      forwardTransforms[i] = forward * joints[i].localTransform * interpolatedTransform;
+      backwardTransforms[i] = glm::inverse(joints[i].localTransform) * backward;
+      animatedTransforms[i] = forwardTransforms[i] * backwardTransforms[i];
+    }
+
+    glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), animatedTransforms.size(), false, glm::value_ptr(animatedTransforms[0]));
+  }
+};
+
+ModelInstance* c = nullptr;
+IAnimator* walk_animator;
+IAnimator* trudge_animator;
+IAnimator* stand_animator;
+
+Model read_model(std::string modelPath, std::string texturePath, float scale = 1.0f)
+{
+  std::ifstream file(modelPath);
   Model model;
   int vertexCount;
   int faceCount;
@@ -261,15 +181,15 @@ Model read_model(std::string path)
 
   // read vertices
   file >> vertexCount;
-  model.vertexData.resize(vertexCount * 3); // 3 floats per vertex (x, y, z)
+  model.vertexData.resize(vertexCount * 5); // 5 floats per vertex (x, y, z, g, w)
   for (int i = 0; i < model.vertexData.size(); ++i)
     file >> model.vertexData[i];
 
   // read faces
   file >> faceCount;
-  model.faceIndexes.resize(faceCount * 3); // 3 ints per face (vId1, vId2, vId3)
-  for (int i = 0; i < model.faceIndexes.size(); ++i)
-    file >> model.faceIndexes[i];
+  model.faceData.resize(faceCount * 3 * 7); // 3 vertices per face (vId1, vId2, vId3), 7 floats per vertex (x, y, z, g, w, u, v)
+  for (int i = 0; i < model.faceData.size(); ++i)
+    file >> model.faceData[i];
 
   // read lines
   file >> lineCount;
@@ -277,7 +197,68 @@ Model read_model(std::string path)
   for (int i = 0; i < model.lineIndexes.size(); ++i)
     file >> model.lineIndexes[i];
 
+  // read texture
+  cimg_library::CImg<unsigned char> texture;
+  texture.load_jpeg(texturePath.c_str());
+  model.textureData = wilt::NArray<unsigned char, 3>{ { 3, texture.width(), texture.height() }, texture.data(), wilt::PTR::REF };
+  model.textureData = model.textureData.t(0, 1).t(1, 2).clone();
+
+  // get rotations
+  model.transform = glm::rotate(glm::scale(glm::mat4(), { scale, scale, scale }), glm::radians(-90.0f), { 1, 0, 0 });
+
+  // read bones
+  int jointCount;
+  file >> jointCount;
+  model.joints.resize(jointCount);
+  for (int i = 0; i < jointCount; ++i)
+  {
+    file >> model.joints[i].parent_index;
+
+    file >> model.joints[i].location[0];
+    file >> model.joints[i].location[1];
+    file >> model.joints[i].location[2];
+
+    file >> model.joints[i].rotation[3]; // w
+    file >> model.joints[i].rotation[0]; // x
+    file >> model.joints[i].rotation[1]; // y
+    file >> model.joints[i].rotation[2]; // z
+  }
+
+  for (int i = 0; i < jointCount; ++i)
+  {
+    model.joints[i].calcLocalTransform();
+    //if (model.joints[i].parent_index != -1)
+    //  model.joints[model.joints[i].parent_index].children.push_back(&model.joints[i]);
+  }
+
   return model;
+}
+
+std::vector<std::vector<AnimatedJoint>> read_animation(std::string path)
+{
+  std::ifstream file(path);
+  unsigned int frameCount;
+  unsigned int boneCount;
+
+  file >> frameCount >> boneCount;
+  std::vector<std::vector<AnimatedJoint>> ret{ frameCount, std::vector<AnimatedJoint>{ boneCount } };
+
+  for (int i = 0; i < frameCount; ++i)
+  {
+    for (int j = 0; j < boneCount; ++j)
+    {
+      file >> ret[i][j].location[0];
+      file >> ret[i][j].location[1];
+      file >> ret[i][j].location[2];
+
+      file >> ret[i][j].rotation[3]; // w
+      file >> ret[i][j].rotation[0]; // x
+      file >> ret[i][j].rotation[1]; // y
+      file >> ret[i][j].rotation[2]; // z
+    }
+  }
+
+  return ret;
 }
 
 void load_model(Model& model)
@@ -289,14 +270,22 @@ void load_model(Model& model)
   glBindBuffer(GL_ARRAY_BUFFER, model.vertexDataVBO);
   glBufferData(GL_ARRAY_BUFFER, model.vertexData.size() * sizeof(float), model.vertexData.data(), GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-  //glBindVertexArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
   // load faces
-  glGenBuffers(1, &model.faceIndexesID);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.faceIndexesID);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model.faceIndexes.size() * sizeof(unsigned int), model.faceIndexes.data(), GL_STATIC_DRAW);
+  glGenVertexArrays(1, &model.faceDataVAO);
+  glGenBuffers(1, &model.faceDataVBO);
+  glBindVertexArray(model.faceDataVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, model.faceDataVBO);
+  glBufferData(GL_ARRAY_BUFFER, model.faceData.size() * sizeof(float), model.faceData.data(), GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(5 * sizeof(float)));
 
   // load lines
   glGenBuffers(1, &model.lineIndexesID);
@@ -305,25 +294,40 @@ void load_model(Model& model)
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+  // load texture
+  model.texture = Texture::fromMemory((const char*)model.textureData._basePtr(), GL_RGB, model.textureData.width(), model.textureData.height());
+  model.texture.setMinFilter(GL_LINEAR);
+  model.texture.setMagFilter(GL_LINEAR);
 }
 
-void draw_faces(Model& model)
+void draw_faces(ModelInstance& instance, Program& program, float time)
 {
-  glBindVertexArray(model.vertexDataVAO);
-  //glBindBuffer(GL_ARRAY_BUFFER, model.vertexDataVBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.faceIndexesID);
-  glDrawElements(GL_TRIANGLES, model.faceIndexes.size(), GL_UNSIGNED_INT, (void*)0);
+  program.setMat4("model", glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }));
+  program.setInt("model_texture", 0);
+
+  instance.animator->applyAnimation(program, time, instance);
+
+  glActiveTexture(GL_TEXTURE0);
+  glEnable(GL_TEXTURE_2D);
+  glBindTexture(GL_TEXTURE_2D, instance.model->texture.id());
+
+  glBindVertexArray(instance.model->faceDataVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, instance.model->faceDataVBO);
+  glDrawArrays(GL_TRIANGLES, 0, instance.model->faceData.size() / 7 * 3);
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void draw_lines(Model& model)
+void draw_lines(ModelInstance& instance, Program& program, float time)
 {
-  glBindVertexArray(model.vertexDataVAO);
-  //glBindBuffer(GL_ARRAY_BUFFER, model.vertexDataVBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.lineIndexesID);
-  glDrawElements(GL_LINES_ADJACENCY, model.lineIndexes.size(), GL_UNSIGNED_INT, (void*)0);
+  program.setMat4("model", glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }));
+
+  instance.animator->applyAnimation(program, time, instance);
+
+  glBindVertexArray(instance.model->vertexDataVAO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance.model->lineIndexesID);
+  glDrawElements(GL_LINES_ADJACENCY, instance.model->lineIndexes.size(), GL_UNSIGNED_INT, (void*)0);
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -331,12 +335,14 @@ void draw_lines(Model& model)
 
 int main()
 {
+  wilt::logging.setLogger<wilt::StreamLogger>(std::cout);
+
   // glfw: initialize and configure
   // ------------------------------
   glfwInit();
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
 #ifdef __APPLE__
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
@@ -368,170 +374,69 @@ int main()
   glEnable(GL_DEPTH_TEST);
 
   // build and compile our shader programs
-  // ------------------------------------
-  Shader lineShader("shaders/line.vert.glsl", "shaders/line.frag.glsl", "shaders/line.geom.glsl");
-  Shader depthShader("shaders/line.vert.glsl", "shaders/depth.frag.glsl");
-  Shader screenShader("shaders/screen.vert.glsl", "shaders/screen.frag.glsl");
-
-  auto spikeLines = read_line_model("models/temp_lines.txt");
-  auto spikeFaces = read_face_model("models/temp_faces.txt");
-  auto file_model = read_model("models/temp_model.txt");
-
-  cimg_library::CImg<unsigned char> f;
-  f.load_jpeg("models/perlin.jpg");
-
-  // set up vertex data (and buffer(s)) and configure vertex attributes
-  // ------------------------------------------------------------------
-  float cubeLines[] = {
-    // points            // face-dir
-
-    // z-lines
-    -0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f, // x+
-    -0.5f, -0.5f,  0.5f,  0.0f,  1.0f,  0.0f, // y+
-
-    -0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f, // x+
-    -0.5f,  0.5f,  0.5f,  0.0f, -1.0f,  0.0f, // y-
-
-    0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f, // x-
-    0.5f, -0.5f,  0.5f,  0.0f,  1.0f,  0.0f, // y+
-
-    0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f, // x-
-    0.5f,  0.5f,  0.5f,  0.0f, -1.0f,  0.0f, // y-
-
-                                             // y-lines
-                                             -0.5f, -0.5f, -0.5f,  0.0f,  0.0f,  1.0f, // z+
-                                             -0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f, // x+
-
-                                             0.5f, -0.5f, -0.5f,  0.0f,  0.0f,  1.0f, // z+
-                                             0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f, // x-
-
-                                             -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, -1.0f, // z-
-                                             -0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, // x+
-
-                                             0.5f, -0.5f,  0.5f,  0.0f,  0.0f, -1.0f, // z-
-                                             0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, // x-
-
-                                                                                      // x-lines
-                                                                                      -0.5f, -0.5f, -0.5f,  0.0f,  1.0f,  0.0f, // y+
-                                                                                      0.5f, -0.5f, -0.5f,  0.0f,  0.0f,  1.0f, // z+
-
-                                                                                      -0.5f, -0.5f,  0.5f,  0.0f,  1.0f,  0.0f, // y+
-                                                                                      0.5f, -0.5f,  0.5f,  0.0f,  0.0f, -1.0f, // z-
-
-                                                                                      -0.5f,  0.5f, -0.5f,  0.0f, -1.0f,  0.0f, // y-
-                                                                                      0.5f,  0.5f, -0.5f,  0.0f,  0.0f,  1.0f, // z+
-
-                                                                                      -0.5f,  0.5f,  0.5f,  0.0f, -1.0f,  0.0f, // y-
-                                                                                      0.5f,  0.5f,  0.5f,  0.0f,  0.0f, -1.0f  // z-
+  Program lineProgram{ 
+    VertexShader::fromFile("shaders/line.vert.glsl"),
+    GeometryShader::fromFile("shaders/line.geom.glsl"),
+    FragmentShader::fromFile("shaders/line.frag.glsl")
+  };
+  Program depthProgram{
+    VertexShader::fromFile("shaders/depth.vert.glsl"),
+    FragmentShader::fromFile("shaders/depth.frag.glsl")
+  };
+  Program screenProgram{
+    VertexShader::fromFile("shaders/screen.vert.glsl"),
+    FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
-  float cubeFaces[] = {
-    // back
-    -0.5f, -0.5f, -0.5f,
-    0.5f, -0.5f, -0.5f,
-    0.5f,  0.5f, -0.5f,
-    0.5f,  0.5f, -0.5f,
-    -0.5f,  0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
+  auto treeModel = read_model("models/tree_model.txt", "models/tree_texture.jpg");
+  auto grassModel = read_model("models/grass_model.txt", "models/grass_texture.jpg");
+  auto blockModel = read_model("models/block_model.txt", "models/block_texture.jpg", 0.05f * character_scale);
 
-    // front
-    -0.5f, -0.5f,  0.5f,
-    0.5f, -0.5f,  0.5f,
-    0.5f,  0.5f,  0.5f,
-    0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
-    -0.5f, -0.5f,  0.5f,
+  auto walk_animation = read_animation("models/walk_animation.txt");
+  auto trudge_animation = read_animation("models/trudge_animation.txt");
 
-    // left
-    -0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
-    -0.5f, -0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
+  walk_animator = new LoopAnimator{ walk_animation, 96 };
+  trudge_animator = new LoopAnimator{ trudge_animation, 24 };
+  stand_animator = new StaticAnimator{};
 
-    // right
-    0.5f,  0.5f,  0.5f,
-    0.5f,  0.5f, -0.5f,
-    0.5f, -0.5f, -0.5f,
-    0.5f, -0.5f, -0.5f,
-    0.5f, -0.5f,  0.5f,
-    0.5f,  0.5f,  0.5f,
+  ModelInstance instances[] = 
+  {
+    { &blockModel,{ 0, 0, 20 },  glm::radians(180.0f), walk_animator },
 
-    // bottom
-    -0.5f, -0.5f, -0.5f,
-    0.5f, -0.5f, -0.5f,
-    0.5f, -0.5f,  0.5f,
-    0.5f, -0.5f,  0.5f,
-    -0.5f, -0.5f,  0.5f,
-    -0.5f, -0.5f, -0.5f,
+    { &treeModel, { 5, 0,  4 }, -0.2, new StaticAnimator{} },
+    { &treeModel, { 3, 0,  6 },  0.6, new StaticAnimator{} },
+    { &treeModel, {-2, 0,  3 }, -1.2, new StaticAnimator{} },
+    { &treeModel, {-3, 0,  6 },  0.8, new StaticAnimator{} },
+    { &treeModel, { 3, 0, -5 },  2.3, new StaticAnimator{} },
+    { &treeModel, {-4, 0, -5 }, -3.0, new StaticAnimator{} },
+    { &treeModel, {-5, 0,  0 },  1.4, new StaticAnimator{} },
 
-    // top
-    -0.5f,  0.5f, -0.5f,
-    0.5f,  0.5f, -0.5f,
-    0.5f,  0.5f,  0.5f,
-    0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f, -0.5f
+    { &grassModel, {-4, 0, -3 }, -0.2, new StaticAnimator{} },
+    { &grassModel, {-2, 0, -4 },  0.6, new StaticAnimator{} },
+    { &grassModel, {-1, 0,  1 }, -1.2, new StaticAnimator{} },
+    { &grassModel, { 2, 0, -4 },  0.8, new StaticAnimator{} },
+    { &grassModel, {-2, 0,  4 },  2.3, new StaticAnimator{} },
+    { &grassModel, { 3, 0,  4 }, -3.0, new StaticAnimator{} },
+    { &grassModel, { 4, 0,  0 },  1.4, new StaticAnimator{} },
   };
 
+  auto& character = instances[0];
+  c = &character;
+
+  for (auto model : { &treeModel, &grassModel, &blockModel })
+    load_model(*model);
+
+  // load quad
   float quadVertices[] = {
     -1.0f,  1.0f,  0.0f, 1.0f,
     -1.0f, -1.0f,  0.0f, 0.0f,
-    1.0f, -1.0f,  1.0f, 0.0f,
+     1.0f, -1.0f,  1.0f, 0.0f,
 
     -1.0f,  1.0f,  0.0f, 1.0f,
-    1.0f, -1.0f,  1.0f, 0.0f,
-    1.0f,  1.0f,  1.0f, 1.0f
+     1.0f, -1.0f,  1.0f, 0.0f,
+     1.0f,  1.0f,  1.0f, 1.0f
   };
 
-  load_model(file_model);
-
-  // load lines
-  unsigned int linesVBO, linesVAO;
-  glGenVertexArrays(1, &linesVAO);
-  glGenBuffers(1, &linesVBO);
-  glBindVertexArray(linesVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, linesVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(cubeLines), cubeLines, GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-
-  // load spike lines
-  unsigned int spikeLinesVBO, spikeLinesVAO;
-  glGenVertexArrays(1, &spikeLinesVAO);
-  glGenBuffers(1, &spikeLinesVBO);
-  glBindVertexArray(spikeLinesVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, spikeLinesVBO);
-  glBufferData(GL_ARRAY_BUFFER, spikeLines.size() * sizeof(float), spikeLines.data(), GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-
-  // load faces
-  unsigned int facesVAO, facesVBO;
-  glGenVertexArrays(1, &facesVAO);
-  glGenBuffers(1, &facesVBO);
-  glBindVertexArray(facesVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, facesVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(cubeFaces), &cubeFaces, GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-  // load spike faces
-  unsigned int spikeFacesVAO, spikeFacesVBO;
-  glGenVertexArrays(1, &spikeFacesVAO);
-  glGenBuffers(1, &spikeFacesVBO);
-  glBindVertexArray(spikeFacesVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, spikeFacesVBO);
-  glBufferData(GL_ARRAY_BUFFER, spikeFaces.size() * sizeof(float), spikeFaces.data(), GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-  // load quad
   unsigned int quadVAO, quadVBO;
   glGenVertexArrays(1, &quadVAO);
   glGenBuffers(1, &quadVBO);
@@ -543,37 +448,19 @@ int main()
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-  // create framebuffer for the depth shader to write to
-  // -----------
+  faceFramebuffer = Framebuffer(
+    Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT),
+    Texture::fromMemory(NULL, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT)
+  );
 
-  // create a color texture
-  glGenTextures(1, &color_texture);
-  glBindTexture(GL_TEXTURE_2D, color_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_texture, 0);
+  lineFramebuffer = Framebuffer(
+    Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT),
+    Texture::fromMemory(NULL, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT)
+  );
 
-  // create a depth texture 
-  glGenTextures(1, &depth_texture);
-  glBindTexture(GL_TEXTURE_2D, depth_texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
-
-  // create the framebuffer
-  unsigned int framebuffer;
-  glGenFramebuffers(1, &framebuffer);
-  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_texture, 0);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_texture, 0);
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  Texture paperTexture = Texture::fromFile("models/paper_texture.jpg");
+  paperTexture.setMinFilter(GL_LINEAR);
+  paperTexture.setMagFilter(GL_LINEAR);
 
   GLint maxGeometryOutputVertices;
   glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &maxGeometryOutputVertices);
@@ -582,82 +469,90 @@ int main()
   // render loop
   // -----------
   int i = 0;
+  float iterationsPerSecond = 144.0f;
+  int selected_perlin = 0;
+  glm::vec3 view_reference;
   while (!glfwWindowShouldClose(window))
   {
+    float time = i / 144.0f;
+
     // input
     processInput(window);
 
     float radius = camera_distance;
     float camX = sin(camera_rotation) * radius;
     float camZ = cos(camera_rotation) * radius;
-    glm::mat4 view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    float camY = 2.0f;
+    //float camY = 0.0f;
+    //glm::vec3 camera_pos = glm::vec3(camX, camY, camZ);
+    glm::vec3 camera_pos = character.position + glm::vec3(0, 2, 4);
+    glm::mat4 view = glm::lookAt(camera_pos, character.position + glm::vec3(0, 1.5, 0), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    glm::mat4 model = glm::rotate(glm::scale(glm::mat4(), { 0.5f, 0.5f, 0.5f }), glm::radians(-90.0f), { 1.0f, 0.0f, 0.0f });
 
-    // render depth
-    depthShader.use();
-    depthShader.setMat4("projection", projection);
-    depthShader.setMat4("view", view);
-    depthShader.setFloat("frame", i / 24);
-    //depthShader.setMat4("model", model);
+    // render faces and depth
+    depthProgram.use();
+    depthProgram.setMat4("projection", projection);
+    depthProgram.setMat4("view", view);
+    depthProgram.setFloat("frame", i / 24);
+    depthProgram.setVec3("view_reference", view_reference);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, faceFramebuffer.id());
     glEnable(GL_DEPTH_TEST);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //glBindVertexArray(facesVAO);
-    //depthShader.setMat4("model", glm::translate(model, { 0.0f, 0.0f, 0.0f }));
-    //glDrawArrays(GL_TRIANGLES, 0, 36);
-    //depthShader.setMat4("model", glm::translate(model, { 0.5f, 0.25f, 0.5f }));
-    //glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    //glBindVertexArray(spikeFacesVAO);
-    //depthShader.setMat4("model", glm::rotate(glm::scale(model, { 0.5f, 0.5f, 0.5f }), 0.35f, { 0.1, 0.4, -0.2 }));
-    depthShader.setMat4("model", model);
-    //glDrawArrays(GL_TRIANGLES, 0, spikeFaces.size() / 3); // 3 is the data per vertex
-
-    draw_faces(file_model);
+    for (auto& instance : instances)
+      draw_faces(instance, depthProgram, time);
 
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // render lines
-    lineShader.use();
-    lineShader.setMat4("projection", projection);
-    lineShader.setMat4("view", view);
-    //lineShader.setMat4("model", model);
-    lineShader.setFloat("frame", i / 24);
-    lineShader.setFloat("ratio", 720.0f / 1280.0f);
-    lineShader.setInt("depth_texture", 0);
+    lineProgram.use();
+    lineProgram.setMat4("projection", projection);
+    lineProgram.setMat4("view", view);
+    lineProgram.setFloat("frame", i / 24);
+    lineProgram.setFloat("ratio", (float)SCR_WIDTH / (float)SCR_HEIGHT);
+    lineProgram.setInt("depth_texture", 0);
+    lineProgram.setVec3("view_reference", view_reference);
 
+    glActiveTexture(GL_TEXTURE0);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, faceFramebuffer.depthTexture().id());
+
+    glBindFramebuffer(GL_FRAMEBUFFER, lineFramebuffer.id());
+    glEnable(GL_DEPTH_TEST);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glBindTexture(GL_TEXTURE_2D, depth_texture);
 
-    //glBindVertexArray(linesVAO);
-    //lineShader.setMat4("model", glm::translate(model, { 0.0f, 0.0f, 0.0f }));
-    //glDrawArrays(GL_LINES, 0, 24);
-    //lineShader.setMat4("model", glm::translate(model, { 0.5f, 0.25f, 0.5f }));
-    //glDrawArrays(GL_LINES, 0, 24);
+    for (auto& instance : instances)
+      draw_lines(instance, lineProgram, time);
 
-    //glBindVertexArray(spikeLinesVAO);
-    //lineShader.setMat4("model", glm::rotate(glm::scale(model, { 0.5f, 0.5f, 0.5f }), 0.35f, { 0.1, 0.4, -0.2 }));
-    lineShader.setMat4("model", model);
-    //glDrawArrays(GL_LINES, 0, spikeLines.size() / 6); // 6 is the data per vertex
-
-    draw_lines(file_model);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // render depth
-    //screenShader.use();
+    screenProgram.use();
+    screenProgram.setInt("face_texture", 0);
+    screenProgram.setInt("line_texture", 1);
+    screenProgram.setInt("bkgd_texture", 2);
 
-    //glDisable(GL_DEPTH_TEST);
-    //glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    //glClear(GL_COLOR_BUFFER_BIT);
-    //glBindVertexArray(quadVAO);
-    //glBindTexture(GL_TEXTURE_2D, depth_texture);
-    //glDrawArrays(GL_TRIANGLES, 0, 6);
+    glActiveTexture(GL_TEXTURE0);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, faceFramebuffer.colorTexture().id());
+
+    glActiveTexture(GL_TEXTURE1);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, lineFramebuffer.colorTexture().id());
+
+    glActiveTexture(GL_TEXTURE2);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, paperTexture.id());
+
+    glDisable(GL_DEPTH_TEST);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
     // -------------------------------------------------------------------------------
@@ -665,20 +560,21 @@ int main()
     glfwPollEvents();
 
     if (!paused)
+    {
       i++;
+      if (i % 24 == 0)
+      {
+        selected_perlin = (selected_perlin + (rand() % 7) + 1) % 8;
+        view_reference = camera_pos;
+      }
+
+      character.position += character_vel * character_speed;
+    }
   }
 
   // optional: de-allocate all resources once they've outlived their purpose:
   // ------------------------------------------------------------------------
-  glDeleteVertexArrays(1, &linesVAO);
-  glDeleteVertexArrays(1, &facesVAO);
-  glDeleteVertexArrays(1, &spikeLinesVAO);
-  glDeleteVertexArrays(1, &spikeFacesVAO);
   glDeleteVertexArrays(1, &quadVAO);
-  glDeleteBuffers(1, &linesVBO);
-  glDeleteBuffers(1, &facesVBO);
-  glDeleteBuffers(1, &spikeLinesVBO);
-  glDeleteBuffers(1, &spikeFacesVBO);
   glDeleteBuffers(1, &quadVBO);
 
   // glfw: terminate, clearing all previously allocated GLFW resources.
@@ -703,6 +599,33 @@ void processInput(GLFWwindow *window)
     camera_rotation -= glm::radians(30.0f) / 144.0f;
   if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     camera_rotation += glm::radians(30.0f) / 144.0f;
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    character_vel = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 1, 0 }) * glm::vec4(character_vel, 0.0));
+    c->rotation += glm::radians(1.0f);
+  }
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    character_vel = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 1, 0 }) * glm::vec4(character_vel, 0.0));
+    c->rotation -= glm::radians(1.0f);
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+  {
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    {
+      character_speed = 0.003f;
+      c->animator = trudge_animator;
+    }
+    else
+    {
+      character_speed = 0.01f;
+      c->animator = walk_animator;
+    }
+  }
+  else
+  {
+    character_speed = 0.0f;
+    c->animator = stand_animator;
+  }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -713,12 +636,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
   // height will be significantly larger than specified on retina displays.
   glViewport(0, 0, width, height);
 
+  SCR_WIDTH = width;
+  SCR_HEIGHT = height;
+
   // resize framebuffer textures
-  glBindTexture(GL_TEXTURE_2D, color_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-  glBindTexture(GL_TEXTURE_2D, depth_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
+  faceFramebuffer.resize(width, height);
+  lineFramebuffer.resize(width, height);
 }

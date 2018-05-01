@@ -1,9 +1,15 @@
-#version 330 core
+#version 420 core
+
+in vec2 uv_coords;
+
+uniform sampler2D model_texture;
 
 void main()
 {
   // This just returns black for all values, however these pixels won't be 
   // used. This shader is only here for the depth buffer
-  gl_FragColor = vec4(0.0f, 0.0f, 0.0f, 1.0);
+  vec4 c = texture(model_texture, vec2(uv_coords.x, 1.0 - uv_coords.y));
+  //gl_FragColor = vec4(c.xyz, 1.0);
+  gl_FragColor = c;
 
 }

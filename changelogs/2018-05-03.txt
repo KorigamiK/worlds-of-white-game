@@ -1,0 +1,11 @@
+Changelog (2018-05-03)
+
+
+Model Scaling
+
+  Added the ability to specify the model scale when loading model data. This also exposed an issue where
+
+
+Model Animators
+
+  The way I had added the animation code meant it was hard to make improvements, add new animations, or new effects without affecting others. So I added an Animator to each instance that is in charge of running animations. That way all the non-moving things can use a StaticAnimator and my current character can use a LoopAnimator. I'll probably add a more complicated animator for the character so I can stop and start different animations at will.

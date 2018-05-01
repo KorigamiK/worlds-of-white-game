@@ -16,4 +16,25 @@ Always-Draw Edges
   The Blender export script has been updated so that edges can be marked as "always-draw" by assigning them to a named vertex group. This would make the script export the line using the original edge indexes instead of the corresponding face indexes. This ensures that the edge is always drawn regardless of edge-ness (still guarded by depth though). The idea is that facial features (like eye-borders, eyebrows, and mouths) could be always be drawn. Using vertex groups for this purpose also means that nearby always-draw edges must have a buffer vertex between them.
 
 
+Texture-Dependent Vertex Variation
 
+  Randomly calculating vertex offsets, while deterministic, don't play well with visually nearby textures (i.e. nearby vertices may end up overlapping and cause visually confusing results). Using semi-smooth random texture, you can get the desired variation, while still ensuring the end result is consistent. The texture can be changed each frame to keep the frame-by-frame style.
+
+  As part of this, I've also made set it to change the variation texture each frame. But, its just the same texture in different flips and rotations, which I was able to do thanks to the multi-dimensional array manipulation library I made years ago.
+
+
+Model Textures
+
+  Finally got textures on models. Had to once again change the blender export script to include the new UV data on the vertices. Unfortunately, the way I did it means that vertices are saved 2+ times: 1 to allow indexed line-drawing, 1+ to add the independent UV coordinates (1+ usually meaning 4-6), which results in a 5x file size. Will probably clean it up later, but right now isn't a problem.
+
+
+World Map
+
+  I've had a small mock-up of for the world for a while, but I now have a sketch for the rivers, coastlines, and city locations. Not definitive, as I will no doubt change some layouts depending on gameplay/plot reasons, but at least it gives me a basis for constructing the rest of the world. I'll update the map with shrines, outposts, encounters, quest paths, and other things that need spatial consideration.
+
+
+Future Work
+
+- animation implementation
+- more worldbuilding (conflict, society, quests, game storyline)
+- more project cleanup

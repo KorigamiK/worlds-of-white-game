@@ -2,13 +2,18 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="utilities\logger.cpp">
-      <Filter>utilities</Filter>
-    </ClCompile>
     <ClCompile Include="utilities\ring.cpp">
       <Filter>utilities</Filter>
     </ClCompile>
     <ClCompile Include="libraries\glad\src\glad.c" />
+    <ClCompile Include="logging\LoggingManager.cpp" />
+    <ClCompile Include="logging\SourceLogger.cpp" />
+    <ClCompile Include="logging\loggers\FileLogger.cpp" />
+    <ClCompile Include="logging\loggers\StreamLogger.cpp" />
+    <ClCompile Include="graphics\shader.cpp" />
+    <ClCompile Include="graphics\program.cpp" />
+    <ClCompile Include="graphics\texture.cpp" />
+    <ClCompile Include="graphics\framebuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -16,11 +21,26 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="utilities\logger.h">
-      <Filter>utilities</Filter>
-    </ClInclude>
     <ClInclude Include="utilities\ring.h">
       <Filter>utilities</Filter>
     </ClInclude>
+    <ClInclude Include="graphics\shader.h" />
+    <ClInclude Include="logging\ILogger.h" />
+    <ClInclude Include="logging\LoggingLevel.h" />
+    <ClInclude Include="logging\LoggingManager.h" />
+    <ClInclude Include="logging\SourceLogger.h" />
+    <ClInclude Include="logging\loggers\FileLogger.h" />
+    <ClInclude Include="logging\loggers\StreamLogger.h" />
+    <ClInclude Include="graphics\program.h" />
+    <ClInclude Include="utilities\narray\borders.hpp" />
+    <ClInclude Include="utilities\narray\core.hpp" />
+    <ClInclude Include="utilities\narray\filters.hpp" />
+    <ClInclude Include="utilities\narray\narray.hpp" />
+    <ClInclude Include="utilities\narray\narrayiterator.hpp" />
+    <ClInclude Include="utilities\narray\operators.hpp" />
+    <ClInclude Include="utilities\narray\point.hpp" />
+    <ClInclude Include="utilities\narray\util.h" />
+    <ClInclude Include="graphics\texture.h" />
+    <ClInclude Include="graphics\framebuffer.h" />
   </ItemGroup>
 </Project>

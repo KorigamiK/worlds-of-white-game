@@ -1,0 +1,38 @@
+Changelog (2018-04-26)
+
+
+Math-based Vertex Variation
+
+  So last week I implemented texture-based vertex variation, but I discovered that had a few side effects I didn't like (mostly the say it "waved" vertices around while the camera was moving between frames). So decided to do some math instead and based the variation off of the camera position and trigonometric waves. I may still go back to textures but I need a good sky-box/sphere texture and this gives me the effect I want for right now so I won't worry about it.
+
+
+Multi-Model and Multi-Instance Rendering
+
+  Up until this point, I had only been loading and rendering one model at a time. However, I've since re-done both how the models are loaded and how instances are drawn. Now I can load a list of models and create instances bound to those models with individual positions and rotations. In doing so, I also had to couple the texture to the model, which honestly should've happened earlier, but whatever.
+
+
+Better Clipping
+
+  I'd had a bug for a while where faces to the sides of the camera would intersect the view. After much frustration, I found that it was due to not preserving the clip value for vertex post-processing. So I had to redo much of the calculations in the geometry shader to preserve it and take it into account. Fortunately, it actually made things work out better; removed some prior uncertainty.
+
+
+Line Width Fixes
+
+  After the clipping change, I'd noticed some of the lines were't being rendered properly; lines that were very z-directional were drawn skinnier. I found it was a problem with how I was normalizing the line to get the perpendicular vector for line width. But then I noticed that horizontal lines were drawn thinner than vertical lines; a problem I thought I fixed long ago. Turns out it was related to the viewport size that was caused by the clipping change as well. Took a bit to figure out what I needed to do to fix that. I think I might eventually change the geometry shader to convert points to pixel-space, manipulate them, and put them back; right now its not very intuitive.
+
+
+Twitter Account
+
+  Decided to make a twitter account to log my activity. Its much easier to show to other people this way and I can avoid bugging people who don't care. Also gives a way for anyone to comment, ask questions, or whatever.
+
+
+Blender Animation Importing
+
+  Spent a very long time trying to understand the blender armature structure so that I can export, load, and display an animation. Part of the time was just trying to get a quick-and-dirty way to do the animations by exporting whole matrices for each group per frame, but I never could find or implement a way to do that. Mostly followed ThinMatrix's structure for running animations but much debugging required me to scrap most of it and build it fresh from scratch so I could diagnose issues as they arise. And after countless problems, I've finally got it to run an animation in my renderer.
+
+
+Future Work
+
+- model scaling
+- moving model + 3rd person camera
+- model some terrain

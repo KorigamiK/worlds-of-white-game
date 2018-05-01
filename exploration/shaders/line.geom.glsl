@@ -1,9 +1,10 @@
-#version 330 core
+#version 420 core
 
 layout(lines_adjacency) in;
 layout(triangle_strip, max_vertices = 64) out;
 
 uniform sampler2D depth_texture;
+
 uniform float frame;
 uniform float ratio;
 
@@ -18,13 +19,15 @@ uniform float ratio;
 // 
 
 const int   POINT_MAX = 28;        // maximum intermediate points
-const float POINT_SPACING = 0.05f; // (screen units) length between points 
+const float POINT_SPACING = 0.02f; // (screen units) length between points 
 
-const float EDGE_OFFSET = 0.004f;          // (screen units) edge distance from point base
-const float EDGE_OFFSET_VARIANCE = 0.001; // (screen units) edge distance from point variation
+const float EDGE_OFFSET = 0.002f;          // (screen units) edge distance from point base
+//const float EDGE_OFFSET = 0.002f;          // (screen units) edge distance from point base
+//const float EDGE_OFFSET_VARIANCE = 0.0015; // (screen units) edge distance from point variation
+const float EDGE_OFFSET_VARIANCE = 0.001f; // (screen units) edge distance from point variation
 
 const float POINT_DRIFT_MAX = EDGE_OFFSET - EDGE_OFFSET_VARIANCE; // (screen units) maximum point wobble
-//const float POINT_DRIFT_MAX = 0.0f;                               // (screen units) maximum point wobble
+//const float POINT_DRIFT_MAX = 0.000f;                             // (screen units) maximum point wobble
 const float POINT_DRIFT = POINT_DRIFT_MAX / 2;                    // (screen units) point wobble
 
 float seed1 = frame;
@@ -69,14 +72,9 @@ float get_depth(vec2 v)
 	return max(max(d1, d2), max(d3, d4));
 }
 
-float percent_difference(float a, float b)
-{
-	return (a - b) / b;
-}
-
 bool is_hidden(vec4 p)
 {
-	return percent_difference(p.z, get_depth(p.xy)) > (0.00f * (1.0f - p.z));
+	return p.z / p.w > get_depth(p.xy / p.w);
 }
 
 float direction_from_line(vec2 p1, vec2 p2, vec2 point)
@@ -94,10 +92,10 @@ bool is_edge()
 {
 	// The line is an edge if both face-points lie on the same side of the line.
 
-    vec4 p0 = gl_in[0].gl_Position;
-    vec4 p1 = gl_in[1].gl_Position;
-	vec4 p2 = gl_in[2].gl_Position;
-	vec4 p3 = gl_in[3].gl_Position;
+    vec4 p0 = gl_in[0].gl_Position / gl_in[0].gl_Position.w;
+    vec4 p1 = gl_in[1].gl_Position / gl_in[1].gl_Position.w;
+	vec4 p2 = gl_in[2].gl_Position / gl_in[2].gl_Position.w;
+	vec4 p3 = gl_in[3].gl_Position / gl_in[3].gl_Position.w;
 
 	float d1 = direction_from_line(p1.xy, p2.xy, p0.xy);
 	float d2 = direction_from_line(p1.xy, p2.xy, p3.xy);
@@ -105,37 +103,37 @@ bool is_edge()
 	// Check includes zero on the off-chance one face-point is exactly on the 
 	// line; it should be considered an edge in that case.
 
-	return d1 * d2 >= 0;
+	return d1 * d2 >= -0.000000000001f;
 }
 
 void _draw_segment(vec4 p, vec4 perp)
 {
-	gl_Position = p + perp * (EDGE_OFFSET + rand() * EDGE_OFFSET_VARIANCE);
+	gl_Position = p + perp * (EDGE_OFFSET + rand() * EDGE_OFFSET_VARIANCE) * p.w;
 	EmitVertex();
 
-	gl_Position = p - perp * (EDGE_OFFSET + rand() * EDGE_OFFSET_VARIANCE);
+	gl_Position = p - perp * (EDGE_OFFSET + rand() * EDGE_OFFSET_VARIANCE) * p.w;
 	EmitVertex();
 }
 
 void _draw_start_endcap(vec4 p, vec4 perp)
 {
-	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
+	vec4 para = vec4(perp.y / ratio, -perp.x * ratio, 0.0f, 0.0f);
 
-	gl_Position = p + para * EDGE_OFFSET * 0.66f + perp * EDGE_OFFSET / 2;
+	gl_Position = p + para * EDGE_OFFSET * 0.66f * p.w + perp * EDGE_OFFSET / 2 * p.w;
 	EmitVertex();
 	
-	gl_Position = p + para * EDGE_OFFSET * 0.66f - perp * EDGE_OFFSET / 2;
+	gl_Position = p + para * EDGE_OFFSET * 0.66f * p.w - perp * EDGE_OFFSET / 2 * p.w;
 	EmitVertex();
 }
 
 void _draw_end_endcap(vec4 p, vec4 perp)
 {
-	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
+	vec4 para = vec4(perp.y / ratio, -perp.x * ratio, 0.0f, 0.0f);
 
-	gl_Position = p - para * EDGE_OFFSET * 0.66f + perp * EDGE_OFFSET / 2;
+	gl_Position = p - para * EDGE_OFFSET * 0.66f * p.w + perp * EDGE_OFFSET / 2 * p.w;
 	EmitVertex();
 	
-	gl_Position = p - para * EDGE_OFFSET * 0.66f - perp * EDGE_OFFSET / 2;
+	gl_Position = p - para * EDGE_OFFSET * 0.66f * p.w - perp * EDGE_OFFSET / 2 * p.w;
 	EmitVertex();
 	
 	EndPrimitive();
@@ -144,7 +142,7 @@ void _draw_end_endcap(vec4 p, vec4 perp)
 vec4 _find_intermediate(vec4 p_hidden, vec4 p_shown)
 {
 	vec4 middle;
-	for (int i = 0; (distance(p_hidden.xy, p_shown.xy) > EDGE_OFFSET * 2) && (i < 5); ++i)
+	for (int i = 0; (distance(p_hidden.xy / p_hidden.w, p_shown.xy / p_shown.w) > EDGE_OFFSET * 2) && (i < 5); ++i)
 	{
 		vec4 middle = mix(p_hidden, p_shown, 0.5);
 		if (is_hidden(middle))
@@ -164,20 +162,22 @@ void draw_segment(vec4 p, bool p_draw, vec4 perp)
 
 	if (previous_p_draw && p_draw)
 	{
-		_draw_segment(p + perp * drift, perp);
+		_draw_segment(p + perp * drift * p.w, perp);
 	}
 
 	if (previous_p_draw && !p_draw)
 	{
 		// find intermediate
-		vec4 m = _find_intermediate(p, previous_p) + perp * drift;
+		vec4 m = _find_intermediate(p, previous_p);
+		m = m + perp * drift * m.w;
 		_draw_end_endcap(m, perp);
 	}
 
 	if (!previous_p_draw && p_draw)
 	{
 		// find intermediate
-		vec4 m = _find_intermediate(previous_p, p) + perp * drift;
+		vec4 m = _find_intermediate(previous_p, p);
+		m = m + perp * drift * m.w;
 		_draw_start_endcap(m, perp);
 		_draw_segment(m, perp);
 	}
@@ -195,8 +195,8 @@ void draw_segment_start(vec4 p, bool p_draw, vec4 perp)
 {
 	if (p_draw)
 	{
-		_draw_start_endcap(p + perp * drift, perp);
-		_draw_segment(p + perp * drift, perp);
+		_draw_start_endcap(p + perp * drift * p.w, perp);
+		_draw_segment(p + perp * drift * p.w, perp);
 	}
 
 	previous_p = p;
@@ -222,10 +222,11 @@ void main()
 	vec4 end = gl_in[2].gl_Position;
 
 	vec4 diff = end - start;
-	vec4 direction = normalize(diff);
-	vec4 perp = vec4(direction.y, -direction.x / ratio, 0.0f, 0.0f);
+	vec3 diff2 = normalize((end.xyz / end.w) - (start.xyz / start.w));
+    vec4 perp = normalize(vec4(diff2.y, -diff2.x * ratio, 0.0f, 0.0f));
+	perp.y *= ratio;
 	float virtual_length = length(diff);
-	float screen_length = length(vec2(diff.x / ratio, diff.y));
+	float screen_length = length(vec2((end.x / end.w - start.x / start.w) / ratio, end.y / end.w - start.y / start.w));
 	int n = min(POINT_MAX, int(screen_length / POINT_SPACING) - 1);
 
 	draw_segment_start(start, !is_hidden(start), perp);

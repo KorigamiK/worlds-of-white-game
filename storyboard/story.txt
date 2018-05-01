@@ -73,8 +73,10 @@ Sparrow
 
 Goat
 Bear
+Rabbit
+Owl
 
-Wild animals: turtles, rabbits, fish, deer
+Wild animals: fish
 ___
  | Bear
  |      ___     ___
@@ -89,7 +91,10 @@ ___
 - While out on excursion to northen island, gets attacked and cursed which causes him to lose the feathers on his wings
 - No amount of healing can remove the curse, he is very useless in his flock without the ability to fly
 - Decides to leave his flock to try to find a new purpose
-- On his way to Bronla, he injures himself and falls unconscious but is picked up by a witch (Herza Shanaza) 
+- On his way to Bronla, he injures himself and falls unconscious but is picked up by a witch (Herza) 
 - He asks but she tells him the curse cannot be lifted
 - After he is asleep again, she reads his fortune and sees that he can face the impending doom she has forseen. She gives him a gem pendant and a note and magically transports him to the other side of the mountains. 
 - He awakes from a nightmare in a valley that he doesn't recognize. 
+
+
+Kevit 

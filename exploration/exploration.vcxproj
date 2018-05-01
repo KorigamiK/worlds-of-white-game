@@ -137,13 +137,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="graphics\framebuffer.cpp" />
+    <ClCompile Include="graphics\program.cpp" />
+    <ClCompile Include="graphics\shader.cpp" />
+    <ClCompile Include="graphics\texture.cpp" />
     <ClCompile Include="libraries\glad\src\glad.c" />
+    <ClCompile Include="logging\loggers\FileLogger.cpp" />
+    <ClCompile Include="logging\loggers\StreamLogger.cpp" />
+    <ClCompile Include="logging\LoggingManager.cpp" />
+    <ClCompile Include="logging\SourceLogger.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="utilities\logger.cpp" />
     <ClCompile Include="utilities\ring.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="utilities\logger.h" />
+    <ClInclude Include="graphics\framebuffer.h" />
+    <ClInclude Include="graphics\program.h" />
+    <ClInclude Include="graphics\shader.h" />
+    <ClInclude Include="graphics\texture.h" />
+    <ClInclude Include="logging\ILogger.h" />
+    <ClInclude Include="logging\loggers\FileLogger.h" />
+    <ClInclude Include="logging\loggers\StreamLogger.h" />
+    <ClInclude Include="logging\LoggingLevel.h" />
+    <ClInclude Include="logging\LoggingManager.h" />
+    <ClInclude Include="logging\SourceLogger.h" />
+    <ClInclude Include="utilities\narray\borders.hpp" />
+    <ClInclude Include="utilities\narray\core.hpp" />
+    <ClInclude Include="utilities\narray\filters.hpp" />
+    <ClInclude Include="utilities\narray\narray.hpp" />
+    <ClInclude Include="utilities\narray\narrayiterator.hpp" />
+    <ClInclude Include="utilities\narray\operators.hpp" />
+    <ClInclude Include="utilities\narray\point.hpp" />
+    <ClInclude Include="utilities\narray\util.h" />
     <ClInclude Include="utilities\ring.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
