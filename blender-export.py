@@ -1,4 +1,5 @@
 import os
+import bmesh
 os.chdir('C:\\Users\\kmdre\\Downloads')
 
 obj = bpy.data.objects['Character'];
@@ -25,13 +26,15 @@ for face in mesh.polygons:
     print(vertex.co[0], vertex.co[1], vertex.co[2], group, weight, uv.x, uv.y, file=file)
 
 # write lines
-print(len(mesh.edges), file=file)
-for edge in mesh.edges:
+bpy.ops.object.mode_set(mode='EDIT')
+bm = bmesh.from_edit_mesh(mesh)
+print(len(bm.edges), file=file)
+for edge in bm.edges:
   vId0 = -1
-  vId1 = edge.vertices[0]
-  vId2 = edge.vertices[1]
+  vId1 = edge.verts[0].index
+  vId2 = edge.verts[1].index
   vId3 = -1
-  faces = [face for face in mesh.polygons if (vId1, vId2) in face.edge_keys or (vId2, vId1) in face.edge_keys]
+  faces = edge.link_faces
   if len(faces) == 0:
     continue
   if len(faces) == 1:
@@ -40,9 +43,11 @@ for edge in mesh.edges:
     vId0 = vId2
     vId3 = vId1
   else:
-    vId0 = [v for v in faces[0].vertices if v != vId1 and v != vId2][0]
-    vId3 = [v for v in faces[1].vertices if v != vId1 and v != vId2][0]
+    vId0 = [v for v in faces[0].verts if v.index != vId1 and v.index != vId2][0].index
+    vId3 = [v for v in faces[1].verts if v.index != vId1 and v.index != vId2][0].index
   print(vId0, vId1, vId2, vId3, file=file)
+
+bpy.ops.object.mode_set(mode='OBJECT')
 
 # write bones
 arm = obj.parent

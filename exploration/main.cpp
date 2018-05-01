@@ -389,6 +389,7 @@ int main()
   };
 
   auto treeModel = read_model("models/tree_model.txt", "models/tree_texture.jpg");
+  auto tree2Model = read_model("models/tree_2_model.txt", "models/tree_2_texture.jpg");
   auto grassModel = read_model("models/grass_model.txt", "models/grass_texture.jpg");
   auto blockModel = read_model("models/block_model.txt", "models/block_texture.jpg", 0.05f * character_scale);
 
@@ -409,7 +410,9 @@ int main()
     { &treeModel, {-3, 0,  6 },  0.8, new StaticAnimator{} },
     { &treeModel, { 3, 0, -5 },  2.3, new StaticAnimator{} },
     { &treeModel, {-4, 0, -5 }, -3.0, new StaticAnimator{} },
-    { &treeModel, {-5, 0,  0 },  1.4, new StaticAnimator{} },
+    { &treeModel,{ -5, 0,  0 },  1.4, new StaticAnimator{} },
+
+    { &tree2Model, {-20, 0, -20 },  0.0, new StaticAnimator{} },
 
     { &grassModel, {-4, 0, -3 }, -0.2, new StaticAnimator{} },
     { &grassModel, {-2, 0, -4 },  0.6, new StaticAnimator{} },
@@ -423,7 +426,7 @@ int main()
   auto& character = instances[0];
   c = &character;
 
-  for (auto model : { &treeModel, &grassModel, &blockModel })
+  for (auto model : { &treeModel, &tree2Model, &grassModel, &blockModel })
     load_model(*model);
 
   // load quad

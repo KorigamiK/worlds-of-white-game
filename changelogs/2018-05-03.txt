@@ -9,3 +9,13 @@ Model Scaling
 Model Animators
 
   The way I had added the animation code meant it was hard to make improvements, add new animations, or new effects without affecting others. So I added an Animator to each instance that is in charge of running animations. That way all the non-moving things can use a StaticAnimator and my current character can use a LoopAnimator. I'll probably add a more complicated animator for the character so I can stop and start different animations at will.
+
+
+Progressive Line Drawing
+
+  I toyed around with progressively drawing lines until the entire object is rendered. In my head I'd like it to be the mechanic for loading or pop-in, which would be cool. Not sure about the textures though...
+
+
+More Efficient Export
+
+  When getting all the edges, I need to get the appropriate vertices for the adjacent points. What I was doing though was looping through the faces finding all that matched. Unfortunately, this ends up being O(n^2) over the number of faces (approximately) which wouldn't even complete in a timely manner for a 10,000 vertex model. Fortunately, I could convert the mesh into a bmesh that has the appropriate references with O(n) lookups
