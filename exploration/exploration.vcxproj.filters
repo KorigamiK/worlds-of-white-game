@@ -15,6 +15,7 @@
     <ClCompile Include="graphics\texture.cpp" />
     <ClCompile Include="graphics\framebuffer.cpp" />
     <ClCompile Include="graphics\joint.cpp" />
+    <ClCompile Include="graphics\model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -44,5 +45,6 @@
     <ClInclude Include="graphics\texture.h" />
     <ClInclude Include="graphics\framebuffer.h" />
     <ClInclude Include="graphics\joint.h" />
+    <ClInclude Include="graphics\model.h" />
   </ItemGroup>
 </Project>

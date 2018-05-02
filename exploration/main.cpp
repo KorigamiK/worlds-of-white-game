@@ -7,19 +7,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <cimg/cimg.h>
-
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <vector>
-#include <sstream>
 
 #include "logging/LoggingManager.h"
 #include "logging/loggers/StreamLogger.h"
 #include "graphics/program.h"
 #include "graphics/texture.h"
 #include "graphics/framebuffer.h"
+#include "graphics/joint.h"
+#include "graphics/model.h"
 #include "utilities/narray/narray.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -33,8 +32,6 @@ float camera_distance = 8.0f;
 float camera_rotation = 1.5f;
 
 float character_scale = 1.0f;
-float character_speed = 0.01f;
-glm::vec3 character_vel{ 0, 0, -1 };
 
 Framebuffer faceFramebuffer;
 Framebuffer lineFramebuffer;
@@ -55,6 +52,16 @@ struct AnimatedJoint
   }
 };
 
+struct AnimationFrame
+{
+  std::vector<AnimatedJoint> _poses;
+};
+
+struct Animation
+{
+  std::vector<AnimationFrame> _frames;
+};
+
 glm::mat4 getInterpolatedTransform(const AnimatedJoint& joint1, const AnimatedJoint& joint2, float interp)
 {
   glm::vec3 location = glm::mix(joint1.location, joint2.location, interp);
@@ -66,22 +73,6 @@ glm::mat4 getInterpolatedTransform(const AnimatedJoint& joint1, const AnimatedJo
   return locationTransform * rotationTransform;
 }
 
-struct Model
-{
-  std::vector<float> vertexData;
-  std::vector<float> faceData;
-  std::vector<unsigned int> lineIndexes;
-  unsigned int vertexDataVBO;
-  unsigned int vertexDataVAO;
-  unsigned int faceDataVBO;
-  unsigned int faceDataVAO;
-  unsigned int lineIndexesID;
-  wilt::NArray<unsigned char, 3> textureData;
-  Texture texture;
-  glm::mat4 transform;
-  std::vector<Joint> joints;
-};
-
 class IAnimator;
 
 struct ModelInstance
@@ -90,6 +81,15 @@ struct ModelInstance
   glm::vec3 position;
   float rotation;
   IAnimator* animator;
+
+  ModelInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator)
+    : model{ model }
+    , position{ position }
+    , rotation{ rotation }
+    , animator{ animator }
+  { }
+
+  virtual void update(GLFWwindow *window, float time) { }
 };
 
 class IAnimator
@@ -111,11 +111,11 @@ public:
 class LoopAnimator : public IAnimator
 {
 public:
-  std::vector<std::vector<AnimatedJoint>> animation;
+  Animation animation;
   float framesPerSecond;
 
 public:
-  LoopAnimator(std::vector<std::vector<AnimatedJoint>> animation, float fps = 24.0f)
+  LoopAnimator(Animation animation, float fps = 24.0f)
     : animation{ animation }
     , framesPerSecond{ fps }
   { }
@@ -125,24 +125,24 @@ public:
   {
     auto& joints = instance.model->joints;
 
-    float frame_pos = std::fmod(time * framesPerSecond, animation.size());
+    float frame_pos = std::fmod(time * framesPerSecond, animation._frames.size());
     int frame1 = (int)frame_pos;
-    int frame2 = (frame1 + 1) % animation.size();
+    int frame2 = (frame1 + 1) % animation._frames.size();
     float interlop = frame_pos - frame1;
 
-    std::vector<glm::mat4> animatedTransforms(animation[0].size());
-    std::vector<glm::mat4> forwardTransforms(animation[0].size());
-    std::vector<glm::mat4> backwardTransforms(animation[0].size());
+    std::vector<glm::mat4> animatedTransforms(animation._frames[0]._poses.size());
+    std::vector<glm::mat4> forwardTransforms(animation._frames[0]._poses.size());
+    std::vector<glm::mat4> backwardTransforms(animation._frames[0]._poses.size());
 
-    for (int i = 0; i < animation[0].size(); ++i)
+    for (int i = 0; i < animation._frames[0]._poses.size(); ++i)
     {
-      auto p = joints[i].parent_index;
+      auto p = joints[i].parentIndex();
       auto forward = (p != -1) ? forwardTransforms[p] : glm::mat4();
       auto backward = (p != -1) ? backwardTransforms[p] : glm::mat4();
 
-      glm::mat4 interpolatedTransform = getInterpolatedTransform(animation[frame1][i], animation[frame2][i], interlop);
-      forwardTransforms[i] = forward * joints[i].localTransform * interpolatedTransform;
-      backwardTransforms[i] = glm::inverse(joints[i].localTransform) * backward;
+      glm::mat4 interpolatedTransform = getInterpolatedTransform(animation._frames[frame1]._poses[i], animation._frames[frame2]._poses[i], interlop);
+      forwardTransforms[i] = forward * joints[i].transform() * interpolatedTransform;
+      backwardTransforms[i] = glm::inverse(joints[i].transform()) * backward;
       animatedTransforms[i] = forwardTransforms[i] * backwardTransforms[i];
     }
 
@@ -150,139 +150,95 @@ public:
   }
 };
 
-ModelInstance* c = nullptr;
 IAnimator* walk_animator;
 IAnimator* trudge_animator;
 IAnimator* stand_animator;
 
-Model read_model(std::string modelPath, std::string texturePath, float scale = 1.0f)
+class CharacterInstance : public ModelInstance
 {
-  std::ifstream file(modelPath);
-  Model model;
-  int vertexCount;
-  int faceCount;
-  int lineCount;
+public:
+  using ModelInstance::ModelInstance;
 
-  // read vertices
-  file >> vertexCount;
-  model.vertexData.resize(vertexCount * 5); // 5 floats per vertex (x, y, z, g, w)
-  for (int i = 0; i < model.vertexData.size(); ++i)
-    file >> model.vertexData[i];
+  float speed = 0.0;
+  glm::vec3 velocity{ 0, 0, -1 };
 
-  // read faces
-  file >> faceCount;
-  model.faceData.resize(faceCount * 3 * 7); // 3 vertices per face (vId1, vId2, vId3), 7 floats per vertex (x, y, z, g, w, u, v)
-  for (int i = 0; i < model.faceData.size(); ++i)
-    file >> model.faceData[i];
-
-  // read lines
-  file >> lineCount;
-  model.lineIndexes.resize(lineCount * 4); // 4 ints per line (vId1, vId2, vId3, vId4)
-  for (int i = 0; i < model.lineIndexes.size(); ++i)
-    file >> model.lineIndexes[i];
-
-  // read texture
-  cimg_library::CImg<unsigned char> texture;
-  texture.load_jpeg(texturePath.c_str());
-  model.textureData = wilt::NArray<unsigned char, 3>{ { 3, texture.width(), texture.height() }, texture.data(), wilt::PTR::REF };
-  model.textureData = model.textureData.t(0, 1).t(1, 2).clone();
-
-  // get rotations
-  model.transform = glm::rotate(glm::scale(glm::mat4(), { scale, scale, scale }), glm::radians(-90.0f), { 1, 0, 0 });
-
-  // read bones
-  int jointCount;
-  file >> jointCount;
-  model.joints.resize(jointCount);
-  for (int i = 0; i < jointCount; ++i)
+public:
+  void update(GLFWwindow *window, float time) override
   {
-    file >> model.joints[i].parent_index;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 1, 0 }) * glm::vec4(velocity, 0.0));
+      rotation += glm::radians(1.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 1, 0 }) * glm::vec4(velocity, 0.0));
+      rotation -= glm::radians(1.0f);
+    }
 
-    file >> model.joints[i].location[0];
-    file >> model.joints[i].location[1];
-    file >> model.joints[i].location[2];
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+      if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+      {
+        speed = 0.003f;
+        animator = trudge_animator;
+      }
+      else
+      {
+        speed = 0.01f;
+        animator = walk_animator;
+      }
+    }
+    else
+    {
+      speed = 0.0f;
+      animator = stand_animator;
+    }
 
-    file >> model.joints[i].rotation[3]; // w
-    file >> model.joints[i].rotation[0]; // x
-    file >> model.joints[i].rotation[1]; // y
-    file >> model.joints[i].rotation[2]; // z
+    position += velocity * speed;
   }
+};
 
-  for (int i = 0; i < jointCount; ++i)
+class SpiritInstance : public ModelInstance
+{
+public:
+  using ModelInstance::ModelInstance;
+
+  float height = 1.0f;
+
+public:
+  void update(GLFWwindow *window, float time) override
   {
-    model.joints[i].calcLocalTransform();
-    //if (model.joints[i].parent_index != -1)
-    //  model.joints[model.joints[i].parent_index].children.push_back(&model.joints[i]);
+    position += (glm::mat3)glm::rotate(glm::mat4(), rotation, { 0, 1, 0 }) * glm::vec3(0.005f, 0, 0);
+    rotation += 0.005f;
+    position.y = 1.0f + 0.5f * std::sin(time + rotation);
   }
+};
 
-  return model;
-}
-
-std::vector<std::vector<AnimatedJoint>> read_animation(std::string path)
+Animation read_animation(std::string path)
 {
   std::ifstream file(path);
   unsigned int frameCount;
   unsigned int boneCount;
 
   file >> frameCount >> boneCount;
-  std::vector<std::vector<AnimatedJoint>> ret{ frameCount, std::vector<AnimatedJoint>{ boneCount } };
+  Animation ret;
+  ret._frames = std::vector<AnimationFrame>{ frameCount, AnimationFrame{ std::vector<AnimatedJoint>{ boneCount } } };
 
   for (int i = 0; i < frameCount; ++i)
   {
     for (int j = 0; j < boneCount; ++j)
     {
-      file >> ret[i][j].location[0];
-      file >> ret[i][j].location[1];
-      file >> ret[i][j].location[2];
+      file >> ret._frames[i]._poses[j].location[0];
+      file >> ret._frames[i]._poses[j].location[1];
+      file >> ret._frames[i]._poses[j].location[2];
 
-      file >> ret[i][j].rotation[3]; // w
-      file >> ret[i][j].rotation[0]; // x
-      file >> ret[i][j].rotation[1]; // y
-      file >> ret[i][j].rotation[2]; // z
+      file >> ret._frames[i]._poses[j].rotation[3]; // w
+      file >> ret._frames[i]._poses[j].rotation[0]; // x
+      file >> ret._frames[i]._poses[j].rotation[1]; // y
+      file >> ret._frames[i]._poses[j].rotation[2]; // z
     }
   }
 
   return ret;
-}
-
-void load_model(Model& model)
-{
-  // load vertices
-  glGenVertexArrays(1, &model.vertexDataVAO);
-  glGenBuffers(1, &model.vertexDataVBO);
-  glBindVertexArray(model.vertexDataVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, model.vertexDataVBO);
-  glBufferData(GL_ARRAY_BUFFER, model.vertexData.size() * sizeof(float), model.vertexData.data(), GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-
-  // load faces
-  glGenVertexArrays(1, &model.faceDataVAO);
-  glGenBuffers(1, &model.faceDataVBO);
-  glBindVertexArray(model.faceDataVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, model.faceDataVBO);
-  glBufferData(GL_ARRAY_BUFFER, model.faceData.size() * sizeof(float), model.faceData.data(), GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
-  glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(5 * sizeof(float)));
-
-  // load lines
-  glGenBuffers(1, &model.lineIndexesID);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.lineIndexesID);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model.lineIndexes.size() * sizeof(unsigned int), model.lineIndexes.data(), GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-  // load texture
-  model.texture = Texture::fromMemory((const char*)model.textureData._basePtr(), GL_RGB, model.textureData.width(), model.textureData.height());
-  model.texture.setMinFilter(GL_LINEAR);
-  model.texture.setMagFilter(GL_LINEAR);
 }
 
 void draw_faces(ModelInstance& instance, Program& program, float time)
@@ -372,10 +328,11 @@ int main()
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
-  auto treeModel = read_model("models/tree_model.txt", "models/tree_texture.jpg");
-  auto tree2Model = read_model("models/tree_2_model.txt", "models/tree_2_texture.jpg");
-  auto grassModel = read_model("models/grass_model.txt", "models/grass_texture.jpg");
-  auto blockModel = read_model("models/block_model.txt", "models/block_texture.jpg", 0.05f * character_scale);
+  auto treeModel = Model::read("models/tree_model.txt", "models/tree_texture.jpg");
+  auto tree2Model = Model::read("models/tree_2_model.txt", "models/tree_2_texture.jpg");
+  auto grassModel = Model::read("models/grass_model.txt", "models/grass_texture.jpg");
+  auto blockModel = Model::read("models/block_model.txt", "models/block_texture.jpg", 0.05f * character_scale);
+  auto spiritModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 0.1f);
 
   auto walk_animation = read_animation("models/walk_animation.txt");
   auto trudge_animation = read_animation("models/trudge_animation.txt");
@@ -384,34 +341,38 @@ int main()
   trudge_animator = new LoopAnimator{ trudge_animation, 24 };
   stand_animator = new StaticAnimator{};
 
-  ModelInstance instances[] = 
+  ModelInstance* instances[] = 
   {
-    { &blockModel,{ 0, 0, 20 },  glm::radians(180.0f), walk_animator },
+    new CharacterInstance(&blockModel,{ 0, 0, 20 },  glm::radians(180.0f), walk_animator),
 
-    { &treeModel, { 5, 0,  4 }, -0.2, new StaticAnimator{} },
-    { &treeModel, { 3, 0,  6 },  0.6, new StaticAnimator{} },
-    { &treeModel, {-2, 0,  3 }, -1.2, new StaticAnimator{} },
-    { &treeModel, {-3, 0,  6 },  0.8, new StaticAnimator{} },
-    { &treeModel, { 3, 0, -5 },  2.3, new StaticAnimator{} },
-    { &treeModel, {-4, 0, -5 }, -3.0, new StaticAnimator{} },
-    { &treeModel,{ -5, 0,  0 },  1.4, new StaticAnimator{} },
+    new ModelInstance(&treeModel, { 5, 0,  4 }, -0.2, new StaticAnimator{}),
+    new ModelInstance(&treeModel, { 3, 0,  6 },  0.6, new StaticAnimator{}),
+    new ModelInstance(&treeModel, {-2, 0,  3 }, -1.2, new StaticAnimator{}),
+    new ModelInstance(&treeModel, {-3, 0,  6 },  0.8, new StaticAnimator{}),
+    new ModelInstance(&treeModel, { 3, 0, -5 },  2.3, new StaticAnimator{}),
+    new ModelInstance(&treeModel, {-4, 0, -5 }, -3.0, new StaticAnimator{}),
+    new ModelInstance(&treeModel, {-5, 0,  0 },  1.4, new StaticAnimator{}),
 
-    { &tree2Model, {-20, 0, -20 },  0.0, new StaticAnimator{} },
+    // new ModelInstance(&tree2Model, {-20, 0, -20 },  0.0, new StaticAnimator{}),
 
-    { &grassModel, {-4, 0, -3 }, -0.2, new StaticAnimator{} },
-    { &grassModel, {-2, 0, -4 },  0.6, new StaticAnimator{} },
-    { &grassModel, {-1, 0,  1 }, -1.2, new StaticAnimator{} },
-    { &grassModel, { 2, 0, -4 },  0.8, new StaticAnimator{} },
-    { &grassModel, {-2, 0,  4 },  2.3, new StaticAnimator{} },
-    { &grassModel, { 3, 0,  4 }, -3.0, new StaticAnimator{} },
-    { &grassModel, { 4, 0,  0 },  1.4, new StaticAnimator{} },
+    new ModelInstance(&grassModel, {-4, 0, -3 }, -0.2, new StaticAnimator{}),
+    new ModelInstance(&grassModel, {-2, 0, -4 },  0.6, new StaticAnimator{}),
+    new ModelInstance(&grassModel, {-1, 0,  1 }, -1.2, new StaticAnimator{}),
+    new ModelInstance(&grassModel, { 2, 0, -4 },  0.8, new StaticAnimator{}),
+    new ModelInstance(&grassModel, {-2, 0,  4 },  2.3, new StaticAnimator{}),
+    new ModelInstance(&grassModel, { 3, 0,  4 }, -3.0, new StaticAnimator{}),
+    new ModelInstance(&grassModel, { 4, 0,  0 },  1.4, new StaticAnimator{}),
+
+    new SpiritInstance(&spiritModel, { 3, 0, 5 }, 0.0, new StaticAnimator{}),
+    new SpiritInstance(&spiritModel, {-5, 0, 4 }, 1.5, new StaticAnimator{}),
+    new SpiritInstance(&spiritModel, { 4, 0,-3 }, 4.5, new StaticAnimator{}),
+    new SpiritInstance(&spiritModel, {-4, 0,-4 }, 3.0, new StaticAnimator{})
   };
 
   auto& character = instances[0];
-  c = &character;
 
-  for (auto model : { &treeModel, &tree2Model, &grassModel, &blockModel })
-    load_model(*model);
+  for (auto model : { &treeModel, &tree2Model, &grassModel, &blockModel, &spiritModel })
+    model->load();
 
   // load quad
   float quadVertices[] = {
@@ -472,9 +433,13 @@ int main()
     float camY = 2.0f;
     //float camY = 0.0f;
     //glm::vec3 camera_pos = glm::vec3(camX, camY, camZ);
-    glm::vec3 camera_pos = character.position + glm::vec3(0, 2, 4);
-    glm::mat4 view = glm::lookAt(camera_pos, character.position + glm::vec3(0, 1.5, 0), glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::vec3 camera_pos = character->position + glm::vec3(0, 2, 4);
+    glm::mat4 view = glm::lookAt(camera_pos, character->position + glm::vec3(0, 1.5, 0), glm::vec3(0.0f, 1.0f, 0.0f));
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+    if (!paused)
+      for (auto& instance : instances)
+        instance->update(window, time);
 
     // render faces and depth
     depthProgram.use();
@@ -489,7 +454,7 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (auto& instance : instances)
-      draw_faces(instance, depthProgram, time);
+      draw_faces(*instance, depthProgram, time);
 
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -513,7 +478,7 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (auto& instance : instances)
-      draw_lines(instance, lineProgram, time);
+      draw_lines(*instance, lineProgram, time);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -554,8 +519,6 @@ int main()
         selected_perlin = (selected_perlin + (rand() % 7) + 1) % 8;
         view_reference = camera_pos;
       }
-
-      character.position += character_vel * character_speed;
     }
   }
 
@@ -586,33 +549,6 @@ void processInput(GLFWwindow *window)
     camera_rotation -= glm::radians(30.0f) / 144.0f;
   if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     camera_rotation += glm::radians(30.0f) / 144.0f;
-  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-    character_vel = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 1, 0 }) * glm::vec4(character_vel, 0.0));
-    c->rotation += glm::radians(1.0f);
-  }
-  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-    character_vel = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 1, 0 }) * glm::vec4(character_vel, 0.0));
-    c->rotation -= glm::radians(1.0f);
-  }
-
-  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-  {
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-    {
-      character_speed = 0.003f;
-      c->animator = trudge_animator;
-    }
-    else
-    {
-      character_speed = 0.01f;
-      c->animator = walk_animator;
-    }
-  }
-  else
-  {
-    character_speed = 0.0f;
-    c->animator = stand_animator;
-  }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
