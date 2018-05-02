@@ -138,6 +138,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="graphics\framebuffer.cpp" />
+    <ClCompile Include="graphics\joint.cpp" />
     <ClCompile Include="graphics\program.cpp" />
     <ClCompile Include="graphics\shader.cpp" />
     <ClCompile Include="graphics\texture.cpp" />
@@ -151,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="graphics\framebuffer.h" />
+    <ClInclude Include="graphics\joint.h" />
     <ClInclude Include="graphics\program.h" />
     <ClInclude Include="graphics\shader.h" />
     <ClInclude Include="graphics\texture.h" />

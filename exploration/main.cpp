@@ -41,22 +41,6 @@ Framebuffer lineFramebuffer;
 
 constexpr int MAX_JOINTS = 15;
 
-struct Joint
-{
-  int parent_index;
-  glm::vec3 location;
-  glm::quat rotation;
-  glm::mat4 localTransform;
-
-  void calcLocalTransform()
-  {
-    glm::mat4 rotationTransform = (glm::mat4)glm::quat(rotation.w, rotation.x, -rotation.z, rotation.y);
-    glm::mat4 locationTransform = glm::translate(glm::mat4(), { location.x, -location.z, location.y });
-
-    this->localTransform = locationTransform * rotationTransform;
-  }
-};
-
 struct AnimatedJoint
 {
   glm::vec3 location;
