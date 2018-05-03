@@ -18,6 +18,7 @@
 #include "graphics/texture.h"
 #include "graphics/framebuffer.h"
 #include "graphics/joint.h"
+#include "graphics/jointPose.h"
 #include "graphics/model.h"
 #include "utilities/narray/narray.hpp"
 
@@ -28,8 +29,6 @@ void processInput(GLFWwindow *window);
 unsigned int SCR_WIDTH = 1280;
 unsigned int SCR_HEIGHT = 720;
 bool paused = false;
-float camera_distance = 8.0f;
-float camera_rotation = 1.5f;
 
 float character_scale = 1.0f;
 
@@ -38,40 +37,15 @@ Framebuffer lineFramebuffer;
 
 constexpr int MAX_JOINTS = 15;
 
-struct AnimatedJoint
-{
-  glm::vec3 location;
-  glm::quat rotation;
-
-  glm::mat4 getLocalTransform()
-  {
-    glm::mat4 locationTransform = glm::translate(glm::mat4(), { location.x, -location.z, location.y });
-    glm::mat4 rotationTransform = (glm::mat4)glm::quat(rotation.w, rotation.x, -rotation.z, rotation.y);
-
-    return locationTransform * rotationTransform;
-  }
-};
-
 struct AnimationFrame
 {
-  std::vector<AnimatedJoint> _poses;
+  std::vector<JointPose> _poses;
 };
 
 struct Animation
 {
   std::vector<AnimationFrame> _frames;
 };
-
-glm::mat4 getInterpolatedTransform(const AnimatedJoint& joint1, const AnimatedJoint& joint2, float interp)
-{
-  glm::vec3 location = glm::mix(joint1.location, joint2.location, interp);
-  glm::quat rotation = glm::mix(joint1.rotation, joint2.rotation, interp);
-
-  glm::mat4 locationTransform = glm::translate(glm::mat4(), { location.x, -location.z, location.y });
-  glm::mat4 rotationTransform = (glm::mat4)glm::quat(rotation.w, rotation.x, -rotation.z, rotation.y);
-
-  return locationTransform * rotationTransform;
-}
 
 class IAnimator;
 
@@ -140,7 +114,8 @@ public:
       auto forward = (p != -1) ? forwardTransforms[p] : glm::mat4();
       auto backward = (p != -1) ? backwardTransforms[p] : glm::mat4();
 
-      glm::mat4 interpolatedTransform = getInterpolatedTransform(animation._frames[frame1]._poses[i], animation._frames[frame2]._poses[i], interlop);
+      JointPose interpolatedJointPose = JointPose::interpolate(animation._frames[frame1]._poses[i], animation._frames[frame2]._poses[i], interlop);
+      glm::mat4 interpolatedTransform = interpolatedJointPose.calcLocalTransform();
       forwardTransforms[i] = forward * joints[i].transform() * interpolatedTransform;
       backwardTransforms[i] = glm::inverse(joints[i].transform()) * backward;
       animatedTransforms[i] = forwardTransforms[i] * backwardTransforms[i];
@@ -221,7 +196,7 @@ Animation read_animation(std::string path)
 
   file >> frameCount >> boneCount;
   Animation ret;
-  ret._frames = std::vector<AnimationFrame>{ frameCount, AnimationFrame{ std::vector<AnimatedJoint>{ boneCount } } };
+  ret._frames = std::vector<AnimationFrame>{ frameCount, AnimationFrame{ std::vector<JointPose>{ boneCount } } };
 
   for (int i = 0; i < frameCount; ++i)
   {
@@ -272,6 +247,110 @@ void draw_lines(ModelInstance& instance, Program& program, float time)
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
+
+class ICamera
+{
+public:
+  virtual void update(GLFWwindow *window, float time) = 0;
+  virtual glm::mat4 transform() const = 0;
+  virtual glm::vec3 position() const = 0;
+};
+
+class FollowCamera : public ICamera
+{
+public:
+  ModelInstance** _instance;
+  float distance = 1.0f;
+
+public:
+  FollowCamera(ModelInstance** instance)
+    : _instance{ instance }
+  { }
+
+public:
+  virtual void update(GLFWwindow *window, float time)
+  {
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+      distance -= 0.01f;
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+      distance += 0.01f;
+  }
+
+  virtual glm::mat4 transform() const
+  {
+    return glm::lookAt(position(), (*_instance)->position + glm::vec3(0, 1, 0), { 0, 1, 0 });
+  }
+
+  virtual glm::vec3 position() const
+  {
+    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), (*_instance)->rotation + 3.14159265358979f, { 0, 1, 0 }) * glm::vec4(0, 2, 4, 1)) * distance;
+  }
+};
+
+class TrackCamera : public ICamera
+{
+public:
+  ModelInstance** _instance;
+
+public:
+  TrackCamera(ModelInstance** instance)
+    : _instance{ instance }
+  { }
+
+public:
+  virtual void update(GLFWwindow *window, float time)
+  {
+
+  }
+
+  virtual glm::mat4 transform() const
+  {
+    return glm::lookAt({ 0, 1, 0 }, (*_instance)->position, { 0, 1, 0 });
+  }
+
+  virtual glm::vec3 position() const
+  {
+    return { 0, 1, 0 };
+  }
+};
+
+class FreeCamera : public ICamera
+{
+private:
+  glm::vec3 _location;
+  glm::vec3 _direction;
+
+  float CAMERA_SPEED = 0.05f;
+
+public:
+  FreeCamera()
+    : _location { 0, 1, 0 }
+    , _direction { 0, 0, 1 }
+  { }
+
+public:
+  virtual void update(GLFWwindow *window, float time)
+  {
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+      _location += _direction * CAMERA_SPEED;
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+      _location -= _direction * CAMERA_SPEED;
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+      _direction = glm::vec3(glm::rotate(glm::mat4(), glm::radians(30.0f) / 144.0f, { 0, 1, 0 }) * glm::vec4(_direction, 1.0f));
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+      _direction = glm::vec3(glm::rotate(glm::mat4(),-glm::radians(30.0f) / 144.0f, { 0, 1, 0 }) * glm::vec4(_direction, 1.0f));
+  }
+
+  virtual glm::mat4 transform() const
+  {
+    return glm::lookAt(_location, _location + _direction, { 0, 1, 0 });
+  }
+
+  virtual glm::vec3 position() const
+  {
+    return _location;
+  }
+};
 
 int main()
 {
@@ -368,6 +447,7 @@ int main()
     new SpiritInstance(&spiritModel, { 4, 0,-3 }, 4.5, new StaticAnimator{}),
     new SpiritInstance(&spiritModel, {-4, 0,-4 }, 3.0, new StaticAnimator{})
   };
+  int instanceCount = sizeof(instances) / sizeof(ModelInstance*);
 
   auto& character = instances[0];
 
@@ -420,6 +500,14 @@ int main()
   float iterationsPerSecond = 144.0f;
   int selected_perlin = 0;
   glm::vec3 view_reference;
+
+  int instanceIndex = 0;
+  ModelInstance* currentInstance = instances[instanceIndex];
+  ICamera* freeCam = new FreeCamera();
+  ICamera* trackCam = new TrackCamera(&currentInstance);
+  ICamera* followCam = new FollowCamera(&currentInstance);
+  ICamera* cam = followCam;
+
   while (!glfwWindowShouldClose(window))
   {
     float time = i / 144.0f;
@@ -427,19 +515,32 @@ int main()
     // input
     processInput(window);
 
-    float radius = camera_distance;
-    float camX = sin(camera_rotation) * radius;
-    float camZ = cos(camera_rotation) * radius;
-    float camY = 2.0f;
-    //float camY = 0.0f;
-    //glm::vec3 camera_pos = glm::vec3(camX, camY, camZ);
-    glm::vec3 camera_pos = character->position + glm::vec3(0, 2, 4);
-    glm::mat4 view = glm::lookAt(camera_pos, character->position + glm::vec3(0, 1.5, 0), glm::vec3(0.0f, 1.0f, 0.0f));
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+      cam = followCam;
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+      cam = trackCam;
+    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+      cam = freeCam;
+    if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
+    {
+      instanceIndex = (instanceIndex != instanceCount - 1) ? instanceIndex + 1 : 0;
+      currentInstance = instances[instanceIndex];
+    }
+    if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
+    {
+      instanceIndex = (instanceIndex != 0) ? instanceIndex - 1 : instanceCount - 1;
+      currentInstance = instances[instanceIndex];
+    }
+
+    glm::mat4 view = cam->transform();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
     if (!paused)
+    {
+      cam->update(window, time);
       for (auto& instance : instances)
         instance->update(window, time);
+    }
 
     // render faces and depth
     depthProgram.use();
@@ -517,7 +618,7 @@ int main()
       if (i % 24 == 0)
       {
         selected_perlin = (selected_perlin + (rand() % 7) + 1) % 8;
-        view_reference = camera_pos;
+        view_reference = cam->position();
       }
     }
   }
@@ -541,14 +642,6 @@ void processInput(GLFWwindow *window)
     glfwSetWindowShouldClose(window, true);
   if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
     paused = !paused;
-  if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    camera_distance -= 0.05;
-  if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    camera_distance += 0.05;
-  if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-    camera_rotation -= glm::radians(30.0f) / 144.0f;
-  if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-    camera_rotation += glm::radians(30.0f) / 144.0f;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

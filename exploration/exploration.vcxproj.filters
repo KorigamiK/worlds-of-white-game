@@ -16,6 +16,7 @@
     <ClCompile Include="graphics\framebuffer.cpp" />
     <ClCompile Include="graphics\joint.cpp" />
     <ClCompile Include="graphics\model.cpp" />
+    <ClCompile Include="graphics\jointPose.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -46,5 +47,6 @@
     <ClInclude Include="graphics\framebuffer.h" />
     <ClInclude Include="graphics\joint.h" />
     <ClInclude Include="graphics\model.h" />
+    <ClInclude Include="graphics\jointPose.h" />
   </ItemGroup>
 </Project>
