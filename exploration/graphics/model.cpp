@@ -76,7 +76,7 @@ Model Model::read(const std::string& modelPath, const std::string& texturePath, 
   model.textureData = model.textureData.t(0, 1).t(1, 2).clone();
 
   // get rotations
-  model.transform = glm::rotate(glm::scale(glm::mat4(), { scale, scale, scale }), glm::radians(-90.0f), { 1, 0, 0 });
+  model.transform = glm::scale(glm::mat4(), { scale, scale, scale });
 
   // read bones
   int jointCount;

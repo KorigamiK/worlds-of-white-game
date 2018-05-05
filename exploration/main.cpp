@@ -135,17 +135,17 @@ public:
   using ModelInstance::ModelInstance;
 
   float speed = 0.0;
-  glm::vec3 velocity{ 0, 0, -1 };
+  glm::vec3 velocity{ 0, 1, 0 };
 
 public:
   void update(GLFWwindow *window, float time) override
   {
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 1, 0 }) * glm::vec4(velocity, 0.0));
+      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
       rotation += glm::radians(1.0f);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 1, 0 }) * glm::vec4(velocity, 0.0));
+      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
       rotation -= glm::radians(1.0f);
     }
 
@@ -182,9 +182,9 @@ public:
 public:
   void update(GLFWwindow *window, float time) override
   {
-    position += (glm::mat3)glm::rotate(glm::mat4(), rotation, { 0, 1, 0 }) * glm::vec3(0.005f, 0, 0);
+    position += (glm::mat3)glm::rotate(glm::mat4(), rotation, { 0, 0, 1 }) * glm::vec3(0.005f, 0, 0);
     rotation += 0.005f;
-    position.y = 1.0f + 0.5f * std::sin(time + rotation);
+    position.z = 1.0f + 0.5f * std::sin(time + rotation);
   }
 };
 
@@ -278,12 +278,12 @@ public:
 
   virtual glm::mat4 transform() const
   {
-    return glm::lookAt(position(), (*_instance)->position + glm::vec3(0, 1, 0), { 0, 0, 1 });
+    return glm::lookAt(position(), (*_instance)->position + glm::vec3(0, 0, 1), { 0, 0, 1 });
   }
 
   virtual glm::vec3 position() const
   {
-    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), (*_instance)->rotation + 3.14159265358979f, { 0, 0, 1 }) * glm::vec4(4, 2, 0, 1)) * distance;
+    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), (*_instance)->rotation, { 0, 0, 1 }) * glm::vec4(0, 4, 2, 1)) * distance;
   }
 };
 
@@ -324,7 +324,7 @@ private:
 
 public:
   FreeCamera()
-    : _location { 0, -30, 0 }
+    : _location { 0, -20, 1 }
     , _direction { 0, 1, 0 }
   { }
 
