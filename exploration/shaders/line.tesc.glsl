@@ -1,6 +1,11 @@
 #version 420 core
  
-layout(vertices = 4) out; // 4 points per patch
+layout(vertices = 4) out;
+
+uniform float frame;
+uniform float ratio;
+
+const float POINT_SPACING = 2.0f / 64.0f;
 
 float direction_from_line(vec2 p1, vec2 p2, vec2 point)
 {
@@ -31,16 +36,41 @@ bool is_edge()
 	return d1 * d2 >= -0.000000000001f;
 }
 
-void main() {
+vec2 get_screen_space_vector()
+{
+	// This determines the vector of the line projected on the screen for 
+	// determining its visual length
+
+    vec4 start = gl_in[1].gl_Position / gl_in[1].gl_Position.w;
+	vec4 end   = gl_in[2].gl_Position / gl_in[2].gl_Position.w;
+
+	float dx = end.x - start.x;
+	float dy = end.y - start.y;
+	
+	return vec2(dx * ratio, dy);
+}
+
+void main()
+{
 	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 	if (gl_InvocationID == 0)
-	{ // levels only need to be set once per patch
-		
-		int n = 5;
-		if (!is_edge())
-			n = 0;
+	{
+		// Zero here means don't draw the line (create no segments). This
+		// shader is in control of which lines to draw; the geometry shader
+		// is responsible for how to draw them (depth, effects, etc)
 
-		gl_TessLevelOuter[0] = 1; // we're only tessellating one line
-		gl_TessLevelOuter[1] = n; // tessellate the line into 100 segments
+		int segment_count = 0;
+
+		if (is_edge())
+		{
+			// Implementations may allow for more than 64 segments, but it is
+			// the spec-defined minimum, so I'll just use that for now.
+
+			float line_length = length(get_screen_space_vector());
+			segment_count = clamp(int(line_length / POINT_SPACING + 0.5f), 1, 64);
+		}
+
+		gl_TessLevelOuter[0] = 1;
+		gl_TessLevelOuter[1] = segment_count;
 	}
 }

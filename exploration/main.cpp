@@ -398,8 +398,7 @@ int main()
     VertexShader::fromFile("shaders/line.vert.glsl"),
     TessellationControlShader::fromFile("shaders/line.tesc.glsl"),
     TessellationEvaluationShader::fromFile("shaders/line.tess.glsl"),
-    //GeometryShader::fromFile("shaders/line.geom.glsl"),
-    Shader{},
+    GeometryShader::fromFile("shaders/line.geom.glsl"),
     FragmentShader::fromFile("shaders/line.frag.glsl")
   };
   Program depthProgram{
