@@ -37,6 +37,20 @@ public:
   static Shader fromFile(const char* filename) { return Shader::fromFile(filename, GL_VERTEX_SHADER); }
 };
 
+class TessellationControlShader
+{
+public:
+  static Shader fromMemory(const char* data) { return Shader::fromMemory(data, GL_TESS_CONTROL_SHADER); }
+  static Shader fromFile(const char* filename) { return Shader::fromFile(filename, GL_TESS_CONTROL_SHADER); }
+};
+
+class TessellationEvaluationShader
+{
+public:
+  static Shader fromMemory(const char* data) { return Shader::fromMemory(data, GL_TESS_EVALUATION_SHADER); }
+  static Shader fromFile(const char* filename) { return Shader::fromFile(filename, GL_TESS_EVALUATION_SHADER); }
+};
+
 class GeometryShader
 {
 public:

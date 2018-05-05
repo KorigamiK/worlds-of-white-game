@@ -12,14 +12,18 @@ Program::Program(GLuint id)
 { }
 
 Program::Program(Shader fragmentShader)
-  : Program{ Shader{}, Shader{}, std::move(fragmentShader) }
+  : Program{ Shader{}, Shader{}, Shader{}, Shader{}, std::move(fragmentShader) }
 { }
 
 Program::Program(Shader vertexShader, Shader fragmentShader)
-  : Program{ std::move(vertexShader), Shader{}, std::move(fragmentShader) }
+  : Program{ std::move(vertexShader), Shader{}, Shader{}, Shader{}, std::move(fragmentShader) }
 { }
 
 Program::Program(Shader vertexShader, Shader geometryShader, Shader fragmentShader)
+  : Program{ std::move(vertexShader), Shader{}, Shader{}, std::move(geometryShader), std::move(fragmentShader) }
+{ }
+
+Program::Program(Shader vertexShader, Shader tessellationControlShader, Shader tessellationEvaluationShader, Shader geometryShader, Shader fragmentShader)
   : _id{ 0 }
 {
   _id = glCreateProgram();
@@ -30,6 +34,10 @@ Program::Program(Shader vertexShader, Shader geometryShader, Shader fragmentShad
     glAttachShader(_id, geometryShader.id());
   if (fragmentShader.loaded())
     glAttachShader(_id, fragmentShader.id());
+  if (tessellationControlShader.loaded())
+    glAttachShader(_id, tessellationControlShader.id());
+  if (tessellationEvaluationShader.loaded())
+    glAttachShader(_id, tessellationEvaluationShader.id());
 
   glLinkProgram(_id);
 

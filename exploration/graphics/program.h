@@ -19,6 +19,7 @@ public:
   explicit Program(Shader fragmentShader);
   Program(Shader vertexShader, Shader fragmentShader);
   Program(Shader vertexShader, Shader geometryShader, Shader fragmentShader);
+  Program(Shader vertexShader, Shader tessellationControlShader, Shader tessellationEvaluationShader, Shader geometryShader, Shader fragmentShader);
   Program(const Program& s) = delete;
   Program(Program&& s);
 
