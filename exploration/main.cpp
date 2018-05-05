@@ -278,12 +278,12 @@ public:
 
   virtual glm::mat4 transform() const
   {
-    return glm::lookAt(position(), (*_instance)->position + glm::vec3(0, 1, 0), { 0, 1, 0 });
+    return glm::lookAt(position(), (*_instance)->position + glm::vec3(0, 1, 0), { 0, 0, 1 });
   }
 
   virtual glm::vec3 position() const
   {
-    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), (*_instance)->rotation + 3.14159265358979f, { 0, 1, 0 }) * glm::vec4(0, 2, 4, 1)) * distance;
+    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), (*_instance)->rotation + 3.14159265358979f, { 0, 0, 1 }) * glm::vec4(4, 2, 0, 1)) * distance;
   }
 };
 
@@ -305,12 +305,12 @@ public:
 
   virtual glm::mat4 transform() const
   {
-    return glm::lookAt({ 0, 1, 0 }, (*_instance)->position, { 0, 1, 0 });
+    return glm::lookAt({ 0, 0, 1 }, (*_instance)->position, { 0, 0, 1 });
   }
 
   virtual glm::vec3 position() const
   {
-    return { 0, 1, 0 };
+    return { 0, 0, 1 };
   }
 };
 
@@ -324,8 +324,8 @@ private:
 
 public:
   FreeCamera()
-    : _location { 0, 1, 0 }
-    , _direction { 0, 0, 1 }
+    : _location { 0, -30, 0 }
+    , _direction { 0, 1, 0 }
   { }
 
 public:
@@ -336,14 +336,14 @@ public:
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
       _location -= _direction * CAMERA_SPEED;
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-      _direction = glm::vec3(glm::rotate(glm::mat4(), glm::radians(30.0f) / 144.0f, { 0, 1, 0 }) * glm::vec4(_direction, 1.0f));
+      _direction = glm::vec3(glm::rotate(glm::mat4(), glm::radians(30.0f) / 144.0f, { 0, 0, 1 }) * glm::vec4(_direction, 1.0f));
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-      _direction = glm::vec3(glm::rotate(glm::mat4(),-glm::radians(30.0f) / 144.0f, { 0, 1, 0 }) * glm::vec4(_direction, 1.0f));
+      _direction = glm::vec3(glm::rotate(glm::mat4(),-glm::radians(30.0f) / 144.0f, { 0, 0, 1 }) * glm::vec4(_direction, 1.0f));
   }
 
   virtual glm::mat4 transform() const
   {
-    return glm::lookAt(_location, _location + _direction, { 0, 1, 0 });
+    return glm::lookAt(_location, _location + _direction, { 0, 0, 1 });
   }
 
   virtual glm::vec3 position() const
@@ -422,30 +422,30 @@ int main()
 
   ModelInstance* instances[] = 
   {
-    new CharacterInstance(&blockModel,{ 0, 0, 20 },  glm::radians(180.0f), walk_animator),
+    new CharacterInstance(&blockModel,{ 0, 0, 0 },  glm::radians(180.0f), walk_animator),
 
-    new ModelInstance(&treeModel, { 5, 0,  4 }, -0.2, new StaticAnimator{}),
-    new ModelInstance(&treeModel, { 3, 0,  6 },  0.6, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-2, 0,  3 }, -1.2, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-3, 0,  6 },  0.8, new StaticAnimator{}),
-    new ModelInstance(&treeModel, { 3, 0, -5 },  2.3, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-4, 0, -5 }, -3.0, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-5, 0,  0 },  1.4, new StaticAnimator{}),
+    new ModelInstance(&treeModel, { 5,  4, 0 }, -0.2, new StaticAnimator{}),
+    new ModelInstance(&treeModel, { 3,  6, 0 },  0.6, new StaticAnimator{}),
+    new ModelInstance(&treeModel, {-2,  3, 0 }, -1.2, new StaticAnimator{}),
+    new ModelInstance(&treeModel, {-3,  6, 0 },  0.8, new StaticAnimator{}),
+    new ModelInstance(&treeModel, { 3, -5, 0 },  2.3, new StaticAnimator{}),
+    new ModelInstance(&treeModel, {-4, -5, 0 }, -3.0, new StaticAnimator{}),
+    new ModelInstance(&treeModel, {-5,  0, 0 },  1.4, new StaticAnimator{}),
 
-    // new ModelInstance(&tree2Model, {-20, 0, -20 },  0.0, new StaticAnimator{}),
+    // new ModelInstance(&tree2Model, {-20, -20, 0 },  0.0, new StaticAnimator{}),
 
-    new ModelInstance(&grassModel, {-4, 0, -3 }, -0.2, new StaticAnimator{}),
-    new ModelInstance(&grassModel, {-2, 0, -4 },  0.6, new StaticAnimator{}),
-    new ModelInstance(&grassModel, {-1, 0,  1 }, -1.2, new StaticAnimator{}),
-    new ModelInstance(&grassModel, { 2, 0, -4 },  0.8, new StaticAnimator{}),
-    new ModelInstance(&grassModel, {-2, 0,  4 },  2.3, new StaticAnimator{}),
-    new ModelInstance(&grassModel, { 3, 0,  4 }, -3.0, new StaticAnimator{}),
-    new ModelInstance(&grassModel, { 4, 0,  0 },  1.4, new StaticAnimator{}),
+    new ModelInstance(&grassModel, {-4, -3, 0 }, -0.2, new StaticAnimator{}),
+    new ModelInstance(&grassModel, {-2, -4, 0 },  0.6, new StaticAnimator{}),
+    new ModelInstance(&grassModel, {-1,  1, 0 }, -1.2, new StaticAnimator{}),
+    new ModelInstance(&grassModel, { 2, -4, 0 },  0.8, new StaticAnimator{}),
+    new ModelInstance(&grassModel, {-2,  4, 0 },  2.3, new StaticAnimator{}),
+    new ModelInstance(&grassModel, { 3,  4, 0 }, -3.0, new StaticAnimator{}),
+    new ModelInstance(&grassModel, { 4,  0, 0 },  1.4, new StaticAnimator{}),
 
-    new SpiritInstance(&spiritModel, { 3, 0, 5 }, 0.0, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel, {-5, 0, 4 }, 1.5, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel, { 4, 0,-3 }, 4.5, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel, {-4, 0,-4 }, 3.0, new StaticAnimator{})
+    new SpiritInstance(&spiritModel, { 3, 5 , 0}, 0.0, new StaticAnimator{}),
+    new SpiritInstance(&spiritModel, {-5, 4 , 0}, 1.5, new StaticAnimator{}),
+    new SpiritInstance(&spiritModel, { 4,-3 , 0}, 4.5, new StaticAnimator{}),
+    new SpiritInstance(&spiritModel, {-4,-4 , 0}, 3.0, new StaticAnimator{})
   };
   int instanceCount = sizeof(instances) / sizeof(ModelInstance*);
 
