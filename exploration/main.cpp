@@ -242,7 +242,8 @@ void draw_lines(ModelInstance& instance, Program& program, float time)
 
   glBindVertexArray(instance.model->vertexDataVAO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance.model->lineIndexesID);
-  glDrawElements(GL_LINES_ADJACENCY, instance.model->lineIndexes.size(), GL_UNSIGNED_INT, (void*)0);
+  glPatchParameteri(GL_PATCH_VERTICES, 4);
+  glDrawElements(GL_PATCHES, instance.model->lineIndexes.size(), GL_UNSIGNED_INT, (void*)0);
   glBindVertexArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -395,7 +396,10 @@ int main()
   // build and compile our shader programs
   Program lineProgram{ 
     VertexShader::fromFile("shaders/line.vert.glsl"),
-    GeometryShader::fromFile("shaders/line.geom.glsl"),
+    TessellationControlShader::fromFile("shaders/line.tesc.glsl"),
+    TessellationEvaluationShader::fromFile("shaders/line.tess.glsl"),
+    //GeometryShader::fromFile("shaders/line.geom.glsl"),
+    Shader{},
     FragmentShader::fromFile("shaders/line.frag.glsl")
   };
   Program depthProgram{
