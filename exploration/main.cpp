@@ -415,6 +415,7 @@ int main()
   auto grassModel = Model::read("models/grass_model.txt", "models/grass_texture.jpg");
   auto blockModel = Model::read("models/block_model.txt", "models/block_texture.jpg", 0.05f * character_scale);
   auto spiritModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 0.1f);
+  auto birdModel = Model::read("models/bird_triangle_2_model.txt", "models/bird_triangle_2_texture.jpg", 0.4f);
 
   auto walk_animation = read_animation("models/walk_animation.txt");
   auto trudge_animation = read_animation("models/trudge_animation.txt");
@@ -445,16 +446,18 @@ int main()
     new ModelInstance(&grassModel, { 3,  4, 0 }, -3.0, new StaticAnimator{}),
     new ModelInstance(&grassModel, { 4,  0, 0 },  1.4, new StaticAnimator{}),
 
-    new SpiritInstance(&spiritModel, { 3, 5 , 0}, 0.0, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel, {-5, 4 , 0}, 1.5, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel, { 4,-3 , 0}, 4.5, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel, {-4,-4 , 0}, 3.0, new StaticAnimator{})
+    new SpiritInstance(&spiritModel, { 3, 5 ,0 }, 0.0, new StaticAnimator{}),
+    new SpiritInstance(&spiritModel, {-5, 4 ,0 }, 1.5, new StaticAnimator{}),
+    new SpiritInstance(&spiritModel, { 4,-3 ,0 }, 4.5, new StaticAnimator{}),
+    new SpiritInstance(&spiritModel,{ -4,-4 ,0 }, 3.0, new StaticAnimator{}),
+
+    new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new StaticAnimator{}),
   };
   int instanceCount = sizeof(instances) / sizeof(ModelInstance*);
 
   auto& character = instances[0];
 
-  for (auto model : { &treeModel, &tree2Model, &grassModel, &blockModel, &spiritModel })
+  for (auto model : { &treeModel, &tree2Model, &grassModel, &blockModel, &spiritModel, &birdModel })
     model->load();
 
   // load quad

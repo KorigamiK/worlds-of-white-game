@@ -1,0 +1,11 @@
+Changelog (2018-05-10)
+
+
+Converted World Orientation
+
+  The original tutorial I had started with was set up to be Y-up. Naively thinking Blender was Y-up as well, I carried on doing things that way. But, then I decided it was a lot less cognitive overhead for me if it was Z-up. Upon inspection, I realized Blender was also Z-up; I had even put in a model transformation to account for this. I changed the camera, model orientations, and movements to be Z-up. I think this'll make things easier for me in the long run.
+
+
+Tessellation Shader for Line Segmentation
+
+  I implemented the line segmentation in the geometry shader myself. However, it means I'm at the limit of the geometry shader vertex output, it adds a lot of complexity to it, and the tessellation shader is designed for this purpose. So the segmenting and edge-detection got moved there, so the geometry shader can focus on line-drawing (and depth detection).
