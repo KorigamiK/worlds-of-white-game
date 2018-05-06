@@ -325,7 +325,7 @@ private:
 
 public:
   FreeCamera()
-    : _location { 0, -20, 1 }
+    : _location { 0, -0.5, 1 }
     , _direction { 0, 1, 0 }
   { }
 
@@ -426,32 +426,34 @@ int main()
 
   ModelInstance* instances[] = 
   {
-    new CharacterInstance(&blockModel,{ 0, 0, 0 },  glm::radians(180.0f), walk_animator),
+    //new CharacterInstance(&blockModel,{ 0, 0, 0 },  glm::radians(180.0f), walk_animator),
 
-    new ModelInstance(&treeModel, { 5,  4, 0 }, -0.2, new StaticAnimator{}),
-    new ModelInstance(&treeModel, { 3,  6, 0 },  0.6, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-2,  3, 0 }, -1.2, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-3,  6, 0 },  0.8, new StaticAnimator{}),
-    new ModelInstance(&treeModel, { 3, -5, 0 },  2.3, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-4, -5, 0 }, -3.0, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-5,  0, 0 },  1.4, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, { 5,  4, 0 }, -0.2, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, { 3,  6, 0 },  0.6, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, {-2,  3, 0 }, -1.2, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, {-3,  6, 0 },  0.8, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, { 3, -5, 0 },  2.3, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, {-4, -5, 0 }, -3.0, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, {-5,  0, 0 },  1.4, new StaticAnimator{}),
 
     // new ModelInstance(&tree2Model, {-20, -20, 0 },  0.0, new StaticAnimator{}),
 
-    new ModelInstance(&grassModel, {-4, -3, 0 }, -0.2, new StaticAnimator{}),
-    new ModelInstance(&grassModel, {-2, -4, 0 },  0.6, new StaticAnimator{}),
-    new ModelInstance(&grassModel, {-1,  1, 0 }, -1.2, new StaticAnimator{}),
-    new ModelInstance(&grassModel, { 2, -4, 0 },  0.8, new StaticAnimator{}),
-    new ModelInstance(&grassModel, {-2,  4, 0 },  2.3, new StaticAnimator{}),
-    new ModelInstance(&grassModel, { 3,  4, 0 }, -3.0, new StaticAnimator{}),
-    new ModelInstance(&grassModel, { 4,  0, 0 },  1.4, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, {-4, -3, 0 }, -0.2, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, {-2, -4, 0 },  0.6, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, {-1,  1, 0 }, -1.2, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, { 2, -4, 0 },  0.8, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, {-2,  4, 0 },  2.3, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, { 3,  4, 0 }, -3.0, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, { 4,  0, 0 },  1.4, new StaticAnimator{}),
 
-    new SpiritInstance(&spiritModel, { 3, 5 ,0 }, 0.0, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel, {-5, 4 ,0 }, 1.5, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel, { 4,-3 ,0 }, 4.5, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel,{ -4,-4 ,0 }, 3.0, new StaticAnimator{}),
+    //new SpiritInstance(&spiritModel, { 3, 5 ,0 }, 0.0, new StaticAnimator{}),
+    //new SpiritInstance(&spiritModel, {-5, 4 ,0 }, 1.5, new StaticAnimator{}),
+    //new SpiritInstance(&spiritModel, { 4,-3 ,0 }, 4.5, new StaticAnimator{}),
+    //new SpiritInstance(&spiritModel,{ -4,-4 ,0 }, 3.0, new StaticAnimator{}),
 
-    new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new StaticAnimator{}),
+    //new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new StaticAnimator{}),
+
+    new ModelInstance(&spiritModel, {0, 0, 1}, 0.0, new StaticAnimator{})
   };
   int instanceCount = sizeof(instances) / sizeof(ModelInstance*);
 
@@ -512,7 +514,7 @@ int main()
   ICamera* freeCam = new FreeCamera();
   ICamera* trackCam = new TrackCamera(&currentInstance);
   ICamera* followCam = new FollowCamera(&currentInstance);
-  ICamera* cam = followCam;
+  ICamera* cam = freeCam;
 
   while (!glfwWindowShouldClose(window))
   {
@@ -546,6 +548,7 @@ int main()
       cam->update(window, time);
       for (auto& instance : instances)
         instance->update(window, time);
+      instances[0]->rotation += 0.01f;
     }
 
     // render faces and depth
