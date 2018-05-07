@@ -3,12 +3,24 @@
 layout(lines) in;
 layout(triangle_strip, max_vertices = 8) out;
 
-in float tess_vertex_offset[2];
+in vec4 tess_vertex_offset[2];
 
 uniform sampler2D depth_texture;
 
 uniform float frame;
 uniform float ratio;
+
+// Keeping the ratio correct is a pain, so I just convert to screen space, do
+// any manipulations, then put it back into the projection space. This might be 
+// supplied later through a unifrom variable.
+
+const mat4 to_screen_space = mat4(
+	1, 0,     0, 0,
+	0, 1/ratio, 0, 0,
+	0, 0,     1, 0,
+	0, 0,     0, 1
+);
+const mat4 from_screen_space = inverse(to_screen_space);
 
 // Always has this shape:
 // 
@@ -33,6 +45,16 @@ float rand()
   seed2 = seed1;
   seed1 = value;
   return value;
+}
+
+mat4 rotate(float theta)
+{
+	return mat4(
+		cos(theta), -sin(theta), 0, 0,
+		sin(theta),  cos(theta), 0, 0,
+		0,           0,          1, 0,
+		0,           0,          0, 1
+	);
 }
 
 float get_depth_1(vec2 v)
@@ -72,37 +94,41 @@ bool is_hidden(vec4 p)
 	return p.z / p.w > get_depth(p.xy / p.w);
 }
 
-void _draw_segment(vec4 p, vec4 perp)
+void _draw_segment(vec4 p, vec4 perp, float thickness)
 {
-	gl_Position = p + perp * (EDGE_OFFSET + tess_vertex_offset[0] * EDGE_OFFSET_VARIANCE) * p.w;
+	gl_Position = p + perp * (EDGE_OFFSET + thickness * EDGE_OFFSET_VARIANCE) * p.w;
+	gl_Position = from_screen_space * gl_Position;
 	EmitVertex();
 
-	gl_Position = p - perp * (EDGE_OFFSET + tess_vertex_offset[0] * EDGE_OFFSET_VARIANCE) * p.w;
+	gl_Position = p - perp * (EDGE_OFFSET + thickness * EDGE_OFFSET_VARIANCE) * p.w;
+	gl_Position = from_screen_space * gl_Position;
 	EmitVertex();
 }
 
 void _draw_start_endcap(vec4 p, vec4 perp)
 {
-	vec4 para = vec4(perp.y / ratio, -perp.x * ratio, 0.0f, 0.0f);
+	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
 
 	gl_Position = p + para * EDGE_OFFSET * 0.66f * p.w + perp * EDGE_OFFSET / 2 * p.w;
+	gl_Position = from_screen_space * gl_Position;
 	EmitVertex();
 	
 	gl_Position = p + para * EDGE_OFFSET * 0.66f * p.w - perp * EDGE_OFFSET / 2 * p.w;
+	gl_Position = from_screen_space * gl_Position;
 	EmitVertex();
 }
 
 void _draw_end_endcap(vec4 p, vec4 perp)
 {
-	vec4 para = vec4(perp.y / ratio, -perp.x * ratio, 0.0f, 0.0f);
+	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
 
 	gl_Position = p - para * EDGE_OFFSET * 0.66f * p.w + perp * EDGE_OFFSET / 2 * p.w;
+	gl_Position = from_screen_space * gl_Position;
 	EmitVertex();
 	
 	gl_Position = p - para * EDGE_OFFSET * 0.66f * p.w - perp * EDGE_OFFSET / 2 * p.w;
+	gl_Position = from_screen_space * gl_Position;
 	EmitVertex();
-	
-	EndPrimitive();
 }
 
 vec4 _find_intermediate(vec4 p_hidden, vec4 p_shown)
@@ -119,12 +145,50 @@ vec4 _find_intermediate(vec4 p_hidden, vec4 p_shown)
 	return p_shown;
 }
 
-void draw_segment(vec4 p1, vec4 p2, vec4 perp)
+float transform1(float v)
 {
+	// v between -1 and 1
+
+	return 1 - cos(v*3.141592/2);
+}
+
+void draw_segment(vec4 p1, vec4 p2)
+{
+	p1 = to_screen_space * p1;
+	p2 = to_screen_space * p2;
+
+	vec4 perp = normalize(vec4(p1.y / p1.w - p2.y / p2.w, p2.x / p2.w - p1.x / p1.w, 0.0f, 0.0f));
+	
+	//// SKETCHY
+	//perp = perp * rotate(0.0 + 0.5f * tess_vertex_offset[0].y);
+	//vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
+	//vec4 center = mix(p1, p2, 0.5);
+	//float l = distance(p1.xy / p1.w, p2.xy / p2.w) * 3.0;
+	//p1 = center + para * l / 2 * center.w;
+	//p2 = center - para * l / 2 * center.w;
+
+	//// WAVE
+	//vec4 center = mix(p1, p2, 0.5);
+	//float angle = atan(p1.y - p2.y, p1.x - p2.x);
+	//perp = vec4(0, 1, 0, 0);
+	//vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
+	//float l = distance(p1.xy / p1.w, p2.xy / p2.w) * 3.0;
+	//p1 = center + para * l / 2 * center.w;
+	//p2 = center - para * l / 2 * center.w;
+
+	//// SPIKE
+	//vec2 center = vec2(0.33, 0.33);
+	//p1 += vec4(normalize(p1.xy / p1.w - center), 0, 0) * transform1(tess_vertex_offset[0].y) * 0.2f * p1.w;
+	//p2 += vec4(normalize(p2.xy / p2.w - center), 0, 0) * transform1(tess_vertex_offset[1].y) * 0.2f * p2.w;
+
+	perp = normalize(vec4(p1.y / p1.w - p2.y / p2.w, p2.x / p2.w - p1.x / p1.w, 0.0f, 0.0f));
+
 	_draw_start_endcap(p1, perp);
-	_draw_segment(p1, perp);
-	_draw_segment(p2, perp);
+	_draw_segment(p1, perp, tess_vertex_offset[0].x);
+	_draw_segment(p2, perp, tess_vertex_offset[1].x);
 	_draw_end_endcap(p2, perp);
+	
+	EndPrimitive();
 }
 
 void main()
@@ -132,27 +196,22 @@ void main()
     vec4 start = gl_in[0].gl_Position;
 	vec4 end = gl_in[1].gl_Position;
 
-	vec4 diff = end - start;
-	vec3 diff2 = normalize((end.xyz / end.w) - (start.xyz / start.w));
-    vec4 perp = normalize(vec4(diff2.y, -diff2.x * ratio, 0.0f, 0.0f));
-	perp.y *= ratio;
-
 	bool start_shown = !is_hidden(start);
 	bool end_shown   = !is_hidden(end);
 
 	if (start_shown && end_shown)
 	{
-		draw_segment(start, end, perp);
+		draw_segment(start, end);
 	}
 	else if (start_shown && !end_shown)
 	{
 		vec4 new_end = _find_intermediate(end, start);
-		draw_segment(start, new_end, perp);
+		draw_segment(start, new_end);
 	}
 	else if (!start_shown && end_shown)
 	{
 		vec4 new_start = _find_intermediate(start, end);
-		draw_segment(new_start, end, perp);
+		draw_segment(new_start, end);
 	}
 	else if (start_shown && end_shown)
 	{

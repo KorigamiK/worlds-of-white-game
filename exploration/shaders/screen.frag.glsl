@@ -20,4 +20,4 @@ void main()
 	//vec3 final = bkgd * line;
 
     FragColor = vec4(final.x, final.y, final.z, 1.0);
-} 
+}
