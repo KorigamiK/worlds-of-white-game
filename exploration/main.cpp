@@ -35,7 +35,7 @@ float character_scale = 1.0f;
 Framebuffer faceFramebuffer;
 Framebuffer lineFramebuffer;
 
-constexpr int MAX_JOINTS = 15;
+constexpr int MAX_JOINTS = 24;
 
 struct AnimationFrame
 {
@@ -410,15 +410,22 @@ int main()
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
-  auto treeModel = Model::read("models/tree_model.txt", "models/tree_texture.jpg");
-  auto tree2Model = Model::read("models/tree_2_model.txt", "models/tree_2_texture.jpg");
-  auto grassModel = Model::read("models/grass_model.txt", "models/grass_texture.jpg");
-  auto blockModel = Model::read("models/block_model.txt", "models/block_texture.jpg", 0.05f * character_scale);
-  auto spiritModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 0.1f);
-  auto birdModel = Model::read("models/bird_triangle_2_model.txt", "models/bird_triangle_2_texture.jpg", 0.4f);
+  //auto treeModel = Model::read("models/tree_model.txt", "models/tree_texture.jpg");
+  //auto tree2Model = Model::read("models/tree_2_model.txt", "models/tree_2_texture.jpg");
+  //auto grassModel = Model::read("models/grass_model.txt", "models/grass_texture.jpg");
+  //auto blockModel = Model::read("models/block_model.txt", "models/block_texture.jpg", 0.05f * character_scale);
+  //auto spiritModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 0.1f);
+  //auto birdModel = Model::read("models/bird_final_model_3.txt", "models/bird_final_texture.jpg", 0.2f);
+  //auto birdModel = Model::read("models/block_model_2.txt", "models/block_texture.jpg", 0.2f);
+  auto birdModel = Model::read("C://Users//kmdre//Downloads//temp_model.txt", "models/bird_final_texture.jpg", 0.2f);
 
   auto walk_animation = read_animation("models/walk_animation.txt");
   auto trudge_animation = read_animation("models/trudge_animation.txt");
+  //auto idle_animation = read_animation("models/bird_final_idle_animation.txt");
+  //auto idle_animation = read_animation("models/bird_final_test_animation.txt");
+  //auto idle_animation = read_animation("models/block_animation_2.txt");
+  auto idle_animation = read_animation("C:\\Users\\kmdre\\Downloads\\animation.txt");
+
 
   walk_animator = new LoopAnimator{ walk_animation, 96 };
   trudge_animator = new LoopAnimator{ trudge_animation, 24 };
@@ -426,32 +433,32 @@ int main()
 
   ModelInstance* instances[] = 
   {
-    new CharacterInstance(&blockModel,{ 0, 0, 0 },  glm::radians(180.0f), walk_animator),
+    //new CharacterInstance(&blockModel,{ 0, 0, 0 },  glm::radians(180.0f), walk_animator),
 
-    new ModelInstance(&treeModel, { 5,  4, 0 }, -0.2, new StaticAnimator{}),
-    new ModelInstance(&treeModel, { 3,  6, 0 },  0.6, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-2,  3, 0 }, -1.2, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-3,  6, 0 },  0.8, new StaticAnimator{}),
-    new ModelInstance(&treeModel, { 3, -5, 0 },  2.3, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-4, -5, 0 }, -3.0, new StaticAnimator{}),
-    new ModelInstance(&treeModel, {-5,  0, 0 },  1.4, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, { 5,  4, 0 }, -0.2, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, { 3,  6, 0 },  0.6, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, {-2,  3, 0 }, -1.2, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, {-3,  6, 0 },  0.8, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, { 3, -5, 0 },  2.3, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, {-4, -5, 0 }, -3.0, new StaticAnimator{}),
+    //new ModelInstance(&treeModel, {-5,  0, 0 },  1.4, new StaticAnimator{}),
 
-    // new ModelInstance(&tree2Model, {-20, -20, 0 },  0.0, new StaticAnimator{}),
+    //// new ModelInstance(&tree2Model, {-20, -20, 0 },  0.0, new StaticAnimator{}),
 
-    new ModelInstance(&grassModel, {-4, -3, 0 }, -0.2, new StaticAnimator{}),
-    new ModelInstance(&grassModel, {-2, -4, 0 },  0.6, new StaticAnimator{}),
-    new ModelInstance(&grassModel, {-1,  1, 0 }, -1.2, new StaticAnimator{}),
-    new ModelInstance(&grassModel, { 2, -4, 0 },  0.8, new StaticAnimator{}),
-    new ModelInstance(&grassModel, {-2,  4, 0 },  2.3, new StaticAnimator{}),
-    new ModelInstance(&grassModel, { 3,  4, 0 }, -3.0, new StaticAnimator{}),
-    new ModelInstance(&grassModel, { 4,  0, 0 },  1.4, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, {-4, -3, 0 }, -0.2, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, {-2, -4, 0 },  0.6, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, {-1,  1, 0 }, -1.2, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, { 2, -4, 0 },  0.8, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, {-2,  4, 0 },  2.3, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, { 3,  4, 0 }, -3.0, new StaticAnimator{}),
+    //new ModelInstance(&grassModel, { 4,  0, 0 },  1.4, new StaticAnimator{}),
 
-    new SpiritInstance(&spiritModel, { 3, 5 ,0 }, 0.0, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel, {-5, 4 ,0 }, 1.5, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel, { 4,-3 ,0 }, 4.5, new StaticAnimator{}),
-    new SpiritInstance(&spiritModel,{ -4,-4 ,0 }, 3.0, new StaticAnimator{}),
+    //new SpiritInstance(&spiritModel, { 3, 5 ,0 }, 0.0, new StaticAnimator{}),
+    //new SpiritInstance(&spiritModel, {-5, 4 ,0 }, 1.5, new StaticAnimator{}),
+    //new SpiritInstance(&spiritModel, { 4,-3 ,0 }, 4.5, new StaticAnimator{}),
+    //new SpiritInstance(&spiritModel,{ -4,-4 ,0 }, 3.0, new StaticAnimator{}),
 
-    new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new StaticAnimator{}),
+    new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new LoopAnimator{ idle_animation, 72.0f }),
 
     //new ModelInstance(&spiritModel, {0, 0, 1}, 0.0, new StaticAnimator{})
   };
@@ -459,7 +466,7 @@ int main()
 
   auto& character = instances[0];
 
-  for (auto model : { &treeModel, &tree2Model, &grassModel, &blockModel, &spiritModel, &birdModel })
+  for (auto model : { /*&treeModel, &tree2Model, &grassModel, &blockModel, &spiritModel,*/ &birdModel })
     model->load();
 
   // load quad

@@ -12,8 +12,11 @@ alwaysDrawGroupId = obj.vertex_groups.find("always_draw");
 # write vertices
 print(len(mesh.vertices), file=file)
 for vertex in mesh.vertices:
-  group, weight = (vertex.groups[0].group, vertex.groups[0].weight) if len(vertex.groups) > 0 else (0, 1.0)
-  print(vertex.co[0], vertex.co[1], vertex.co[2], group, weight, file=file)
+  groups = [g for g in vertex.groups if g.group != alwaysDrawGroupId]
+  group1, weight1 = (groups[0].group, groups[0].weight) if len(groups) > 0 else (0, 1.0)
+  group2, weight2 = (groups[1].group, groups[1].weight) if len(groups) > 1 else (0, 0.0)
+  group3, weight3 = (groups[2].group, groups[2].weight) if len(groups) > 2 else (0, 0.0)
+  print(vertex.co[0], vertex.co[1], vertex.co[2], group1, group2, group3, weight1, weight2, weight3, file=file)
 
 # write faces
 print(len(mesh.polygons), file=file)
@@ -22,8 +25,11 @@ for face in mesh.polygons:
   for vId, lId in zip(face.vertices, face.loop_indices):
     vertex = mesh.vertices[vId];
     uv = mesh.uv_layers.active.data[lId].uv
-    group, weight = (vertex.groups[0].group, vertex.groups[0].weight) if len(vertex.groups) > 0 else (0, 1.0)
-    print(vertex.co[0], vertex.co[1], vertex.co[2], group, weight, uv.x, uv.y, file=file)
+    groups = [g for g in vertex.groups if g.group != alwaysDrawGroupId]
+    group1, weight1 = (groups[0].group, groups[0].weight) if len(groups) > 0 else (0, 1.0)
+    group2, weight2 = (groups[1].group, groups[1].weight) if len(groups) > 1 else (0, 0.0)
+    group3, weight3 = (groups[2].group, groups[2].weight) if len(groups) > 2 else (0, 0.0)
+    print(vertex.co[0], vertex.co[1], vertex.co[2], group1, group2, group3, weight1, weight2, weight3, uv.x, uv.y, file=file)
 
 # write lines
 bpy.ops.object.mode_set(mode='EDIT')
@@ -62,12 +68,12 @@ else:
   mybones = [(b.matrix, b.vector, b.head, int(b.parent.name) if not b.parent is None else -1) for b in bones]
   mybones[0] = (mybones[0][0] * Matrix(((1, 0, 0), (0, 0, 1), (0, -1, 0))), 
                (Matrix(((1, 0, 0), (0, 0, 1), (0, -1, 0))) * mybones[0][1]), 
-               (Matrix(((1, 0, 0), (0, 0, 1), (0, -1, 0))) * mybones[0][2]), 
+               (Matrix(((1, 0, 0), (0, 0, 1), (0, -1, 0))) * mybones[0][2]),  
                mybones[0][3])
   for matrix, vector, head, parent_id in mybones:
     parent = mybones[parent_id] if parent_id != -1 else (Matrix(), Vector(), Vector(), -1)
-    parent_matrix, parent_vector, parent_head, parent_parent = parent
-    location = parent_matrix * (head + parent_vector)
+    parent_matrix, parent_vector, parent_head, parent_parent_id = parent
+    location = head + Vector((0, parent_vector.length, 0))
     rotation = matrix.to_quaternion()
     print(parent_id, location[0], location[1], location[2], rotation[0], rotation[1], rotation[2], rotation[3], file=file)
 

@@ -12,9 +12,11 @@ void Model::load()
   glBindBuffer(GL_ARRAY_BUFFER, vertexDataVBO);
   glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+  glEnableVertexAttribArray(2);
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 
   // load faces
   glGenVertexArrays(1, &faceDataVAO);
@@ -23,11 +25,13 @@ void Model::load()
   glBindBuffer(GL_ARRAY_BUFFER, faceDataVBO);
   glBufferData(GL_ARRAY_BUFFER, faceData.size() * sizeof(float), faceData.data(), GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(3 * sizeof(float)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(3 * sizeof(float)));
   glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(5 * sizeof(float)));
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(6 * sizeof(float)));
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(9 * sizeof(float)));
 
   // load lines
   glGenBuffers(1, &lineIndexesID);
@@ -53,13 +57,13 @@ Model Model::read(const std::string& modelPath, const std::string& texturePath, 
 
   // read vertices
   file >> vertexCount;
-  model.vertexData.resize(vertexCount * 5); // 5 floats per vertex (x, y, z, g, w)
+  model.vertexData.resize(vertexCount * 9); // 9 floats per vertex (x, y, z, g1, g2, g3, w1, w2, w3)
   for (std::size_t i = 0; i < model.vertexData.size(); ++i)
     file >> model.vertexData[i];
 
   // read faces
   file >> faceCount;
-  model.faceData.resize(faceCount * 3 * 7); // 3 vertices per face (vId1, vId2, vId3), 7 floats per vertex (x, y, z, g, w, u, v)
+  model.faceData.resize(faceCount * 3 * 11); // 3 vertices per face (vId1, vId2, vId3), 11 floats per vertex (x, y, z, g1, g2, g3, w1, w2, w3, u, v)
   for (std::size_t i = 0; i < model.faceData.size(); ++i)
     file >> model.faceData[i];
 

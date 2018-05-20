@@ -1,8 +1,9 @@
 #version 420 core
 
 layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aGroup;
-layout (location = 2) in vec2 uv_coords_in;
+layout (location = 1) in vec3 aGroups;
+layout (location = 2) in vec3 aWeights;
+layout (location = 3) in vec2 uv_coords_in;
 
 out vec2 uv_coords;
 
@@ -15,7 +16,7 @@ uniform vec3 view_reference;
 uniform float ratio;
 uniform float frame;
 
-uniform mat4 positions[15];
+uniform mat4 positions[24];
 
 float variation(float v)
 {
@@ -69,6 +70,10 @@ void main()
 	model_space_position /= model_space_position.w;
 	model_space_position.xyz = apply_variation(model_space_position.xyz);
 	
-	gl_Position = projection * view * model * positions[int(aGroup.x)] * vec4(aPos, 1.0f);
+	vec4 pos0 = projection * view * model * positions[int(aGroups.x)] * vec4(aPos, 1.0f);
+	vec4 pos1 = projection * view * model * positions[int(aGroups.y)] * vec4(aPos, 1.0f);
+	vec4 pos2 = projection * view * model * positions[int(aGroups.z)] * vec4(aPos, 1.0f);
+	
+	gl_Position = (aWeights[0] * pos0) + (aWeights[1] * pos1) + (aWeights[2] * pos2);
 	uv_coords = uv_coords_in;
 }
