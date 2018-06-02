@@ -32,10 +32,10 @@ const mat4 from_screen_space = inverse(to_screen_space);
 //  \--+ 2-------------------- + 9/
 // 
 
-const float EDGE_OFFSET = 0.002f;          // (screen units) edge distance from point base
+const float EDGE_OFFSET = 0.001f;          // (screen units) edge distance from point base
 //const float EDGE_OFFSET = 0.002f;          // (screen units) edge distance from point base
 //const float EDGE_OFFSET_VARIANCE = 0.0015; // (screen units) edge distance from point variation
-const float EDGE_OFFSET_VARIANCE = 0.001f; // (screen units) edge distance from point variation
+const float EDGE_OFFSET_VARIANCE = 0.000f; // (screen units) edge distance from point variation
 
 float seed1 = frame;
 float seed2 = gl_PrimitiveIDIn; // this is a bad seed value, its not unique after tessellation

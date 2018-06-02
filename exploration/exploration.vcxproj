@@ -69,8 +69,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)libraries\glfw\include;$(ProjectDir)libraries\glm\include;$(ProjectDir)libraries\cimg\include;$(ProjectDir)libraries\libjpeg\include;$(ProjectDir)libraries\glad\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)libraries\glfw\lib;$(ProjectDir)libraries\libjpeg\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\kmdre\Downloads\reactphysics3d-0.7.0\reactphysics3d-0.7.0\src;$(ProjectDir)libraries\glfw\include;$(ProjectDir)libraries\glm\include;$(ProjectDir)libraries\cimg\include;$(ProjectDir)libraries\libjpeg\include;$(ProjectDir)libraries\glad\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)libraries\glfw\lib;$(ProjectDir)libraries\libjpeg\lib;C:\Users\kmdre\Downloads\reactphysics3d-0.7.0\build\lib\Debug;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir).build\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>.build\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
@@ -96,7 +96,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;jpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;jpeg.lib;reactphysics3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

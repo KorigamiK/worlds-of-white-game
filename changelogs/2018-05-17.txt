@@ -1,0 +1,13 @@
+Changelog (2018-05-17)
+
+
+Character Model
+
+  Finally finished modeling and rigging the preliminary character model. Spent a lot of time figuring out how to do the feathers, and rigging mostly. I'll likely be upgrading/redoing it in the future with just more detail or maybe different techniques, but this is more than good for now.
+
+
+Future Work
+
+- Terrain/Map design
+- Physics
+- More animations

@@ -9,3 +9,18 @@ Converted World Orientation
 Tessellation Shader for Line Segmentation
 
   I implemented the line segmentation in the geometry shader myself. However, it means I'm at the limit of the geometry shader vertex output, it adds a lot of complexity to it, and the tessellation shader is designed for this purpose. So the segmenting and edge-detection got moved there, so the geometry shader can focus on line-drawing (and depth detection).
+
+
+Aspect Ratio Handling
+
+  Made it so that the vertices are mapped into window space before doing transformations and mapped back into projection space when drawing the lines. That way I don't have to worry about aspect ratio when programming special effects.
+
+
+Custom Shading Effects
+
+  Toyed around with some shader effects, namely ones that rough up the model; like adding variation to the rotations or adding directional offsets to simulate movement or action. I'll get around to it more later on when I was to spice up animations or just add special effects. 
+
+
+Future Work
+
+- Character Modeling

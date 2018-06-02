@@ -7,6 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <reactphysics3d.h>
+
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -261,7 +263,8 @@ class FollowCamera : public ICamera
 {
 public:
   ModelInstance** _instance;
-  float distance = 1.0f;
+  float distance = 0.9f;
+  float offsetAngle = -0.97f;
 
 public:
   FollowCamera(ModelInstance** instance)
@@ -275,6 +278,10 @@ public:
       distance -= 0.01f;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
       distance += 0.01f;
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+      offsetAngle += 0.01f;
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+      offsetAngle -= 0.01f;
   }
 
   virtual glm::mat4 transform() const
@@ -284,7 +291,7 @@ public:
 
   virtual glm::vec3 position() const
   {
-    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), (*_instance)->rotation, { 0, 0, 1 }) * glm::vec4(0, 4, 2, 1)) * distance;
+    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), (*_instance)->rotation + offsetAngle, { 0, 0, 1 }) * glm::vec4(0, 4, 2, 1)) * distance;
   }
 };
 
@@ -417,7 +424,8 @@ int main()
   //auto spiritModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 0.1f);
   //auto birdModel = Model::read("models/bird_final_model_3.txt", "models/bird_final_texture.jpg", 0.2f);
   //auto birdModel = Model::read("models/block_model_2.txt", "models/block_texture.jpg", 0.2f);
-  auto birdModel = Model::read("C://Users//kmdre//Downloads//temp_model.txt", "models/bird_final_texture.jpg", 0.2f);
+  //auto birdModel = Model::read("C://Users//kmdre//Downloads//temp_model.txt", "models/bird_final_texture.jpg", 0.2f);
+  auto flowerModel = Model::read("models/island_model.txt", "models/island_texture.jpg", 0.6f);
 
   auto walk_animation = read_animation("models/walk_animation.txt");
   auto trudge_animation = read_animation("models/trudge_animation.txt");
@@ -458,7 +466,9 @@ int main()
     //new SpiritInstance(&spiritModel, { 4,-3 ,0 }, 4.5, new StaticAnimator{}),
     //new SpiritInstance(&spiritModel,{ -4,-4 ,0 }, 3.0, new StaticAnimator{}),
 
-    new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new LoopAnimator{ idle_animation, 72.0f }),
+    //new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new LoopAnimator{ idle_animation, 72.0f }),
+
+    new ModelInstance(&flowerModel, { 0, 0 ,0 }, 0.0, new StaticAnimator{}),
 
     //new ModelInstance(&spiritModel, {0, 0, 1}, 0.0, new StaticAnimator{})
   };
@@ -466,7 +476,7 @@ int main()
 
   auto& character = instances[0];
 
-  for (auto model : { /*&treeModel, &tree2Model, &grassModel, &blockModel, &spiritModel,*/ &birdModel })
+  for (auto model : { /*&treeModel, &tree2Model, &grassModel, &blockModel, &spiritModel, &birdModel, */ &flowerModel })
     model->load();
 
   // load quad
@@ -566,7 +576,7 @@ int main()
 
     glBindFramebuffer(GL_FRAMEBUFFER, faceFramebuffer.id());
     glEnable(GL_DEPTH_TEST);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(245 / 255.0f, 245 / 255.0f, 235 / 255.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (auto& instance : instances)
