@@ -2,3 +2,4 @@
 *.db
 *.opendb
 .build/
+exploration/nsight_profiler.cfg
