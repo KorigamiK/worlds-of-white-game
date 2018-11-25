@@ -3,3 +3,8 @@
 *.opendb
 .build/
 exploration/nsight_profiler.cfg
+
+# sublime
+*.sublime-project
+*.sublime-workspace
+
