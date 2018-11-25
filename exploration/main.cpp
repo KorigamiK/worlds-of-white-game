@@ -6,11 +6,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_transform_2d.hpp>
+
+#include <btBulletDynamicsCommon.h>
 
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <vector>
+#include <set>
+#include <map>
+#include <numeric>
 
 #include "logging/LoggingManager.h"
 #include "logging/loggers/StreamLogger.h"
@@ -55,12 +61,14 @@ struct ModelInstance
   glm::vec3 position;
   float rotation;
   IAnimator* animator;
+  float scale;
 
-  ModelInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator)
+  ModelInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale = 1.0f)
     : model{ model }
     , position{ position }
     , rotation{ rotation }
     , animator{ animator }
+    , scale{ scale }
   { }
 
   virtual void update(GLFWwindow *window, float time) { }
@@ -158,7 +166,7 @@ public:
       }
       else
       {
-        speed = 0.01f;
+        speed = 0.0005f;
         animator = walk_animator;
       }
     }
@@ -218,7 +226,7 @@ Animation read_animation(std::string path)
 
 void draw_faces(ModelInstance& instance, Program& program, float time)
 {
-  program.setMat4("model", glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }));
+  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }), glm::vec3(instance.scale, instance.scale, instance.scale)));
   program.setInt("model_texture", 0);
 
   instance.animator->applyAnimation(program, time, instance);
@@ -236,7 +244,7 @@ void draw_faces(ModelInstance& instance, Program& program, float time)
 
 void draw_lines(ModelInstance& instance, Program& program, float time)
 {
-  program.setMat4("model", glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }));
+  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }), glm::vec3(instance.scale, instance.scale, instance.scale)));
 
   instance.animator->applyAnimation(program, time, instance);
 
@@ -415,31 +423,22 @@ int main()
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
-  //auto treeModel = Model::read("models/tree_model.txt", "models/tree_texture.jpg");
-  //auto tree2Model = Model::read("models/tree_2_model.txt", "models/tree_2_texture.jpg");
-  //auto grassModel = Model::read("models/grass_model.txt", "models/grass_texture.jpg");
-  //auto blockModel = Model::read("models/block_model.txt", "models/block_texture.jpg", 0.05f * character_scale);
-  //auto spiritModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 0.1f);
-  //auto birdModel = Model::read("models/bird_final_model_3.txt", "models/bird_final_texture.jpg", 0.2f);
-  //auto birdModel = Model::read("models/block_model_2.txt", "models/block_texture.jpg", 0.2f);
-  //auto birdModel = Model::read("C://Users//kmdre//Downloads//temp_model.txt", "models/bird_final_texture.jpg", 0.2f);
-  auto flowerModel = Model::read("models/island_model.txt", "models/island_texture.jpg", 0.6f);
+  auto birdModel = Model::read("models/bird_model.txt", "models/bird_texture.jpg", 0.2f);
+  auto islandModel = Model::read("models/island_model.txt", "models/island_texture.jpg", 1.0f);
+  auto ballModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 0.1f);
 
-  auto walk_animation = read_animation("models/walk_animation.txt");
+  auto walk_animation = read_animation("models/bird_walk_animation.txt");
   auto trudge_animation = read_animation("models/trudge_animation.txt");
-  //auto idle_animation = read_animation("models/bird_final_idle_animation.txt");
-  //auto idle_animation = read_animation("models/bird_final_test_animation.txt");
-  //auto idle_animation = read_animation("models/block_animation_2.txt");
-  auto idle_animation = read_animation("C:\\Users\\kmdre\\Downloads\\animation.txt");
+  auto idle_animation = read_animation("models/bird_idle_animation.txt");
 
 
-  walk_animator = new LoopAnimator{ walk_animation, 96 };
+  walk_animator = new LoopAnimator{ walk_animation, 24 };
   trudge_animator = new LoopAnimator{ trudge_animation, 24 };
-  stand_animator = new StaticAnimator{};
+  stand_animator = new LoopAnimator{ idle_animation, 24 };
 
-  ModelInstance* instances[] = 
+  std::vector<ModelInstance*> instances =
   {
-    //new CharacterInstance(&blockModel,{ 0, 0, 0 },  glm::radians(180.0f), walk_animator),
+    new CharacterInstance(&birdModel,{ 0, 0, 5 },  glm::radians(180.0f), walk_animator),
 
     //new ModelInstance(&treeModel, { 5,  4, 0 }, -0.2, new StaticAnimator{}),
     //new ModelInstance(&treeModel, { 3,  6, 0 },  0.6, new StaticAnimator{}),
@@ -466,15 +465,17 @@ int main()
 
     //new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new LoopAnimator{ idle_animation, 72.0f }),
 
-    new ModelInstance(&flowerModel, { 0, 0 ,0 }, 0.0, new StaticAnimator{}),
+    new ModelInstance(&islandModel, { 0, 0 ,0 }, 0.0, new StaticAnimator{}, 10.0f),
 
     //new ModelInstance(&spiritModel, {0, 0, 1}, 0.0, new StaticAnimator{})
   };
-  int instanceCount = sizeof(instances) / sizeof(ModelInstance*);
 
-  auto& character = instances[0];
-
-  for (auto model : { /*&treeModel, &tree2Model, &grassModel, &blockModel, &spiritModel, &birdModel, */ &flowerModel })
+  // load models
+  std::set<Model*> models;
+  models.insert(&ballModel);
+  for (auto instance : instances)
+    models.insert(instance->model);
+  for (auto model : models)
     model->load();
 
   // load quad
@@ -529,8 +530,61 @@ int main()
   ICamera* freeCam = new FreeCamera();
   ICamera* trackCam = new TrackCamera(&currentInstance);
   ICamera* followCam = new FollowCamera(&currentInstance);
-  ICamera* cam = freeCam;
+  ICamera* cam = followCam;
 
+  // create the physics world
+  auto collisionConfiguration = new btDefaultCollisionConfiguration(); // I don't
+  auto dispatcher = new	btCollisionDispatcher(collisionConfiguration); // know what
+  auto broadphase = new btDbvtBroadphase();                            // these things
+  auto solver = new btSequentialImpulseConstraintSolver;               // fucking do
+
+  auto dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+  dynamicsWorld->setGravity(btVector3(0, 0, -10));
+
+  // create terrain
+  auto terrainIndices = std::vector<int>(islandModel.faceData.size() / 11);
+  std::iota(terrainIndices.begin(), terrainIndices.end(), 0);
+  auto terrainVertices = islandModel.faceData;
+  auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / 11, terrainVertices.data(), 11 * sizeof(int));
+  auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, false);
+  auto terrainShapeScaled = new btScaledBvhTriangleMeshShape(terrainShape, btVector3(10, 10, 10));
+  auto terrainMotionState = new btDefaultMotionState();
+  auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShapeScaled);
+  terrainBody->setFriction(0.95);
+  dynamicsWorld->addRigidBody(terrainBody);
+
+  struct InstanceBinding {
+    btRigidBody* body = nullptr;
+    glm::vec3 offset = glm::vec3();
+  };
+
+  std::map<ModelInstance*, InstanceBinding> instancesToBodies;
+
+  // create character
+  auto characterShape = new btCapsuleShapeZ(0.2, 1.0);
+  auto characterMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, 15)));
+  auto characterBody = new btRigidBody(1.0, characterMotionState, characterShape);
+  characterBody->setAngularFactor(0);
+  characterBody->setFriction(0.95);
+  dynamicsWorld->addRigidBody(characterBody);
+  instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, -0.68) };
+
+  // create balls
+  auto ballShape = new btSphereShape(0.1);
+  auto spawnBall = [&]() {
+    auto ballMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, 5)));
+    auto ballBody = new btRigidBody(1.0, ballMotionState, ballShape);
+    ballBody->setCcdMotionThreshold(0.1);
+    ballBody->setCcdSweptSphereRadius(0.2);
+    ballBody->setFriction(0.1);
+    dynamicsWorld->addRigidBody(ballBody);
+
+    auto instance = new ModelInstance(&ballModel, glm::vec3(0, 0, 20), 0.0f, new StaticAnimator());
+    instances.push_back(instance);
+    instancesToBodies[instance] = { ballBody };
+  };
+
+  auto character = instances[0];
   while (!glfwWindowShouldClose(window))
   {
     float time = i / 144.0f;
@@ -544,15 +598,33 @@ int main()
       cam = trackCam;
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
       cam = freeCam;
+    if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
+      spawnBall();
     if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
     {
-      instanceIndex = (instanceIndex != instanceCount - 1) ? instanceIndex + 1 : 0;
+      instanceIndex = (instanceIndex != instances.size() - 1) ? instanceIndex + 1 : 0;
       currentInstance = instances[instanceIndex];
     }
     if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
     {
-      instanceIndex = (instanceIndex != 0) ? instanceIndex - 1 : instanceCount - 1;
+      instanceIndex = (instanceIndex != 0) ? instanceIndex - 1 : instances.size() - 1;
       currentInstance = instances[instanceIndex];
+    }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+      auto rotation = character->rotation;
+      auto velocity = characterBody->getLinearVelocity();
+      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, -0.85, 0);
+      new_velocity.setZ(velocity.z());
+      characterBody->setLinearVelocity(new_velocity);
+      characterBody->activate();
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+      auto rotation = character->rotation;
+      auto velocity = characterBody->getLinearVelocity();
+      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, 0.85, 0);
+      new_velocity.setZ(velocity.z());
+      characterBody->setLinearVelocity(new_velocity);
+      characterBody->activate();
     }
 
     glm::mat4 view = cam->transform();
@@ -562,7 +634,18 @@ int main()
     {
       cam->update(window, time);
       for (auto& instance : instances)
+      {
         instance->update(window, time);
+        if (instancesToBodies[instance].body != nullptr)
+        {
+          btTransform bodyTransform;
+          instancesToBodies[instance].body->getMotionState()->getWorldTransform(bodyTransform);
+          btVector3 bodyPosition = bodyTransform.getOrigin();
+          instance->position = glm::vec3(bodyPosition.x(), bodyPosition.y(), bodyPosition.z()) + instancesToBodies[instance].offset;
+        }
+      }
+
+      dynamicsWorld->stepSimulation(1.0f / 144.0f);
     }
 
     // render faces and depth

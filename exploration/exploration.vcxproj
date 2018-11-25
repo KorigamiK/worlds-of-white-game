@@ -69,8 +69,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)libraries\glfw\include;$(ProjectDir)libraries\glm\include;$(ProjectDir)libraries\cimg\include;$(ProjectDir)libraries\libjpeg\include;$(ProjectDir)libraries\glad\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)libraries\glfw\lib;$(ProjectDir)libraries\libjpeg\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)libraries\glfw\include;$(ProjectDir)libraries\glm\include;$(ProjectDir)libraries\cimg\include;$(ProjectDir)libraries\libjpeg\include;$(ProjectDir)libraries\glad\include;C:\Users\kmdre\Downloads\bullet3-2.87\src;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\kmdre\Downloads\bullet3-2.87\bin;$(ProjectDir)libraries\glfw\lib;$(ProjectDir)libraries\libjpeg\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir).build\$(Configuration)\$(Platform)\</OutDir>
     <IntDir>.build\$(Configuration)\$(Platform)\</IntDir>
   </PropertyGroup>
@@ -96,7 +96,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;jpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;jpeg.lib;BulletCollision.lib;BulletDynamics.lib;LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
