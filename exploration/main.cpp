@@ -133,9 +133,9 @@ public:
   }
 };
 
-IAnimator* walk_animator;
-IAnimator* trudge_animator;
-IAnimator* stand_animator;
+//IAnimator* walk_animator;
+//IAnimator* trudge_animator;
+//IAnimator* stand_animator;
 
 class CharacterInstance : public ModelInstance
 {
@@ -162,18 +162,18 @@ public:
       if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
       {
         speed = 0.003f;
-        animator = trudge_animator;
+        //animator = trudge_animator;
       }
       else
       {
         speed = 0.0005f;
-        animator = walk_animator;
+        //animator = walk_animator;
       }
     }
     else
     {
       speed = 0.0f;
-      animator = stand_animator;
+      //animator = stand_animator;
     }
 
     position += velocity * speed;
@@ -269,8 +269,8 @@ class FollowCamera : public ICamera
 {
 public:
   ModelInstance** _instance;
-  float distance = 0.9f;
-  float offsetAngle = -0.97f;
+  float distance = 3.0f;
+  float offsetAngle = 0.0f;
 
 public:
   FollowCamera(ModelInstance** instance)
@@ -424,21 +424,21 @@ int main()
   };
 
   auto birdModel = Model::read("models/bird_model.txt", "models/bird_texture.jpg", 0.2f);
-  auto islandModel = Model::read("models/island_model.txt", "models/island_texture.jpg", 1.0f);
-  auto ballModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 0.1f);
+  auto testlandModel = Model::read("models/testland_model.txt", "models/island_texture.jpg", 1.0f);
+  auto ballModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 1.0f);
 
-  auto walk_animation = read_animation("models/bird_walk_animation.txt");
-  auto trudge_animation = read_animation("models/trudge_animation.txt");
-  auto idle_animation = read_animation("models/bird_idle_animation.txt");
+  //auto walk_animation = read_animation("models/bird_walk_animation.txt");
+  //auto trudge_animation = read_animation("models/trudge_animation.txt");
+  //auto idle_animation = read_animation("models/bird_idle_animation.txt");
 
 
-  walk_animator = new LoopAnimator{ walk_animation, 24 };
-  trudge_animator = new LoopAnimator{ trudge_animation, 24 };
-  stand_animator = new LoopAnimator{ idle_animation, 24 };
+  //walk_animator = new LoopAnimator{ walk_animation, 24 };
+  //trudge_animator = new LoopAnimator{ trudge_animation, 24 };
+  //stand_animator = new LoopAnimator{ idle_animation, 24 };
 
   std::vector<ModelInstance*> instances =
   {
-    new CharacterInstance(&birdModel,{ 0, 0, 5 },  glm::radians(180.0f), walk_animator),
+    new CharacterInstance(&ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), new StaticAnimator{}, 0.5f),
 
     //new ModelInstance(&treeModel, { 5,  4, 0 }, -0.2, new StaticAnimator{}),
     //new ModelInstance(&treeModel, { 3,  6, 0 },  0.6, new StaticAnimator{}),
@@ -465,7 +465,7 @@ int main()
 
     //new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new LoopAnimator{ idle_animation, 72.0f }),
 
-    new ModelInstance(&islandModel, { 0, 0 ,0 }, 0.0, new StaticAnimator{}, 10.0f),
+    new ModelInstance(&testlandModel, { 0, 0 ,0 }, 0.0, new StaticAnimator{}, 1.0f),
 
     //new ModelInstance(&spiritModel, {0, 0, 1}, 0.0, new StaticAnimator{})
   };
@@ -541,16 +541,47 @@ int main()
   auto dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
   dynamicsWorld->setGravity(btVector3(0, 0, -10));
 
+  bool canJump = false;
+  dynamicsWorld->setInternalTickCallback(+[](btDynamicsWorld* world, float timeStep) -> void
+  {
+    int numManifolds = world->getDispatcher()->getNumManifolds();
+    auto& canJump = *(bool*)world->getWorldUserInfo();
+    canJump = false;
+
+    for (int i = 0; i < numManifolds; ++i)
+    {
+      btPersistentManifold* contactManifold = world->getDispatcher()->getManifoldByIndexInternal(i);
+      const btCollisionObject* obA = contactManifold->getBody0();
+      const btCollisionObject* obB = contactManifold->getBody1();
+
+      int numContacts = contactManifold->getNumContacts();
+      if (numContacts > 0)
+        canJump = true;
+
+      for (int j = 0; j < numContacts; j++)
+      {
+        btManifoldPoint& pt = contactManifold->getContactPoint(j);
+        if (pt.getDistance() < 0.f)
+        {
+          const btVector3& ptA = pt.getPositionWorldOnA();
+          const btVector3& ptB = pt.getPositionWorldOnB();
+          const btVector3& normalOnB = pt.m_normalWorldOnB;
+        }
+      }
+    }
+
+  }, &canJump);
+
   // create terrain
-  auto terrainIndices = std::vector<int>(islandModel.faceData.size() / 11);
+  auto terrainIndices = std::vector<int>(testlandModel.faceData.size() / 11);
   std::iota(terrainIndices.begin(), terrainIndices.end(), 0);
-  auto terrainVertices = islandModel.faceData;
+  auto terrainVertices = testlandModel.faceData;
   auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / 11, terrainVertices.data(), 11 * sizeof(int));
   auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, false);
-  auto terrainShapeScaled = new btScaledBvhTriangleMeshShape(terrainShape, btVector3(10, 10, 10));
+  auto terrainShapeScaled = new btScaledBvhTriangleMeshShape(terrainShape, btVector3(1, 1, 1));
   auto terrainMotionState = new btDefaultMotionState();
   auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShapeScaled);
-  terrainBody->setFriction(0.95);
+  terrainBody->setFriction(0.90f);
   dynamicsWorld->addRigidBody(terrainBody);
 
   struct InstanceBinding {
@@ -561,13 +592,13 @@ int main()
   std::map<ModelInstance*, InstanceBinding> instancesToBodies;
 
   // create character
-  auto characterShape = new btCapsuleShapeZ(0.2, 1.0);
-  auto characterMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, 15)));
+  auto characterShape = new btCapsuleShapeZ(0.5, 1.0);
+  auto characterMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, currentInstance->position.z + 1.0f)));
   auto characterBody = new btRigidBody(1.0, characterMotionState, characterShape);
   characterBody->setAngularFactor(0);
-  characterBody->setFriction(0.95);
+  characterBody->setFriction(0.90f);
   dynamicsWorld->addRigidBody(characterBody);
-  instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, -0.68) };
+  instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, -0.5f) };
 
   // create balls
   auto ballShape = new btSphereShape(0.1);
@@ -613,7 +644,7 @@ int main()
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
       auto rotation = character->rotation;
       auto velocity = characterBody->getLinearVelocity();
-      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, -0.85, 0);
+      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, -3.0f, 0);
       new_velocity.setZ(velocity.z());
       characterBody->setLinearVelocity(new_velocity);
       characterBody->activate();
@@ -621,10 +652,16 @@ int main()
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
       auto rotation = character->rotation;
       auto velocity = characterBody->getLinearVelocity();
-      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, 0.85, 0);
+      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, 3.0f, 0);
       new_velocity.setZ(velocity.z());
       characterBody->setLinearVelocity(new_velocity);
       characterBody->activate();
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump)
+    {
+      auto velocity = characterBody->getLinearVelocity();
+      velocity.setZ(5.0f);
+      characterBody->setLinearVelocity(velocity);
     }
 
     glm::mat4 view = cam->transform();
@@ -746,8 +783,8 @@ void processInput(GLFWwindow *window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
-  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-    paused = !paused;
+  //if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+  //  paused = !paused;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
