@@ -370,8 +370,6 @@ int main()
 {
   wilt::logging.setLogger<wilt::StreamLogger>(std::cout);
 
-  // glfw: initialize and configure
-  // ------------------------------
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -381,8 +379,6 @@ int main()
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
 #endif
 
-                                                       // glfw window creation
-                                                       // --------------------
   GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
   if (window == NULL)
   {
@@ -394,19 +390,14 @@ int main()
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSwapInterval(1);
 
-  // glad: load all OpenGL function pointers
-  // ---------------------------------------
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
   {
     std::cout << "Failed to initialize GLAD" << std::endl;
     return -1;
   }
 
-  // configure global opengl state
-  // -----------------------------
   glEnable(GL_DEPTH_TEST);
 
-  // build and compile our shader programs
   Program lineProgram{ 
     VertexShader::fromFile("shaders/line.vert.glsl"),
     TessellationControlShader::fromFile("shaders/line.tesc.glsl"),
@@ -423,51 +414,13 @@ int main()
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
-  auto birdModel = Model::read("models/bird_model.txt", "models/bird_texture.jpg", 0.2f);
-  auto testlandModel = Model::read("models/testland_model.txt", "models/island_texture.jpg", 1.0f);
+  auto testlandModel = Model::read("models/testland_model.txt", "models/testland_texture.jpg", 1.0f);
   auto ballModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 1.0f);
-
-  //auto walk_animation = read_animation("models/bird_walk_animation.txt");
-  //auto trudge_animation = read_animation("models/trudge_animation.txt");
-  //auto idle_animation = read_animation("models/bird_idle_animation.txt");
-
-
-  //walk_animator = new LoopAnimator{ walk_animation, 24 };
-  //trudge_animator = new LoopAnimator{ trudge_animation, 24 };
-  //stand_animator = new LoopAnimator{ idle_animation, 24 };
 
   std::vector<ModelInstance*> instances =
   {
     new CharacterInstance(&ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), new StaticAnimator{}, 0.5f),
-
-    //new ModelInstance(&treeModel, { 5,  4, 0 }, -0.2, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, { 3,  6, 0 },  0.6, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, {-2,  3, 0 }, -1.2, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, {-3,  6, 0 },  0.8, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, { 3, -5, 0 },  2.3, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, {-4, -5, 0 }, -3.0, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, {-5,  0, 0 },  1.4, new StaticAnimator{}),
-
-    //// new ModelInstance(&tree2Model, {-20, -20, 0 },  0.0, new StaticAnimator{}),
-
-    //new ModelInstance(&grassModel, {-4, -3, 0 }, -0.2, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, {-2, -4, 0 },  0.6, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, {-1,  1, 0 }, -1.2, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, { 2, -4, 0 },  0.8, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, {-2,  4, 0 },  2.3, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, { 3,  4, 0 }, -3.0, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, { 4,  0, 0 },  1.4, new StaticAnimator{}),
-
-    //new SpiritInstance(&spiritModel, { 3, 5 ,0 }, 0.0, new StaticAnimator{}),
-    //new SpiritInstance(&spiritModel, {-5, 4 ,0 }, 1.5, new StaticAnimator{}),
-    //new SpiritInstance(&spiritModel, { 4,-3 ,0 }, 4.5, new StaticAnimator{}),
-    //new SpiritInstance(&spiritModel,{ -4,-4 ,0 }, 3.0, new StaticAnimator{}),
-
-    //new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new LoopAnimator{ idle_animation, 72.0f }),
-
-    new ModelInstance(&testlandModel, { 0, 0 ,0 }, 0.0, new StaticAnimator{}, 1.0f),
-
-    //new ModelInstance(&spiritModel, {0, 0, 1}, 0.0, new StaticAnimator{})
+    new ModelInstance(&testlandModel, { 0, 0, 0 }, 0.0, new StaticAnimator{}, 1.0f)
   };
 
   // load models
@@ -514,12 +467,6 @@ int main()
   paperTexture.setMinFilter(GL_LINEAR);
   paperTexture.setMagFilter(GL_LINEAR);
 
-  GLint maxGeometryOutputVertices;
-  glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &maxGeometryOutputVertices);
-  std::cout << maxGeometryOutputVertices << std::endl;
-
-  // render loop
-  // -----------
   int i = 0;
   float iterationsPerSecond = 144.0f;
   int selected_perlin = 0;
@@ -783,8 +730,8 @@ void processInput(GLFWwindow *window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
-  //if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-  //  paused = !paused;
+  if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
+    paused = !paused;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
