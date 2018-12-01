@@ -461,10 +461,9 @@ int main()
   }, &canJump);
 
   // create terrain
-  auto terrainIndices = std::vector<int>(testlandModel.faceData.size() / 11);
-  std::iota(terrainIndices.begin(), terrainIndices.end(), 0);
-  auto terrainVertices = testlandModel.faceData;
-  auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / 11, terrainVertices.data(), 11 * sizeof(int));
+  auto terrainIndices = testlandModel.faceIndexes;
+  auto terrainVertices = testlandModel.vertexData;
+  auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, (int*)terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / 9, terrainVertices.data(), 9 * sizeof(float));
   auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, false);
   auto terrainShapeScaled = new btScaledBvhTriangleMeshShape(terrainShape, btVector3(1, 1, 1));
   auto terrainMotionState = new btDefaultMotionState();

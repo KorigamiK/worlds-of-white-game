@@ -19,13 +19,10 @@ class Model
 {
 public:
   std::vector<float> vertexData;
-  std::vector<float> faceData;
   std::vector<unsigned int> lineIndexes;
   std::vector<unsigned int> faceIndexes;
   unsigned int vertexDataVBO;
   unsigned int vertexDataVAO;
-  unsigned int faceDataVBO;
-  unsigned int faceDataVAO;
   unsigned int lineIndexesID;
   unsigned int faceIndexesID;
   wilt::NArray<unsigned char, 3> textureData;
