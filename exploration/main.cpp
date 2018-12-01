@@ -528,6 +528,7 @@ int main()
   auto terrainShapeScaled = new btScaledBvhTriangleMeshShape(terrainShape, btVector3(1, 1, 1));
   auto terrainMotionState = new btDefaultMotionState();
   auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShapeScaled);
+  terrainBody->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
   terrainBody->setFriction(0.90f);
   dynamicsWorld->addRigidBody(terrainBody);
 
@@ -539,28 +540,14 @@ int main()
   std::map<ModelInstance*, InstanceBinding> instancesToBodies;
 
   // create character
-  auto characterShape = new btCapsuleShapeZ(0.5, 1.0);
+  auto characterShape = new btSphereShape(0.25);
   auto characterMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, currentInstance->position.z + 1.0f)));
   auto characterBody = new btRigidBody(1.0, characterMotionState, characterShape);
   characterBody->setAngularFactor(0);
   characterBody->setFriction(0.90f);
+  characterBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
   dynamicsWorld->addRigidBody(characterBody);
-  instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, -0.5f) };
-
-  // create balls
-  auto ballShape = new btSphereShape(0.1);
-  auto spawnBall = [&]() {
-    auto ballMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, 5)));
-    auto ballBody = new btRigidBody(1.0, ballMotionState, ballShape);
-    ballBody->setCcdMotionThreshold(0.1);
-    ballBody->setCcdSweptSphereRadius(0.2);
-    ballBody->setFriction(0.1);
-    dynamicsWorld->addRigidBody(ballBody);
-
-    auto instance = new ModelInstance(&ballModel, glm::vec3(0, 0, 20), 0.0f, new StaticAnimator());
-    instances.push_back(instance);
-    instancesToBodies[instance] = { ballBody };
-  };
+  instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, 0) };
 
   auto character = instances[0];
   while (!glfwWindowShouldClose(window))
@@ -576,8 +563,6 @@ int main()
       cam = trackCam;
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
       cam = freeCam;
-    if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
-      spawnBall();
     if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
     {
       instanceIndex = (instanceIndex != instances.size() - 1) ? instanceIndex + 1 : 0;
@@ -632,6 +617,47 @@ int main()
       dynamicsWorld->stepSimulation(1.0f / 144.0f);
     }
 
+    {
+      // do character deformation
+      auto& characterModel = *character->model;
+      auto characterRotation = character->rotation;
+      auto characterScale = character->scale;
+      auto characterPosition = btVector3(
+        character->position.x,
+        character->position.y,
+        character->position.z);
+
+      auto newVertexData = characterModel.vertexData;
+      for (int i = 0; i < characterModel.vertexData.size(); i += 9)
+      {
+        auto point = btVector3(
+          characterModel.vertexData[i],
+          characterModel.vertexData[i + 1],
+          characterModel.vertexData[i + 2]).rotate({ 0, 0, 1 }, characterRotation) * characterScale;
+
+        btCollisionWorld::AllHitsRayResultCallback result(characterPosition, characterPosition + point);
+        dynamicsWorld->rayTest(characterPosition, characterPosition + point, result);
+
+        auto closestFraction = 1.0f;
+        for (int j = 0; j < result.m_hitFractions.size(); ++j)
+          if (result.m_hitFractions.at(j) < closestFraction)
+            closestFraction = result.m_hitFractions.at(j);
+
+        auto closest = btVector3(0, 0, 0).lerp(point, closestFraction).rotate({ 0, 0, 1 }, -characterRotation) / characterScale;
+        std::cout << closestFraction << ' ';
+
+        newVertexData[i + 0] = closest.x();
+        newVertexData[i + 1] = closest.y();
+        newVertexData[i + 2] = closest.z();
+      }
+
+      glBindVertexArray(characterModel.vertexDataVAO);
+      glBindBuffer(GL_ARRAY_BUFFER, characterModel.vertexDataVBO);
+      glBufferData(GL_ARRAY_BUFFER, newVertexData.size() * sizeof(float), newVertexData.data(), GL_STATIC_DRAW);
+
+      std::cout << std::endl;
+    }
+
     // render faces and depth
     depthProgram.use();
     depthProgram.setMat4("projection", projection);
@@ -644,8 +670,8 @@ int main()
     glClearColor(245 / 255.0f, 245 / 255.0f, 235 / 255.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    for (auto& instance : instances)
-      draw_faces(*instance, depthProgram, time);
+    //for (auto& instance : instances)
+    //  draw_faces(*instance, depthProgram, time);
 
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
