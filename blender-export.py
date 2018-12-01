@@ -77,6 +77,12 @@ else:
     rotation = matrix.to_quaternion()
     print(parent_id, location[0], location[1], location[2], rotation[0], rotation[1], rotation[2], rotation[3], file=file)
 
+# write faces (again)
+print(len(mesh.polygons), file=file)
+for face in mesh.polygons:
+  assert len(face.vertices) == 3
+  print(face.vertices[0], face.vertices[1], face.vertices[2], file=file)
+
 file.close()
 
 

@@ -38,6 +38,11 @@ void Model::load()
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineIndexesID);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, lineIndexes.size() * sizeof(unsigned int), lineIndexes.data(), GL_STATIC_DRAW);
 
+  // load faces (again)
+  glGenBuffers(1, &faceIndexesID);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceIndexesID);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, faceIndexes.size() * sizeof(unsigned int), faceIndexes.data(), GL_STATIC_DRAW);
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
@@ -54,6 +59,7 @@ Model Model::read(const std::string& modelPath, const std::string& texturePath, 
   int vertexCount;
   int faceCount;
   int lineCount;
+  int faceCount2;
 
   // read vertices
   file >> vertexCount;
@@ -105,6 +111,12 @@ Model Model::read(const std::string& modelPath, const std::string& texturePath, 
 
     model.joints[i] = Joint(parentIndex, location, rotation);
   }
+
+  // read faces (again)
+  file >> faceCount2;
+  model.faceIndexes.resize(lineCount * 4); // 3 ints per line (vId1, vId2, vId3)
+  for (std::size_t i = 0; i < model.faceIndexes.size(); ++i)
+    file >> model.faceIndexes[i];
 
   return model;
 }
