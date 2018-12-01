@@ -667,11 +667,11 @@ int main()
 
     glBindFramebuffer(GL_FRAMEBUFFER, faceFramebuffer.id());
     glEnable(GL_DEPTH_TEST);
-    glClearColor(245 / 255.0f, 245 / 255.0f, 235 / 255.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //for (auto& instance : instances)
-    //  draw_faces(*instance, depthProgram, time);
+    for (auto& instance : instances)
+      draw_faces(*instance, depthProgram, time);
 
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
