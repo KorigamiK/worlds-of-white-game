@@ -26,6 +26,7 @@
 #include "graphics/joint.h"
 #include "graphics/jointPose.h"
 #include "graphics/model.h"
+#include "graphics/modelInstance.h"
 #include "utilities/narray/narray.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -51,33 +52,6 @@ struct AnimationFrame
 struct Animation
 {
   std::vector<AnimationFrame> _frames;
-};
-
-class IAnimator;
-
-struct ModelInstance
-{
-  Model* model;
-  glm::vec3 position;
-  float rotation;
-  IAnimator* animator;
-  float scale;
-
-  ModelInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale = 1.0f)
-    : model{ model }
-    , position{ position }
-    , rotation{ rotation }
-    , animator{ animator }
-    , scale{ scale }
-  { }
-
-  virtual void update(GLFWwindow *window, float time) { }
-};
-
-class IAnimator
-{
-public:
-  virtual void applyAnimation(Program& program, float time, ModelInstance& instance) = 0;
 };
 
 class StaticAnimator : public IAnimator
@@ -222,39 +196,6 @@ Animation read_animation(std::string path)
   }
 
   return ret;
-}
-
-void draw_faces(ModelInstance& instance, Program& program, float time)
-{
-  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }), glm::vec3(instance.scale, instance.scale, instance.scale)));
-  program.setInt("model_texture", 0);
-
-  instance.animator->applyAnimation(program, time, instance);
-
-  glActiveTexture(GL_TEXTURE0);
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, instance.model->texture.id());
-
-  glBindVertexArray(instance.model->faceDataVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, instance.model->faceDataVBO);
-  glDrawArrays(GL_TRIANGLES, 0, instance.model->faceData.size() / 7 * 3);
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void draw_lines(ModelInstance& instance, Program& program, float time)
-{
-  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }), glm::vec3(instance.scale, instance.scale, instance.scale)));
-
-  instance.animator->applyAnimation(program, time, instance);
-
-  glBindVertexArray(instance.model->vertexDataVAO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance.model->lineIndexesID);
-  glPatchParameteri(GL_PATCH_VERTICES, 4);
-  glDrawElements(GL_PATCHES, instance.model->lineIndexes.size(), GL_UNSIGNED_INT, (void*)0);
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 class ICamera
@@ -643,8 +584,9 @@ int main()
           if (result.m_hitFractions.at(j) < closestFraction)
             closestFraction = result.m_hitFractions.at(j);
 
+        if (closestFraction < 1.0f)
+          closestFraction -= 0.02f;
         auto closest = btVector3(0, 0, 0).lerp(point, closestFraction).rotate({ 0, 0, 1 }, -characterRotation) / characterScale;
-        std::cout << closestFraction << ' ';
 
         newVertexData[i + 0] = closest.x();
         newVertexData[i + 1] = closest.y();
@@ -654,8 +596,6 @@ int main()
       glBindVertexArray(characterModel.vertexDataVAO);
       glBindBuffer(GL_ARRAY_BUFFER, characterModel.vertexDataVBO);
       glBufferData(GL_ARRAY_BUFFER, newVertexData.size() * sizeof(float), newVertexData.data(), GL_STATIC_DRAW);
-
-      std::cout << std::endl;
     }
 
     // render faces and depth
@@ -671,7 +611,7 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (auto& instance : instances)
-      draw_faces(*instance, depthProgram, time);
+      instance->model->draw_faces(*instance, depthProgram, time);
 
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -695,7 +635,7 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (auto& instance : instances)
-      draw_lines(*instance, lineProgram, time);
+      instance->model->draw_lines(*instance, lineProgram, time);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

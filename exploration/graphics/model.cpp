@@ -120,3 +120,33 @@ Model Model::read(const std::string& modelPath, const std::string& texturePath, 
 
   return model;
 }
+
+void Model::draw_faces(ModelInstance& instance, Program& program, float time)
+{
+  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }), glm::vec3(instance.scale, instance.scale, instance.scale)));
+  program.setInt("model_texture", 0);
+
+  instance.animator->applyAnimation(program, time, instance);
+
+  glBindVertexArray(instance.model->vertexDataVAO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance.model->faceIndexesID);
+  glDrawElements(GL_TRIANGLES, instance.model->faceIndexes.size(), GL_UNSIGNED_INT, (void*)0);
+
+  glBindVertexArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void Model::draw_lines(ModelInstance& instance, Program& program, float time)
+{
+  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }), glm::vec3(instance.scale, instance.scale, instance.scale)));
+
+  instance.animator->applyAnimation(program, time, instance);
+
+  glBindVertexArray(instance.model->vertexDataVAO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance.model->lineIndexesID);
+  glPatchParameteri(GL_PATCH_VERTICES, 4);
+  glDrawElements(GL_PATCHES, instance.model->lineIndexes.size(), GL_UNSIGNED_INT, (void*)0);
+
+  glBindVertexArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}

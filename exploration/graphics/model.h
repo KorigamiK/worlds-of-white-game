@@ -11,6 +11,8 @@
 
 #include "joint.h"
 #include "texture.h"
+#include "program.h"
+#include "modelInstance.h"
 #include "../utilities/narray/narray.hpp"
 
 class Model
@@ -33,6 +35,9 @@ public:
 
 public:
   void load();
+
+  void draw_faces(ModelInstance& instance, Program& program, float time);
+  void draw_lines(ModelInstance& instance, Program& program, float time);
 
 public:
   static Model read(const std::string& modelPath, const std::string& texturePath, float scale = 1.0f);

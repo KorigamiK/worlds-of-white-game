@@ -157,6 +157,7 @@
     <ClInclude Include="graphics\joint.h" />
     <ClInclude Include="graphics\jointPose.h" />
     <ClInclude Include="graphics\model.h" />
+    <ClInclude Include="graphics\modelInstance.h" />
     <ClInclude Include="graphics\program.h" />
     <ClInclude Include="graphics\shader.h" />
     <ClInclude Include="graphics\texture.h" />

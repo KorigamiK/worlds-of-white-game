@@ -48,5 +48,6 @@
     <ClInclude Include="graphics\joint.h" />
     <ClInclude Include="graphics\model.h" />
     <ClInclude Include="graphics\jointPose.h" />
+    <ClInclude Include="graphics\modelInstance.h" />
   </ItemGroup>
 </Project>
