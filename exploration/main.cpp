@@ -469,7 +469,7 @@ int main()
   auto terrainMotionState = new btDefaultMotionState();
   auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShapeScaled);
   terrainBody->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
-  terrainBody->setFriction(0.90f);
+  terrainBody->setFriction(0.95f);
   dynamicsWorld->addRigidBody(terrainBody);
 
   struct InstanceBinding {
@@ -484,7 +484,8 @@ int main()
   auto characterMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, currentInstance->position.z + 1.0f)));
   auto characterBody = new btRigidBody(1.0, characterMotionState, characterShape);
   characterBody->setAngularFactor(0);
-  characterBody->setFriction(0.90f);
+  characterBody->setFriction(0.95f);
+  characterBody->setDamping(0.5f, 0.0f);
   characterBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
   dynamicsWorld->addRigidBody(characterBody);
   instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, 0) };
@@ -534,6 +535,7 @@ int main()
       auto velocity = characterBody->getLinearVelocity();
       velocity.setZ(5.0f);
       characterBody->setLinearVelocity(velocity);
+      characterBody->activate();
     }
 
     glm::mat4 view = cam->transform();
@@ -567,13 +569,53 @@ int main()
         character->position.y,
         character->position.z);
 
+      struct Angle { btVector3 vec; float amount; };
+      std::vector<btVector3> angles =
+      {
+        {  0.0000f,  0.0000f,  1.0000f },
+        {  0.8944f,  0.0000f,  0.4472f },
+        {  0.2764f, -0.8507f,  0.4472f },
+        { -0.7236f, -0.5257f,  0.4472f },
+        { -0.7236f,  0.5257f,  0.4472f },
+        {  0.2764f,  0.8507f,  0.4472f },
+        { -0.2764f, -0.8507f, -0.4472f },
+        {  0.7236f, -0.5257f, -0.4472f },
+        {  0.7236f,  0.5257f, -0.4472f },
+        { -0.2764f,  0.8507f, -0.4472f },
+        { -0.8944f,  0.0000f, -0.4472f },
+        {  0.0000f,  0.0000f, -1.0000f }
+      };
+      std::vector<float> angleAmounts =
+      {
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f
+      };
+
+      auto angleWeightFunction = [](float a)
+      {
+        static auto weights = std::vector<float>{ -0.015f, -0.015f, -0.01f, 0.00f, 0.005f, 0.01f, 0.005f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f };
+        auto index = int(a * 10);
+        auto frac = a * 10 - index;
+        return weights[index] * (1 - frac) + weights[index + 1] * (frac);
+      };
+
       auto newVertexData = characterModel.vertexData;
-      for (int i = 0; i < characterModel.vertexData.size(); i += 9)
+      for (int i = 0; i < newVertexData.size(); i += 9)
       {
         auto point = btVector3(
-          characterModel.vertexData[i],
-          characterModel.vertexData[i + 1],
-          characterModel.vertexData[i + 2]).rotate({ 0, 0, 1 }, characterRotation) * characterScale;
+          newVertexData[i + 0],
+          newVertexData[i + 1],
+          newVertexData[i + 2]).rotate({ 0, 0, 1 }, characterRotation) * characterScale;
 
         btCollisionWorld::AllHitsRayResultCallback result(characterPosition, characterPosition + point);
         dynamicsWorld->rayTest(characterPosition, characterPosition + point, result);
@@ -583,13 +625,46 @@ int main()
           if (result.m_hitFractions.at(j) < closestFraction)
             closestFraction = result.m_hitFractions.at(j);
 
-        if (closestFraction < 1.0f)
-          closestFraction -= 0.02f;
-        auto closest = btVector3(0, 0, 0).lerp(point, closestFraction).rotate({ 0, 0, 1 }, -characterRotation) / characterScale;
+        if (closestFraction >= 1.0f)
+          continue;
+
+        auto closest = btVector3(0, 0, 0).lerp(point, closestFraction - 0.05f).rotate({ 0, 0, 1 }, -characterRotation) / characterScale;
 
         newVertexData[i + 0] = closest.x();
         newVertexData[i + 1] = closest.y();
         newVertexData[i + 2] = closest.z();
+
+        for (int j = 0; j < angles.size(); ++j)
+        {
+          auto& ang = angles[j];
+          float PI = 3.14159265358979f;
+          angleAmounts[j] += angleWeightFunction(closest.angle(ang) / PI);
+        }
+      }
+
+      for (int i = 0; i < newVertexData.size(); i += 9)
+      {
+        auto x = newVertexData[i + 0];
+        auto y = newVertexData[i + 1];
+        auto z = newVertexData[i + 2];
+        if (btVector3(x, y, z).length2() < 0.99f)
+          continue;
+
+        auto g1 = newVertexData[i + 3];
+        auto g2 = newVertexData[i + 4];
+        auto g3 = newVertexData[i + 5];
+        auto w1 = newVertexData[i + 6];
+        auto w2 = newVertexData[i + 7];
+        auto w3 = newVertexData[i + 8];
+
+        auto amount =
+          angleAmounts[g1] * w1 +
+          angleAmounts[g2] * w2 +
+          angleAmounts[g3] * w3;
+
+        newVertexData[i + 0] *= amount;
+        newVertexData[i + 1] *= amount;
+        newVertexData[i + 2] *= amount;
       }
 
       glBindVertexArray(characterModel.vertexDataVAO);
