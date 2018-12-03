@@ -17,6 +17,7 @@
 #include <set>
 #include <map>
 #include <numeric>
+#include <cmath>
 
 #include "logging/LoggingManager.h"
 #include "logging/loggers/StreamLogger.h"
@@ -307,6 +308,118 @@ public:
   }
 };
 
+void doCharacterDeformation(ModelInstance* character, btCollisionWorld* world)
+{
+  auto& characterModel = *character->model;
+  auto characterRotation = character->rotation;
+  auto characterScale = character->scale;
+  auto characterPosition = btVector3(
+    character->position.x,
+    character->position.y,
+    character->position.z);
+
+  const auto DATA_COUNT_PER_VERTEX = 9;
+
+  const auto POINT_COUNT = characterModel.vertexData.size() / 9;
+  const auto POINT_DISTANCE_MAX = 2.0f;
+  const auto POINT_WORLD_MARGIN = 0.0625f;
+
+  auto pointAmounts = std::vector<float>(POINT_COUNT, 1.0f);
+  auto pointBounds = std::vector<float>(POINT_COUNT, POINT_DISTANCE_MAX);
+
+  auto probeAmounts = std::vector<float>(12, 1.0f);
+  auto probeVectors = std::vector<btVector3>
+  {
+    {  0.0000f,  0.0000f,  1.0000f },
+    {  0.8944f,  0.0000f,  0.4472f },
+    {  0.2764f, -0.8507f,  0.4472f },
+    { -0.7236f, -0.5257f,  0.4472f },
+    { -0.7236f,  0.5257f,  0.4472f },
+    {  0.2764f,  0.8507f,  0.4472f },
+    { -0.2764f, -0.8507f, -0.4472f },
+    {  0.7236f, -0.5257f, -0.4472f },
+    {  0.7236f,  0.5257f, -0.4472f },
+    { -0.2764f,  0.8507f, -0.4472f },
+    { -0.8944f,  0.0000f, -0.4472f },
+    {  0.0000f,  0.0000f, -1.0000f }
+  };
+
+  auto probeWeightFunction = [](float a)
+  {
+    static auto weights = std::vector<float>{ -0.025f, -0.020f, -0.015f, 0.00f, 0.005f, 0.01f, 0.01f, 0.005f, 0.00f, 0.00f, 0.00f, 0.00f };
+
+    const auto WEIGHT_SCALING = 1.0f;
+
+    auto index = int(a * 10);
+    auto frac = a * 10 - index;
+    return (weights[index] * (1 - frac) + weights[index + 1] * (frac)) * WEIGHT_SCALING;
+  };
+
+  auto newVertexData = characterModel.vertexData;
+  for (int i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
+  {
+    // should be a unit vector
+    auto point = btVector3(
+      newVertexData[i + 0],
+      newVertexData[i + 1],
+      newVertexData[i + 2]);
+
+    // these are in world space
+    auto rayStart = characterPosition;
+    auto rayEnd = characterPosition + point.rotate({ 0, 0, 1 }, characterRotation) * characterScale * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
+
+    btCollisionWorld::AllHitsRayResultCallback result(rayStart, rayEnd);
+    world->rayTest(rayStart, rayEnd, result);
+
+    auto closestFraction = 1.0f;
+    for (int j = 0; j < result.m_hitFractions.size(); ++j)
+      if (result.m_hitFractions.at(j) < closestFraction)
+        closestFraction = result.m_hitFractions.at(j);
+
+    pointBounds[i / DATA_COUNT_PER_VERTEX] = closestFraction * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN) - POINT_WORLD_MARGIN;
+
+    auto closestAmount = closestFraction * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
+    if (closestAmount < 1.0f)
+    {
+      for (int j = 0; j < probeVectors.size(); ++j)
+      {
+        auto& ang = probeVectors[j];
+        float PI = 3.14159265358979f;
+        probeAmounts[j] += probeWeightFunction(point.angle(ang) / PI) * closestAmount;
+      }
+    }
+  }
+
+  for (int i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
+  {
+    auto pointBound = pointBounds[i / DATA_COUNT_PER_VERTEX];
+
+    auto x = newVertexData[i + 0];
+    auto y = newVertexData[i + 1];
+    auto z = newVertexData[i + 2];
+    auto g1 = newVertexData[i + 3];
+    auto g2 = newVertexData[i + 4];
+    auto g3 = newVertexData[i + 5];
+    auto w1 = newVertexData[i + 6];
+    auto w2 = newVertexData[i + 7];
+    auto w3 = newVertexData[i + 8];
+
+    auto amount =
+      probeAmounts[g1] * w1 +
+      probeAmounts[g2] * w2 +
+      probeAmounts[g3] * w3;
+    amount = amount < pointBound ? amount : pointBound;
+
+    newVertexData[i + 0] *= amount;
+    newVertexData[i + 1] *= amount;
+    newVertexData[i + 2] *= amount;
+  }
+
+  glBindVertexArray(characterModel.vertexDataVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, characterModel.vertexDataVBO);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, newVertexData.size() * sizeof(float), newVertexData.data());
+}
+
 int main()
 {
   wilt::logging.setLogger<wilt::StreamLogger>(std::cout);
@@ -559,118 +672,7 @@ int main()
       dynamicsWorld->stepSimulation(1.0f / 144.0f);
     }
 
-    {
-      // do character deformation
-      auto& characterModel = *character->model;
-      auto characterRotation = character->rotation;
-      auto characterScale = character->scale;
-      auto characterPosition = btVector3(
-        character->position.x,
-        character->position.y,
-        character->position.z);
-
-      struct Angle { btVector3 vec; float amount; };
-      std::vector<btVector3> angles =
-      {
-        {  0.0000f,  0.0000f,  1.0000f },
-        {  0.8944f,  0.0000f,  0.4472f },
-        {  0.2764f, -0.8507f,  0.4472f },
-        { -0.7236f, -0.5257f,  0.4472f },
-        { -0.7236f,  0.5257f,  0.4472f },
-        {  0.2764f,  0.8507f,  0.4472f },
-        { -0.2764f, -0.8507f, -0.4472f },
-        {  0.7236f, -0.5257f, -0.4472f },
-        {  0.7236f,  0.5257f, -0.4472f },
-        { -0.2764f,  0.8507f, -0.4472f },
-        { -0.8944f,  0.0000f, -0.4472f },
-        {  0.0000f,  0.0000f, -1.0000f }
-      };
-      std::vector<float> angleAmounts =
-      {
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f
-      };
-
-      auto angleWeightFunction = [](float a)
-      {
-        static auto weights = std::vector<float>{ -0.015f, -0.015f, -0.01f, 0.00f, 0.005f, 0.01f, 0.005f, 0.00f, 0.00f, 0.00f, 0.00f, 0.00f };
-        auto index = int(a * 10);
-        auto frac = a * 10 - index;
-        return weights[index] * (1 - frac) + weights[index + 1] * (frac);
-      };
-
-      auto newVertexData = characterModel.vertexData;
-      for (int i = 0; i < newVertexData.size(); i += 9)
-      {
-        auto point = btVector3(
-          newVertexData[i + 0],
-          newVertexData[i + 1],
-          newVertexData[i + 2]).rotate({ 0, 0, 1 }, characterRotation) * characterScale;
-
-        btCollisionWorld::AllHitsRayResultCallback result(characterPosition, characterPosition + point);
-        dynamicsWorld->rayTest(characterPosition, characterPosition + point, result);
-
-        auto closestFraction = 1.0f;
-        for (int j = 0; j < result.m_hitFractions.size(); ++j)
-          if (result.m_hitFractions.at(j) < closestFraction)
-            closestFraction = result.m_hitFractions.at(j);
-
-        if (closestFraction >= 1.0f)
-          continue;
-
-        auto closest = btVector3(0, 0, 0).lerp(point, closestFraction - 0.05f).rotate({ 0, 0, 1 }, -characterRotation) / characterScale;
-
-        newVertexData[i + 0] = closest.x();
-        newVertexData[i + 1] = closest.y();
-        newVertexData[i + 2] = closest.z();
-
-        for (int j = 0; j < angles.size(); ++j)
-        {
-          auto& ang = angles[j];
-          float PI = 3.14159265358979f;
-          angleAmounts[j] += angleWeightFunction(closest.angle(ang) / PI);
-        }
-      }
-
-      for (int i = 0; i < newVertexData.size(); i += 9)
-      {
-        auto x = newVertexData[i + 0];
-        auto y = newVertexData[i + 1];
-        auto z = newVertexData[i + 2];
-        if (btVector3(x, y, z).length2() < 0.99f)
-          continue;
-
-        auto g1 = newVertexData[i + 3];
-        auto g2 = newVertexData[i + 4];
-        auto g3 = newVertexData[i + 5];
-        auto w1 = newVertexData[i + 6];
-        auto w2 = newVertexData[i + 7];
-        auto w3 = newVertexData[i + 8];
-
-        auto amount =
-          angleAmounts[g1] * w1 +
-          angleAmounts[g2] * w2 +
-          angleAmounts[g3] * w3;
-
-        newVertexData[i + 0] *= amount;
-        newVertexData[i + 1] *= amount;
-        newVertexData[i + 2] *= amount;
-      }
-
-      glBindVertexArray(characterModel.vertexDataVAO);
-      glBindBuffer(GL_ARRAY_BUFFER, characterModel.vertexDataVBO);
-      glBufferData(GL_ARRAY_BUFFER, newVertexData.size() * sizeof(float), newVertexData.data(), GL_STATIC_DRAW);
-    }
+    doCharacterDeformation(character, dynamicsWorld);
 
     // render faces and depth
     depthProgram.use();
