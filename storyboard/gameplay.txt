@@ -1,5 +1,0 @@
-Gameplay
-
-The player starts by setting a name for their character that will be used in to distinguish multiple saves as well as to refer to the player character in dialogs.
-
-
