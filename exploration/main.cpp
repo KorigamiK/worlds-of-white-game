@@ -705,9 +705,6 @@ int main()
       characterBody->activate();
     }
 
-    glm::mat4 view = cam->transform();
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-
     if (!paused)
     {
       dynamicsWorld->stepSimulation(1.0f / 144.0f, 2, 1.0f / 120.0f);
@@ -725,6 +722,9 @@ int main()
       }
       cam->update(window, time);
     }
+
+    glm::mat4 view = cam->transform();
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
     doCharacterDeformation(character, dynamicsWorld, terrainShape);
 
