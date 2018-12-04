@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_transform_2d.hpp>
+#include <glm/gtx/intersect.hpp>
 
 #include <btBulletDynamicsCommon.h>
 
@@ -211,7 +212,7 @@ class FollowCamera : public ICamera
 {
 public:
   ModelInstance** _instance;
-  float distance = 3.0f;
+  float distance = 1.5f;
   float offsetAngle = 0.0f;
 
 public:
@@ -308,7 +309,7 @@ public:
   }
 };
 
-void doCharacterDeformation(ModelInstance* character, btCollisionWorld* world)
+void doCharacterDeformation(ModelInstance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh)
 {
   auto& characterModel = *character->model;
   auto characterRotation = character->rotation;
@@ -355,6 +356,63 @@ void doCharacterDeformation(ModelInstance* character, btCollisionWorld* world)
     return (weights[index] * (1 - frac) + weights[index + 1] * (frac)) * WEIGHT_SCALING;
   };
 
+  auto getRayIntersectionWorld = [&](btVector3& start, btVector3 end)
+  {
+    btCollisionWorld::AllHitsRayResultCallback result(start, end);
+    world->rayTest(start, end, result);
+
+    auto closestFraction = 1.0f;
+    for (int j = 0; j < result.m_hitFractions.size(); ++j)
+      if (result.m_hitFractions.at(j) < closestFraction)
+        closestFraction = result.m_hitFractions.at(j);
+
+    return closestFraction;
+  };
+
+  auto getMeshTriangles = [&]()
+  {
+    struct CustomTriangleCallback : btTriangleCallback
+    {
+      std::vector<glm::vec3> trianglePoints;
+      void processTriangle(btVector3* triangle, int partId, int index) override
+      {
+        trianglePoints.push_back(glm::vec3(triangle[0].x(), triangle[0].y(), triangle[0].z()));
+        trianglePoints.push_back(glm::vec3(triangle[1].x(), triangle[1].y(), triangle[1].z()));
+        trianglePoints.push_back(glm::vec3(triangle[2].x(), triangle[2].y(), triangle[2].z()));
+      }
+    };
+
+    auto boundingBoxMin = characterPosition - btVector3(POINT_DISTANCE_MAX, POINT_DISTANCE_MAX, POINT_DISTANCE_MAX) * characterScale;
+    auto boundingBoxMax = characterPosition + btVector3(POINT_DISTANCE_MAX, POINT_DISTANCE_MAX, POINT_DISTANCE_MAX) * characterScale;
+    auto triangleCallback = CustomTriangleCallback();
+
+    mesh->processAllTriangles(&triangleCallback, boundingBoxMin, boundingBoxMax);
+
+    return triangleCallback.trianglePoints;
+  };
+
+  auto meshTriangles = getMeshTriangles();
+  auto getRayIntersectionMesh = [&](btVector3& start, btVector3 end)
+  {
+    auto rayStart = glm::vec3(start.x(), start.y(), start.z());
+    auto rayEnd = glm::vec3(end.x(), end.y(), end.z());
+    auto rayLength = (rayStart - rayEnd).length();
+    auto closestFraction = 1.0f;
+
+    for (int i = 0; i < meshTriangles.size(); i += 3)
+    {
+      glm::vec3 data;
+      if (glm::intersectRayTriangle(rayStart, rayEnd - rayStart, meshTriangles[i], meshTriangles[i + 1], meshTriangles[i + 2], data))
+      {
+        auto intersectFraction = data.z;
+        if (intersectFraction < closestFraction)
+          closestFraction = intersectFraction;
+      }
+    }
+
+    return closestFraction;
+  };
+
   auto newVertexData = characterModel.vertexData;
   for (int i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
   {
@@ -367,18 +425,11 @@ void doCharacterDeformation(ModelInstance* character, btCollisionWorld* world)
     // these are in world space
     auto rayStart = characterPosition;
     auto rayEnd = characterPosition + point.rotate({ 0, 0, 1 }, characterRotation) * characterScale * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
-
-    btCollisionWorld::AllHitsRayResultCallback result(rayStart, rayEnd);
-    world->rayTest(rayStart, rayEnd, result);
-
-    auto closestFraction = 1.0f;
-    for (int j = 0; j < result.m_hitFractions.size(); ++j)
-      if (result.m_hitFractions.at(j) < closestFraction)
-        closestFraction = result.m_hitFractions.at(j);
-
-    pointBounds[i / DATA_COUNT_PER_VERTEX] = closestFraction * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN) - POINT_WORLD_MARGIN;
-
+    auto closestFraction = getRayIntersectionMesh(rayStart, rayEnd);
     auto closestAmount = closestFraction * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
+
+    pointBounds[i / DATA_COUNT_PER_VERTEX] = closestAmount - POINT_WORLD_MARGIN;
+
     if (closestAmount < 1.0f)
     {
       for (int j = 0; j < probeVectors.size(); ++j)
@@ -559,6 +610,8 @@ int main()
       if (numContacts > 0)
         canJump = true;
 
+      std::cout << numContacts << std::endl;
+
       for (int j = 0; j < numContacts; j++)
       {
         btManifoldPoint& pt = contactManifold->getContactPoint(j);
@@ -577,12 +630,12 @@ int main()
   auto terrainIndices = testlandModel.faceIndexes;
   auto terrainVertices = testlandModel.vertexData;
   auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, (int*)terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / 9, terrainVertices.data(), 9 * sizeof(float));
-  auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, false);
-  auto terrainShapeScaled = new btScaledBvhTriangleMeshShape(terrainShape, btVector3(1, 1, 1));
+  auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
   auto terrainMotionState = new btDefaultMotionState();
-  auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShapeScaled);
+  auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShape);
   terrainBody->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
   terrainBody->setFriction(0.95f);
+  terrainShape->setMargin(0.0f);
   dynamicsWorld->addRigidBody(terrainBody);
 
   struct InstanceBinding {
@@ -599,6 +652,7 @@ int main()
   characterBody->setAngularFactor(0);
   characterBody->setFriction(0.95f);
   characterBody->setDamping(0.5f, 0.0f);
+  characterBody->setRestitution(0.0f);
   characterBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
   dynamicsWorld->addRigidBody(characterBody);
   instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, 0) };
@@ -656,7 +710,8 @@ int main()
 
     if (!paused)
     {
-      cam->update(window, time);
+      dynamicsWorld->stepSimulation(1.0f / 144.0f, 2, 1.0f / 120.0f);
+
       for (auto& instance : instances)
       {
         instance->update(window, time);
@@ -668,11 +723,10 @@ int main()
           instance->position = glm::vec3(bodyPosition.x(), bodyPosition.y(), bodyPosition.z()) + instancesToBodies[instance].offset;
         }
       }
-
-      dynamicsWorld->stepSimulation(1.0f / 144.0f);
+      cam->update(window, time);
     }
 
-    doCharacterDeformation(character, dynamicsWorld);
+    doCharacterDeformation(character, dynamicsWorld, terrainShape);
 
     // render faces and depth
     depthProgram.use();
