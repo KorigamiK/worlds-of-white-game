@@ -240,7 +240,7 @@ public:
 
   virtual glm::vec3 position() const
   {
-    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), (*_instance)->rotation + offsetAngle, { 0, 0, 1 }) * glm::vec4(0, 4, 2, 1)) * distance;
+    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), /*(*_instance)->rotation +*/ offsetAngle, { 0, 0, 1 }) * glm::vec4(0, 4, 2, 1)) * distance;
   }
 };
 
@@ -474,6 +474,8 @@ void doCharacterDeformation(ModelInstance* character, btCollisionWorld* world, b
 int main()
 {
   wilt::logging.setLogger<wilt::StreamLogger>(std::cout);
+  wilt::logging.setLevel(wilt::LoggingLevel::DEBUG);
+  auto log = wilt::logging.createLogger("main");
 
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -579,9 +581,9 @@ int main()
 
   int instanceIndex = 0;
   ModelInstance* currentInstance = instances[instanceIndex];
-  ICamera* freeCam = new FreeCamera();
-  ICamera* trackCam = new TrackCamera(&currentInstance);
-  ICamera* followCam = new FollowCamera(&currentInstance);
+  FreeCamera* freeCam = new FreeCamera();
+  TrackCamera* trackCam = new TrackCamera(&currentInstance);
+  FollowCamera* followCam = new FollowCamera(&currentInstance);
   ICamera* cam = followCam;
 
   // create the physics world
@@ -609,8 +611,6 @@ int main()
       int numContacts = contactManifold->getNumContacts();
       if (numContacts > 0)
         canJump = true;
-
-      std::cout << numContacts << std::endl;
 
       for (int j = 0; j < numContacts; j++)
       {
@@ -654,8 +654,58 @@ int main()
   characterBody->setDamping(0.5f, 0.0f);
   characterBody->setRestitution(0.0f);
   characterBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+  characterBody->setCcdSweptSphereRadius(0.25f);
+  characterBody->setCcdMotionThreshold(0.00000001f);
   dynamicsWorld->addRigidBody(characterBody);
   instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, 0) };
+
+  auto printJoystickInfo = [&](int joystickId)
+  {
+    const char* name = glfwJoystickPresent(joystickId) ? glfwGetJoystickName(joystickId) : "<none>";
+    std::cout << joystickId << ' ' << name << std::endl;
+
+    auto buttonsCount = 0;
+    auto buttons = glfwGetJoystickButtons(joystickId, &buttonsCount);
+    std::cout << "  buttons:";
+    for (int i = 0; i < buttonsCount; ++i)
+      std::cout << ' ' << (int)buttons[i];
+    std::cout << std::endl;
+
+    auto axesCount = 0;
+    auto axes = glfwGetJoystickAxes(joystickId, &axesCount);
+    std::cout << "  axis   :";
+    for (int i = 0; i < axesCount; ++i)
+      std::cout << ' ' << axes[i];
+    std::cout << std::endl;
+  };
+
+  //printJoystickInfo(GLFW_JOYSTICK_1);
+  //printJoystickInfo(GLFW_JOYSTICK_2);
+  //printJoystickInfo(GLFW_JOYSTICK_3);
+  //printJoystickInfo(GLFW_JOYSTICK_4);
+
+  auto selectedJoystickId = [&log]() -> int
+  {
+    auto selectedJoystickId = -1;
+    for (auto joystickId : { GLFW_JOYSTICK_1, GLFW_JOYSTICK_2, GLFW_JOYSTICK_3, GLFW_JOYSTICK_4 })
+    {
+      if (selectedJoystickId == -1 && glfwJoystickPresent(joystickId))
+        selectedJoystickId = joystickId;
+
+      const char* name = glfwJoystickPresent(joystickId) ? glfwGetJoystickName(joystickId) : "<none>";
+      log.debug(std::to_string(joystickId) + " " + name);
+    }
+
+    if (selectedJoystickId == -1)
+      log.info("no controller connected");
+    else
+      log.info("using controller " + std::to_string(selectedJoystickId));
+
+    return selectedJoystickId;
+  } ();
+
+  if (selectedJoystickId == -1)
+    return -1;
 
   auto character = instances[0];
   while (!glfwWindowShouldClose(window))
@@ -664,6 +714,14 @@ int main()
 
     // input
     processInput(window);
+
+    auto buttonsCount = 0;
+    auto buttons = glfwGetJoystickButtons(selectedJoystickId, &buttonsCount);
+    auto axesCount = 0;
+    auto axes = glfwGetJoystickAxes(selectedJoystickId, &axesCount);
+
+    if (i % 15 == 0)
+      printJoystickInfo(selectedJoystickId);
 
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
       cam = followCam;
@@ -703,6 +761,75 @@ int main()
       velocity.setZ(5.0f);
       characterBody->setLinearVelocity(velocity);
       characterBody->activate();
+    }
+
+    { // do camera movement
+      const auto CAMERA_DEADZONE = 0.12f;
+      const auto CAMERA_ROTATION_RATE = 0.05f;
+
+      auto cameraXAxis = axes[4];
+      auto cameraYAxis = axes[3]; // not used
+
+      followCam->offsetAngle += std::abs(cameraXAxis) < CAMERA_DEADZONE ? 0.0f : cameraXAxis * CAMERA_ROTATION_RATE;
+    }
+
+    { // do character movement
+      const auto CHARACTER_SPEED = 4.0f;
+      const auto CHARACTER_JUMP_SPEED = 4.0f;
+      const auto CHARACTER_JUMP_RISE_SPEED = 0.04f;
+      const auto CHARACTER_DASH_SPEED = 20.0f;
+      const auto CHARACTER_DEADZONE = 0.12f;
+
+      const auto BUTTON_JUMP = 0;
+      const auto BUTTON_DASH = 2;
+
+      auto xAxis =  axes[0];
+      auto yAxis = -axes[1];
+
+      auto angle = std::atan2(yAxis, xAxis);
+      auto magnitude = std::hypot(xAxis, yAxis);
+
+      if (magnitude > CHARACTER_DEADZONE)
+      {
+        angle += followCam->offsetAngle + glm::radians(90.0f);
+        character->rotation =  angle;
+
+        auto old_velocity = characterBody->getLinearVelocity();
+        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_SPEED, 0);
+        new_velocity.setZ(old_velocity.z());
+        characterBody->setLinearVelocity(new_velocity);
+        characterBody->activate();
+      }
+
+      if (buttons[BUTTON_JUMP] == GLFW_PRESS && canJump)
+      {
+        auto velocity = characterBody->getLinearVelocity();
+        velocity.setZ(CHARACTER_JUMP_SPEED);
+        characterBody->setLinearVelocity(velocity);
+        characterBody->activate();
+      }
+      if (buttons[BUTTON_JUMP] == GLFW_PRESS && !canJump && characterBody->getLinearVelocity().z() > 0.0f)
+      {
+        auto velocity = characterBody->getLinearVelocity();
+        velocity.setZ(velocity.getZ() + CHARACTER_JUMP_RISE_SPEED);
+        characterBody->setLinearVelocity(velocity);
+        characterBody->activate();
+      }
+
+      if (buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= CHARACTER_DEADZONE)
+      {
+        auto velocity = characterBody->getLinearVelocity();
+        velocity.setZ(-CHARACTER_DASH_SPEED);
+        characterBody->setLinearVelocity(velocity);
+        characterBody->activate();
+      }
+      if (buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > CHARACTER_DEADZONE)
+      {
+        auto old_velocity = characterBody->getLinearVelocity();
+        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_DASH_SPEED, 0);
+        characterBody->setLinearVelocity(new_velocity);
+        characterBody->activate();
+      }
     }
 
     if (!paused)
