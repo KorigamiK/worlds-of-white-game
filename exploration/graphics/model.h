@@ -11,19 +11,20 @@
 
 #include "joint.h"
 #include "texture.h"
+#include "program.h"
+#include "modelInstance.h"
 #include "../utilities/narray/narray.hpp"
 
 class Model
 {
 public:
   std::vector<float> vertexData;
-  std::vector<float> faceData;
   std::vector<unsigned int> lineIndexes;
+  std::vector<unsigned int> faceIndexes;
   unsigned int vertexDataVBO;
   unsigned int vertexDataVAO;
-  unsigned int faceDataVBO;
-  unsigned int faceDataVAO;
   unsigned int lineIndexesID;
+  unsigned int faceIndexesID;
   wilt::NArray<unsigned char, 3> textureData;
   Texture texture;
   glm::mat4 transform;
@@ -31,6 +32,9 @@ public:
 
 public:
   void load();
+
+  void draw_faces(ModelInstance& instance, Program& program, float time);
+  void draw_lines(ModelInstance& instance, Program& program, float time);
 
 public:
   static Model read(const std::string& modelPath, const std::string& texturePath, float scale = 1.0f);

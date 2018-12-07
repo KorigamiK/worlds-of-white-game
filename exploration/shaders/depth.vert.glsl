@@ -3,9 +3,9 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aGroups;
 layout (location = 2) in vec3 aWeights;
-layout (location = 3) in vec2 uv_coords_in;
+// layout (location = 3) in vec2 uv_coords_in;
 
-out vec2 uv_coords;
+// out vec2 uv_coords;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -75,5 +75,5 @@ void main()
 	vec4 pos2 = projection * view * model * positions[int(aGroups.z)] * vec4(aPos, 1.0f);
 	
 	gl_Position = (aWeights[0] * pos0) + (aWeights[1] * pos1) + (aWeights[2] * pos2);
-	uv_coords = uv_coords_in;
+	// uv_coords = uv_coords_in;
 }

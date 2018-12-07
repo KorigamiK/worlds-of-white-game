@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_transform_2d.hpp>
+#include <glm/gtx/intersect.hpp>
 
 #include <btBulletDynamicsCommon.h>
 
@@ -17,6 +18,7 @@
 #include <set>
 #include <map>
 #include <numeric>
+#include <cmath>
 
 #include "logging/LoggingManager.h"
 #include "logging/loggers/StreamLogger.h"
@@ -26,6 +28,7 @@
 #include "graphics/joint.h"
 #include "graphics/jointPose.h"
 #include "graphics/model.h"
+#include "graphics/modelInstance.h"
 #include "utilities/narray/narray.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -51,33 +54,6 @@ struct AnimationFrame
 struct Animation
 {
   std::vector<AnimationFrame> _frames;
-};
-
-class IAnimator;
-
-struct ModelInstance
-{
-  Model* model;
-  glm::vec3 position;
-  float rotation;
-  IAnimator* animator;
-  float scale;
-
-  ModelInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale = 1.0f)
-    : model{ model }
-    , position{ position }
-    , rotation{ rotation }
-    , animator{ animator }
-    , scale{ scale }
-  { }
-
-  virtual void update(GLFWwindow *window, float time) { }
-};
-
-class IAnimator
-{
-public:
-  virtual void applyAnimation(Program& program, float time, ModelInstance& instance) = 0;
 };
 
 class StaticAnimator : public IAnimator
@@ -133,9 +109,9 @@ public:
   }
 };
 
-IAnimator* walk_animator;
-IAnimator* trudge_animator;
-IAnimator* stand_animator;
+//IAnimator* walk_animator;
+//IAnimator* trudge_animator;
+//IAnimator* stand_animator;
 
 class CharacterInstance : public ModelInstance
 {
@@ -162,18 +138,18 @@ public:
       if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
       {
         speed = 0.003f;
-        animator = trudge_animator;
+        //animator = trudge_animator;
       }
       else
       {
         speed = 0.0005f;
-        animator = walk_animator;
+        //animator = walk_animator;
       }
     }
     else
     {
       speed = 0.0f;
-      animator = stand_animator;
+      //animator = stand_animator;
     }
 
     position += velocity * speed;
@@ -224,39 +200,6 @@ Animation read_animation(std::string path)
   return ret;
 }
 
-void draw_faces(ModelInstance& instance, Program& program, float time)
-{
-  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }), glm::vec3(instance.scale, instance.scale, instance.scale)));
-  program.setInt("model_texture", 0);
-
-  instance.animator->applyAnimation(program, time, instance);
-
-  glActiveTexture(GL_TEXTURE0);
-  glEnable(GL_TEXTURE_2D);
-  glBindTexture(GL_TEXTURE_2D, instance.model->texture.id());
-
-  glBindVertexArray(instance.model->faceDataVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, instance.model->faceDataVBO);
-  glDrawArrays(GL_TRIANGLES, 0, instance.model->faceData.size() / 7 * 3);
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-void draw_lines(ModelInstance& instance, Program& program, float time)
-{
-  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }), glm::vec3(instance.scale, instance.scale, instance.scale)));
-
-  instance.animator->applyAnimation(program, time, instance);
-
-  glBindVertexArray(instance.model->vertexDataVAO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance.model->lineIndexesID);
-  glPatchParameteri(GL_PATCH_VERTICES, 4);
-  glDrawElements(GL_PATCHES, instance.model->lineIndexes.size(), GL_UNSIGNED_INT, (void*)0);
-  glBindVertexArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
 class ICamera
 {
 public:
@@ -269,8 +212,8 @@ class FollowCamera : public ICamera
 {
 public:
   ModelInstance** _instance;
-  float distance = 0.9f;
-  float offsetAngle = -0.97f;
+  float distance = 1.5f;
+  float offsetAngle = 0.0f;
 
 public:
   FollowCamera(ModelInstance** instance)
@@ -297,7 +240,7 @@ public:
 
   virtual glm::vec3 position() const
   {
-    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), (*_instance)->rotation + offsetAngle, { 0, 0, 1 }) * glm::vec4(0, 4, 2, 1)) * distance;
+    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), /*(*_instance)->rotation +*/ offsetAngle, { 0, 0, 1 }) * glm::vec4(0, 4, 2, 1)) * distance;
   }
 };
 
@@ -366,12 +309,174 @@ public:
   }
 };
 
+void doCharacterDeformation(ModelInstance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh)
+{
+  auto& characterModel = *character->model;
+  auto characterRotation = character->rotation;
+  auto characterScale = character->scale;
+  auto characterPosition = btVector3(
+    character->position.x,
+    character->position.y,
+    character->position.z);
+
+  const auto DATA_COUNT_PER_VERTEX = 9;
+
+  const auto POINT_COUNT = characterModel.vertexData.size() / 9;
+  const auto POINT_DISTANCE_MAX = 2.0f;
+  const auto POINT_WORLD_MARGIN = 0.0625f;
+
+  auto pointAmounts = std::vector<float>(POINT_COUNT, 1.0f);
+  auto pointBounds = std::vector<float>(POINT_COUNT, POINT_DISTANCE_MAX);
+
+  auto probeAmounts = std::vector<float>(12, 1.0f);
+  auto probeVectors = std::vector<btVector3>
+  {
+    {  0.0000f,  0.0000f,  1.0000f },
+    {  0.8944f,  0.0000f,  0.4472f },
+    {  0.2764f, -0.8507f,  0.4472f },
+    { -0.7236f, -0.5257f,  0.4472f },
+    { -0.7236f,  0.5257f,  0.4472f },
+    {  0.2764f,  0.8507f,  0.4472f },
+    { -0.2764f, -0.8507f, -0.4472f },
+    {  0.7236f, -0.5257f, -0.4472f },
+    {  0.7236f,  0.5257f, -0.4472f },
+    { -0.2764f,  0.8507f, -0.4472f },
+    { -0.8944f,  0.0000f, -0.4472f },
+    {  0.0000f,  0.0000f, -1.0000f }
+  };
+
+  auto probeWeightFunction = [](float a)
+  {
+    static auto weights = std::vector<float>{ -0.025f, -0.020f, -0.015f, 0.00f, 0.005f, 0.01f, 0.01f, 0.005f, 0.00f, 0.00f, 0.00f, 0.00f };
+
+    const auto WEIGHT_SCALING = 1.0f;
+
+    auto index = int(a * 10);
+    auto frac = a * 10 - index;
+    return (weights[index] * (1 - frac) + weights[index + 1] * (frac)) * WEIGHT_SCALING;
+  };
+
+  auto getRayIntersectionWorld = [&](btVector3& start, btVector3 end)
+  {
+    btCollisionWorld::AllHitsRayResultCallback result(start, end);
+    world->rayTest(start, end, result);
+
+    auto closestFraction = 1.0f;
+    for (int j = 0; j < result.m_hitFractions.size(); ++j)
+      if (result.m_hitFractions.at(j) < closestFraction)
+        closestFraction = result.m_hitFractions.at(j);
+
+    return closestFraction;
+  };
+
+  auto getMeshTriangles = [&]()
+  {
+    struct CustomTriangleCallback : btTriangleCallback
+    {
+      std::vector<glm::vec3> trianglePoints;
+      void processTriangle(btVector3* triangle, int partId, int index) override
+      {
+        trianglePoints.push_back(glm::vec3(triangle[0].x(), triangle[0].y(), triangle[0].z()));
+        trianglePoints.push_back(glm::vec3(triangle[1].x(), triangle[1].y(), triangle[1].z()));
+        trianglePoints.push_back(glm::vec3(triangle[2].x(), triangle[2].y(), triangle[2].z()));
+      }
+    };
+
+    auto boundingBoxMin = characterPosition - btVector3(POINT_DISTANCE_MAX, POINT_DISTANCE_MAX, POINT_DISTANCE_MAX) * characterScale;
+    auto boundingBoxMax = characterPosition + btVector3(POINT_DISTANCE_MAX, POINT_DISTANCE_MAX, POINT_DISTANCE_MAX) * characterScale;
+    auto triangleCallback = CustomTriangleCallback();
+
+    mesh->processAllTriangles(&triangleCallback, boundingBoxMin, boundingBoxMax);
+
+    return triangleCallback.trianglePoints;
+  };
+
+  auto meshTriangles = getMeshTriangles();
+  auto getRayIntersectionMesh = [&](btVector3& start, btVector3 end)
+  {
+    auto rayStart = glm::vec3(start.x(), start.y(), start.z());
+    auto rayEnd = glm::vec3(end.x(), end.y(), end.z());
+    auto rayLength = (rayStart - rayEnd).length();
+    auto closestFraction = 1.0f;
+
+    for (int i = 0; i < meshTriangles.size(); i += 3)
+    {
+      glm::vec3 data;
+      if (glm::intersectRayTriangle(rayStart, rayEnd - rayStart, meshTriangles[i], meshTriangles[i + 1], meshTriangles[i + 2], data))
+      {
+        auto intersectFraction = data.z;
+        if (intersectFraction < closestFraction)
+          closestFraction = intersectFraction;
+      }
+    }
+
+    return closestFraction;
+  };
+
+  auto newVertexData = characterModel.vertexData;
+  for (int i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
+  {
+    // should be a unit vector
+    auto point = btVector3(
+      newVertexData[i + 0],
+      newVertexData[i + 1],
+      newVertexData[i + 2]);
+
+    // these are in world space
+    auto rayStart = characterPosition;
+    auto rayEnd = characterPosition + point.rotate({ 0, 0, 1 }, characterRotation) * characterScale * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
+    auto closestFraction = getRayIntersectionMesh(rayStart, rayEnd);
+    auto closestAmount = closestFraction * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
+
+    pointBounds[i / DATA_COUNT_PER_VERTEX] = closestAmount - POINT_WORLD_MARGIN;
+
+    if (closestAmount < 1.0f)
+    {
+      for (int j = 0; j < probeVectors.size(); ++j)
+      {
+        auto& ang = probeVectors[j];
+        float PI = 3.14159265358979f;
+        probeAmounts[j] += probeWeightFunction(point.angle(ang) / PI) * closestAmount;
+      }
+    }
+  }
+
+  for (int i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
+  {
+    auto pointBound = pointBounds[i / DATA_COUNT_PER_VERTEX];
+
+    auto x = newVertexData[i + 0];
+    auto y = newVertexData[i + 1];
+    auto z = newVertexData[i + 2];
+    auto g1 = newVertexData[i + 3];
+    auto g2 = newVertexData[i + 4];
+    auto g3 = newVertexData[i + 5];
+    auto w1 = newVertexData[i + 6];
+    auto w2 = newVertexData[i + 7];
+    auto w3 = newVertexData[i + 8];
+
+    auto amount =
+      probeAmounts[g1] * w1 +
+      probeAmounts[g2] * w2 +
+      probeAmounts[g3] * w3;
+    amount = amount < pointBound ? amount : pointBound;
+
+    newVertexData[i + 0] *= amount;
+    newVertexData[i + 1] *= amount;
+    newVertexData[i + 2] *= amount;
+  }
+
+  glBindVertexArray(characterModel.vertexDataVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, characterModel.vertexDataVBO);
+  glBufferSubData(GL_ARRAY_BUFFER, 0, newVertexData.size() * sizeof(float), newVertexData.data());
+}
+
 int main()
 {
   wilt::logging.setLogger<wilt::StreamLogger>(std::cout);
+  wilt::logging.setLevel(wilt::LoggingLevel::DEBUG);
+  auto log = wilt::logging.createLogger("main");
 
-  // glfw: initialize and configure
-  // ------------------------------
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -381,8 +486,6 @@ int main()
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
 #endif
 
-                                                       // glfw window creation
-                                                       // --------------------
   GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
   if (window == NULL)
   {
@@ -394,19 +497,14 @@ int main()
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSwapInterval(1);
 
-  // glad: load all OpenGL function pointers
-  // ---------------------------------------
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
   {
     std::cout << "Failed to initialize GLAD" << std::endl;
     return -1;
   }
 
-  // configure global opengl state
-  // -----------------------------
   glEnable(GL_DEPTH_TEST);
 
-  // build and compile our shader programs
   Program lineProgram{ 
     VertexShader::fromFile("shaders/line.vert.glsl"),
     TessellationControlShader::fromFile("shaders/line.tesc.glsl"),
@@ -423,51 +521,13 @@ int main()
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
-  auto birdModel = Model::read("models/bird_model.txt", "models/bird_texture.jpg", 0.2f);
-  auto islandModel = Model::read("models/island_model.txt", "models/island_texture.jpg", 1.0f);
-  auto ballModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 0.1f);
-
-  auto walk_animation = read_animation("models/bird_walk_animation.txt");
-  auto trudge_animation = read_animation("models/trudge_animation.txt");
-  auto idle_animation = read_animation("models/bird_idle_animation.txt");
-
-
-  walk_animator = new LoopAnimator{ walk_animation, 24 };
-  trudge_animator = new LoopAnimator{ trudge_animation, 24 };
-  stand_animator = new LoopAnimator{ idle_animation, 24 };
+  auto testlandModel = Model::read("models/testland_model.txt", "models/testland_texture.jpg", 1.0f);
+  auto ballModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 1.0f);
 
   std::vector<ModelInstance*> instances =
   {
-    new CharacterInstance(&birdModel,{ 0, 0, 5 },  glm::radians(180.0f), walk_animator),
-
-    //new ModelInstance(&treeModel, { 5,  4, 0 }, -0.2, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, { 3,  6, 0 },  0.6, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, {-2,  3, 0 }, -1.2, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, {-3,  6, 0 },  0.8, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, { 3, -5, 0 },  2.3, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, {-4, -5, 0 }, -3.0, new StaticAnimator{}),
-    //new ModelInstance(&treeModel, {-5,  0, 0 },  1.4, new StaticAnimator{}),
-
-    //// new ModelInstance(&tree2Model, {-20, -20, 0 },  0.0, new StaticAnimator{}),
-
-    //new ModelInstance(&grassModel, {-4, -3, 0 }, -0.2, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, {-2, -4, 0 },  0.6, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, {-1,  1, 0 }, -1.2, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, { 2, -4, 0 },  0.8, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, {-2,  4, 0 },  2.3, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, { 3,  4, 0 }, -3.0, new StaticAnimator{}),
-    //new ModelInstance(&grassModel, { 4,  0, 0 },  1.4, new StaticAnimator{}),
-
-    //new SpiritInstance(&spiritModel, { 3, 5 ,0 }, 0.0, new StaticAnimator{}),
-    //new SpiritInstance(&spiritModel, {-5, 4 ,0 }, 1.5, new StaticAnimator{}),
-    //new SpiritInstance(&spiritModel, { 4,-3 ,0 }, 4.5, new StaticAnimator{}),
-    //new SpiritInstance(&spiritModel,{ -4,-4 ,0 }, 3.0, new StaticAnimator{}),
-
-    //new ModelInstance(&birdModel, { 2, 2 ,0 }, 0.0, new LoopAnimator{ idle_animation, 72.0f }),
-
-    new ModelInstance(&islandModel, { 0, 0 ,0 }, 0.0, new StaticAnimator{}, 10.0f),
-
-    //new ModelInstance(&spiritModel, {0, 0, 1}, 0.0, new StaticAnimator{})
+    new CharacterInstance(&ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), new StaticAnimator{}, 0.5f),
+    new ModelInstance(&testlandModel, { 0, 0, 0 }, 0.0, new StaticAnimator{}, 1.0f)
   };
 
   // load models
@@ -514,12 +574,6 @@ int main()
   paperTexture.setMinFilter(GL_LINEAR);
   paperTexture.setMagFilter(GL_LINEAR);
 
-  GLint maxGeometryOutputVertices;
-  glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &maxGeometryOutputVertices);
-  std::cout << maxGeometryOutputVertices << std::endl;
-
-  // render loop
-  // -----------
   int i = 0;
   float iterationsPerSecond = 144.0f;
   int selected_perlin = 0;
@@ -527,9 +581,9 @@ int main()
 
   int instanceIndex = 0;
   ModelInstance* currentInstance = instances[instanceIndex];
-  ICamera* freeCam = new FreeCamera();
-  ICamera* trackCam = new TrackCamera(&currentInstance);
-  ICamera* followCam = new FollowCamera(&currentInstance);
+  FreeCamera* freeCam = new FreeCamera();
+  TrackCamera* trackCam = new TrackCamera(&currentInstance);
+  FollowCamera* followCam = new FollowCamera(&currentInstance);
   ICamera* cam = followCam;
 
   // create the physics world
@@ -541,16 +595,47 @@ int main()
   auto dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
   dynamicsWorld->setGravity(btVector3(0, 0, -10));
 
+  bool canJump = false;
+  dynamicsWorld->setInternalTickCallback(+[](btDynamicsWorld* world, float timeStep) -> void
+  {
+    int numManifolds = world->getDispatcher()->getNumManifolds();
+    auto& canJump = *(bool*)world->getWorldUserInfo();
+    canJump = false;
+
+    for (int i = 0; i < numManifolds; ++i)
+    {
+      btPersistentManifold* contactManifold = world->getDispatcher()->getManifoldByIndexInternal(i);
+      const btCollisionObject* obA = contactManifold->getBody0();
+      const btCollisionObject* obB = contactManifold->getBody1();
+
+      int numContacts = contactManifold->getNumContacts();
+      if (numContacts > 0)
+        canJump = true;
+
+      for (int j = 0; j < numContacts; j++)
+      {
+        btManifoldPoint& pt = contactManifold->getContactPoint(j);
+        if (pt.getDistance() < 0.f)
+        {
+          const btVector3& ptA = pt.getPositionWorldOnA();
+          const btVector3& ptB = pt.getPositionWorldOnB();
+          const btVector3& normalOnB = pt.m_normalWorldOnB;
+        }
+      }
+    }
+
+  }, &canJump);
+
   // create terrain
-  auto terrainIndices = std::vector<int>(islandModel.faceData.size() / 11);
-  std::iota(terrainIndices.begin(), terrainIndices.end(), 0);
-  auto terrainVertices = islandModel.faceData;
-  auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / 11, terrainVertices.data(), 11 * sizeof(int));
-  auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, false);
-  auto terrainShapeScaled = new btScaledBvhTriangleMeshShape(terrainShape, btVector3(10, 10, 10));
+  auto terrainIndices = testlandModel.faceIndexes;
+  auto terrainVertices = testlandModel.vertexData;
+  auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, (int*)terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / 9, terrainVertices.data(), 9 * sizeof(float));
+  auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
   auto terrainMotionState = new btDefaultMotionState();
-  auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShapeScaled);
-  terrainBody->setFriction(0.95);
+  auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShape);
+  terrainBody->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+  terrainBody->setFriction(0.95f);
+  terrainShape->setMargin(0.0f);
   dynamicsWorld->addRigidBody(terrainBody);
 
   struct InstanceBinding {
@@ -561,28 +646,66 @@ int main()
   std::map<ModelInstance*, InstanceBinding> instancesToBodies;
 
   // create character
-  auto characterShape = new btCapsuleShapeZ(0.2, 1.0);
-  auto characterMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, 15)));
+  auto characterShape = new btSphereShape(0.25);
+  auto characterMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, currentInstance->position.z + 1.0f)));
   auto characterBody = new btRigidBody(1.0, characterMotionState, characterShape);
   characterBody->setAngularFactor(0);
-  characterBody->setFriction(0.95);
+  characterBody->setFriction(0.95f);
+  characterBody->setDamping(0.5f, 0.0f);
+  characterBody->setRestitution(0.0f);
+  characterBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+  characterBody->setCcdSweptSphereRadius(0.25f);
+  characterBody->setCcdMotionThreshold(0.00000001f);
   dynamicsWorld->addRigidBody(characterBody);
-  instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, -0.68) };
+  instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, 0) };
 
-  // create balls
-  auto ballShape = new btSphereShape(0.1);
-  auto spawnBall = [&]() {
-    auto ballMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, 5)));
-    auto ballBody = new btRigidBody(1.0, ballMotionState, ballShape);
-    ballBody->setCcdMotionThreshold(0.1);
-    ballBody->setCcdSweptSphereRadius(0.2);
-    ballBody->setFriction(0.1);
-    dynamicsWorld->addRigidBody(ballBody);
+  auto printJoystickInfo = [&](int joystickId)
+  {
+    const char* name = glfwJoystickPresent(joystickId) ? glfwGetJoystickName(joystickId) : "<none>";
+    std::cout << joystickId << ' ' << name << std::endl;
 
-    auto instance = new ModelInstance(&ballModel, glm::vec3(0, 0, 20), 0.0f, new StaticAnimator());
-    instances.push_back(instance);
-    instancesToBodies[instance] = { ballBody };
+    auto buttonsCount = 0;
+    auto buttons = glfwGetJoystickButtons(joystickId, &buttonsCount);
+    std::cout << "  buttons:";
+    for (int i = 0; i < buttonsCount; ++i)
+      std::cout << ' ' << (int)buttons[i];
+    std::cout << std::endl;
+
+    auto axesCount = 0;
+    auto axes = glfwGetJoystickAxes(joystickId, &axesCount);
+    std::cout << "  axis   :";
+    for (int i = 0; i < axesCount; ++i)
+      std::cout << ' ' << axes[i];
+    std::cout << std::endl;
   };
+
+  //printJoystickInfo(GLFW_JOYSTICK_1);
+  //printJoystickInfo(GLFW_JOYSTICK_2);
+  //printJoystickInfo(GLFW_JOYSTICK_3);
+  //printJoystickInfo(GLFW_JOYSTICK_4);
+
+  auto selectedJoystickId = [&log]() -> int
+  {
+    auto selectedJoystickId = -1;
+    for (auto joystickId : { GLFW_JOYSTICK_1, GLFW_JOYSTICK_2, GLFW_JOYSTICK_3, GLFW_JOYSTICK_4 })
+    {
+      if (selectedJoystickId == -1 && glfwJoystickPresent(joystickId))
+        selectedJoystickId = joystickId;
+
+      const char* name = glfwJoystickPresent(joystickId) ? glfwGetJoystickName(joystickId) : "<none>";
+      log.debug(std::to_string(joystickId) + " " + name);
+    }
+
+    if (selectedJoystickId == -1)
+      log.info("no controller connected");
+    else
+      log.info("using controller " + std::to_string(selectedJoystickId));
+
+    return selectedJoystickId;
+  } ();
+
+  if (selectedJoystickId == -1)
+    return -1;
 
   auto character = instances[0];
   while (!glfwWindowShouldClose(window))
@@ -592,14 +715,20 @@ int main()
     // input
     processInput(window);
 
+    auto buttonsCount = 0;
+    auto buttons = glfwGetJoystickButtons(selectedJoystickId, &buttonsCount);
+    auto axesCount = 0;
+    auto axes = glfwGetJoystickAxes(selectedJoystickId, &axesCount);
+
+    if (i % 15 == 0)
+      printJoystickInfo(selectedJoystickId);
+
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
       cam = followCam;
     if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
       cam = trackCam;
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
       cam = freeCam;
-    if (glfwGetKey(window, GLFW_KEY_0) == GLFW_PRESS)
-      spawnBall();
     if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
     {
       instanceIndex = (instanceIndex != instances.size() - 1) ? instanceIndex + 1 : 0;
@@ -613,7 +742,7 @@ int main()
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
       auto rotation = character->rotation;
       auto velocity = characterBody->getLinearVelocity();
-      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, -0.85, 0);
+      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, -3.0f, 0);
       new_velocity.setZ(velocity.z());
       characterBody->setLinearVelocity(new_velocity);
       characterBody->activate();
@@ -621,18 +750,92 @@ int main()
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
       auto rotation = character->rotation;
       auto velocity = characterBody->getLinearVelocity();
-      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, 0.85, 0);
+      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, 3.0f, 0);
       new_velocity.setZ(velocity.z());
       characterBody->setLinearVelocity(new_velocity);
       characterBody->activate();
     }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump)
+    {
+      auto velocity = characterBody->getLinearVelocity();
+      velocity.setZ(5.0f);
+      characterBody->setLinearVelocity(velocity);
+      characterBody->activate();
+    }
 
-    glm::mat4 view = cam->transform();
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    { // do camera movement
+      const auto CAMERA_DEADZONE = 0.12f;
+      const auto CAMERA_ROTATION_RATE = 0.05f;
+
+      auto cameraXAxis = axes[4];
+      auto cameraYAxis = axes[3]; // not used
+
+      followCam->offsetAngle += std::abs(cameraXAxis) < CAMERA_DEADZONE ? 0.0f : cameraXAxis * CAMERA_ROTATION_RATE;
+    }
+
+    { // do character movement
+      const auto CHARACTER_SPEED = 4.0f;
+      const auto CHARACTER_JUMP_SPEED = 4.0f;
+      const auto CHARACTER_JUMP_RISE_SPEED = 0.04f;
+      const auto CHARACTER_DASH_SPEED = 20.0f;
+      const auto CHARACTER_DEADZONE = 0.12f;
+
+      const auto BUTTON_JUMP = 0;
+      const auto BUTTON_DASH = 2;
+
+      auto xAxis =  axes[0];
+      auto yAxis = -axes[1];
+
+      auto angle = std::atan2(yAxis, xAxis);
+      auto magnitude = std::hypot(xAxis, yAxis);
+
+      if (magnitude > CHARACTER_DEADZONE)
+      {
+        angle += followCam->offsetAngle + glm::radians(90.0f);
+        character->rotation =  angle;
+
+        auto old_velocity = characterBody->getLinearVelocity();
+        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_SPEED, 0);
+        new_velocity.setZ(old_velocity.z());
+        characterBody->setLinearVelocity(new_velocity);
+        characterBody->activate();
+      }
+
+      if (buttons[BUTTON_JUMP] == GLFW_PRESS && canJump)
+      {
+        auto velocity = characterBody->getLinearVelocity();
+        velocity.setZ(CHARACTER_JUMP_SPEED);
+        characterBody->setLinearVelocity(velocity);
+        characterBody->activate();
+      }
+      if (buttons[BUTTON_JUMP] == GLFW_PRESS && !canJump && characterBody->getLinearVelocity().z() > 0.0f)
+      {
+        auto velocity = characterBody->getLinearVelocity();
+        velocity.setZ(velocity.getZ() + CHARACTER_JUMP_RISE_SPEED);
+        characterBody->setLinearVelocity(velocity);
+        characterBody->activate();
+      }
+
+      if (buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= CHARACTER_DEADZONE)
+      {
+        auto velocity = characterBody->getLinearVelocity();
+        velocity.setZ(-CHARACTER_DASH_SPEED);
+        characterBody->setLinearVelocity(velocity);
+        characterBody->activate();
+      }
+      if (buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > CHARACTER_DEADZONE)
+      {
+        auto old_velocity = characterBody->getLinearVelocity();
+        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_DASH_SPEED, 0);
+        characterBody->setLinearVelocity(new_velocity);
+        characterBody->activate();
+      }
+    }
 
     if (!paused)
     {
-      cam->update(window, time);
+      dynamicsWorld->stepSimulation(1.0f / 144.0f, 2, 1.0f / 120.0f);
+
       for (auto& instance : instances)
       {
         instance->update(window, time);
@@ -644,9 +847,13 @@ int main()
           instance->position = glm::vec3(bodyPosition.x(), bodyPosition.y(), bodyPosition.z()) + instancesToBodies[instance].offset;
         }
       }
-
-      dynamicsWorld->stepSimulation(1.0f / 144.0f);
+      cam->update(window, time);
     }
+
+    glm::mat4 view = cam->transform();
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+    doCharacterDeformation(character, dynamicsWorld, terrainShape);
 
     // render faces and depth
     depthProgram.use();
@@ -657,11 +864,11 @@ int main()
 
     glBindFramebuffer(GL_FRAMEBUFFER, faceFramebuffer.id());
     glEnable(GL_DEPTH_TEST);
-    glClearColor(245 / 255.0f, 245 / 255.0f, 235 / 255.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (auto& instance : instances)
-      draw_faces(*instance, depthProgram, time);
+      instance->model->draw_faces(*instance, depthProgram, time);
 
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -685,7 +892,7 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (auto& instance : instances)
-      draw_lines(*instance, lineProgram, time);
+      instance->model->draw_lines(*instance, lineProgram, time);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -746,7 +953,7 @@ void processInput(GLFWwindow *window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
-  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+  if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
     paused = !paused;
 }
 

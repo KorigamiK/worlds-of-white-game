@@ -1,0 +1,36 @@
+Changelog (2018-12-06)
+
+
+Changing Gears
+
+  So... I had become a bit unmotivated with the work I was going to. I don't think my ideas were bad, but all the work that would be needed to achieve it would be daunting (I already knew that) and I was doing stuff I wasn't really into (rigging, animating, questing, weapons, etc). So I was turned off from the project and worked on some other things. 
+
+  I eventually came back to it because many of the ideas I had still were interesting to me: mostly regarding the asthetics but also the primary combat system I have in mind. So I've decided to strip out all of the story, much of the worldbuilding, a lot of the would-be mechanics, so I can focus on the simple stuff. The idea I have in mind would eventually be a series of themed dungeon-like areas but I can focus on a single one until I'm satisfied with the core aspects. 
+
+
+Character Model and Behavior
+
+  I've pivoted to creating a simple blob as the character. This will fit in better with the asthetics while still allowing interesting animation and movement. I've rigged it up such that the model smushes around the terrain. I'm satisfied with that part at the moment so I'll probably focus on movement mechanics next (nix the wall-climbing and add a dash).
+
+
+Model Format Change
+
+  The change won't use textures (hopefully) so I finally made the change to combine face-drawing with line-drawing so that they use the same vertex buffer and use indexed drawing. This makes the model exporting, importing, and drawing much more straightforward; I might even be able to combine them to use the same vertex shader.
+
+  I also ditched all the old models and kept just what I needed (they're all still under source control and I still have the raw blender files but I just needed to clean up my workspace). 
+
+
+Controller Support
+
+  Given the game format, a third-person 3D platformer, I've found keyboard input to be sub-optimal. Fortunately the GLFW library I was already using for keyboard input has support for controllers and is easy to work with. 
+
+
+Movement
+
+  I've added a distinction between a short hop and a high jump by adjusting the upwards velocity when the button is held. I've also added the beginning of what will be a dash, but right now its unlimited. I'll be improving it but I'll need to organize my code better to keep track of the player state.
+
+
+Future work
+
+- movement mechanics
+- models and graphics effects

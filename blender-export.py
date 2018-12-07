@@ -22,14 +22,7 @@ for vertex in mesh.vertices:
 print(len(mesh.polygons), file=file)
 for face in mesh.polygons:
   assert len(face.vertices) == 3
-  for vId, lId in zip(face.vertices, face.loop_indices):
-    vertex = mesh.vertices[vId];
-    uv = mesh.uv_layers.active.data[lId].uv
-    groups = [g for g in vertex.groups if g.group != alwaysDrawGroupId]
-    group1, weight1 = (groups[0].group, groups[0].weight) if len(groups) > 0 else (0, 1.0)
-    group2, weight2 = (groups[1].group, groups[1].weight) if len(groups) > 1 else (0, 0.0)
-    group3, weight3 = (groups[2].group, groups[2].weight) if len(groups) > 2 else (0, 0.0)
-    print(vertex.co[0], vertex.co[1], vertex.co[2], group1, group2, group3, weight1, weight2, weight3, uv.x, uv.y, file=file)
+  print(face.vertices[0], face.vertices[1], face.vertices[2], file=file)
 
 # write lines
 bpy.ops.object.mode_set(mode='EDIT')
