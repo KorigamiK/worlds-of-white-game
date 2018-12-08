@@ -8,8 +8,12 @@ class FollowCamera : public ICamera
 {
 public:
   ModelInstance** _instance;
+  float optimalAngle;
+  float optimalDistance;
   float distance;
   float offsetAngle;
+  glm::vec3 optimalPosition; // world space
+  glm::vec3 currentPosition; // world space
 
 public:
   FollowCamera(ModelInstance** instance);
