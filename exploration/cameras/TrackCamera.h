@@ -14,7 +14,7 @@ public:
 
   // ICamera overrides
 public:
-  void update(GLFWwindow *window, float time) override;
+  void update(GLFWwindow *window, float time, int selectedJoystickId) override;
   glm::mat4 transform() const override;
   glm::vec3 position() const override;
 };

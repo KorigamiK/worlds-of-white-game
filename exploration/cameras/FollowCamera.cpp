@@ -6,8 +6,9 @@ FollowCamera::FollowCamera(ModelInstance** instance)
   , offsetAngle{ 0.0f }
 { }
 
-void FollowCamera::update(GLFWwindow *window, float time)
+void FollowCamera::update(GLFWwindow *window, float time, int selectedJoystickId)
 {
+  // keyboard
   if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     distance -= 0.01f;
   if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
@@ -16,6 +17,17 @@ void FollowCamera::update(GLFWwindow *window, float time)
     offsetAngle += 0.01f;
   if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     offsetAngle -= 0.01f;
+
+  // controller
+  const auto CAMERA_DEADZONE = 0.12f;
+  const auto CAMERA_ROTATION_RATE = 0.05f;
+
+  auto axesCount = 0;
+  auto axes = glfwGetJoystickAxes(selectedJoystickId, &axesCount);
+  auto cameraXAxis = axes[4];
+  auto cameraYAxis = axes[3]; // not used yet
+
+  offsetAngle += std::abs(cameraXAxis) < CAMERA_DEADZONE ? 0.0f : cameraXAxis * CAMERA_ROTATION_RATE;
 }
 
 glm::mat4 FollowCamera::transform() const

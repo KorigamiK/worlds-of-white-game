@@ -657,16 +657,6 @@ int main()
       characterBody->activate();
     }
 
-    { // do camera movement
-      const auto CAMERA_DEADZONE = 0.12f;
-      const auto CAMERA_ROTATION_RATE = 0.05f;
-
-      auto cameraXAxis = axes[4];
-      auto cameraYAxis = axes[3]; // not used
-
-      followCam->offsetAngle += std::abs(cameraXAxis) < CAMERA_DEADZONE ? 0.0f : cameraXAxis * CAMERA_ROTATION_RATE;
-    }
-
     { // do character movement
       const auto CHARACTER_SPEED = 4.0f;
       const auto CHARACTER_JUMP_SPEED = 4.0f;
@@ -741,7 +731,7 @@ int main()
           instance->position = glm::vec3(bodyPosition.x(), bodyPosition.y(), bodyPosition.z()) + instancesToBodies[instance].offset;
         }
       }
-      cam->update(window, time);
+      cam->update(window, time, selectedJoystickId);
     }
 
     glm::mat4 view = cam->transform();

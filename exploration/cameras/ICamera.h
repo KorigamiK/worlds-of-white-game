@@ -8,7 +8,7 @@
 class ICamera
 {
 public:
-  virtual void update(GLFWwindow *window, float time) = 0;
+  virtual void update(GLFWwindow *window, float time, int selectedJoystickId) = 0;
   virtual glm::mat4 transform() const = 0;
   virtual glm::vec3 position() const = 0;
 };

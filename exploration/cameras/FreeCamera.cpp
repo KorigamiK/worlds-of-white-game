@@ -8,7 +8,7 @@ FreeCamera::FreeCamera()
   , CAMERA_SPEED{ 0.05f }
 { }
 
-void FreeCamera::update(GLFWwindow *window, float time)
+void FreeCamera::update(GLFWwindow *window, float time, int selectedJoystickId)
 {
   if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     _location += _direction * CAMERA_SPEED;

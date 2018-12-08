@@ -5,7 +5,7 @@ TrackCamera::TrackCamera(ModelInstance** instance)
   : _instance{ instance }
 { }
 
-void TrackCamera::update(GLFWwindow *window, float time)
+void TrackCamera::update(GLFWwindow *window, float time, int selectedJoystickId)
 {
 
 }
