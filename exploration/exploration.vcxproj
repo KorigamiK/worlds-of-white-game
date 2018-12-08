@@ -137,6 +137,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cameras\FollowCamera.cpp" />
+    <ClCompile Include="cameras\FreeCamera.cpp" />
+    <ClCompile Include="cameras\TrackCamera.cpp" />
     <ClCompile Include="graphics\framebuffer.cpp" />
     <ClCompile Include="graphics\joint.cpp" />
     <ClCompile Include="graphics\jointPose.cpp" />

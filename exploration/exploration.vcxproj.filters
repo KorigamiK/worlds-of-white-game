@@ -17,6 +17,9 @@
     <ClCompile Include="graphics\joint.cpp" />
     <ClCompile Include="graphics\model.cpp" />
     <ClCompile Include="graphics\jointPose.cpp" />
+    <ClCompile Include="cameras\FollowCamera.cpp" />
+    <ClCompile Include="cameras\FreeCamera.cpp" />
+    <ClCompile Include="cameras\TrackCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">

@@ -1,6 +1,7 @@
 #ifndef WILT_ICAMERA_H
 #define WILT_ICAMERA_H
 
+#include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 

@@ -2,7 +2,6 @@
 #define WILT_FREECAMERA_H
 
 #include "ICamera.h"
-#include <glm/gtc/matrix_transform.hpp>
 
 class FreeCamera : public ICamera
 {
@@ -10,36 +9,16 @@ private:
   glm::vec3 _location;
   glm::vec3 _direction;
 
-  float CAMERA_SPEED = 0.05f;
+  float CAMERA_SPEED;
 
 public:
-  FreeCamera()
-    : _location{ 0, -0.5, 1 }
-    , _direction{ 0, 1, 0 }
-  { }
+  FreeCamera();
 
+  // ICamera overrides
 public:
-  void update(GLFWwindow *window, float time) override
-  {
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-      _location += _direction * CAMERA_SPEED;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-      _location -= _direction * CAMERA_SPEED;
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-      _direction = glm::vec3(glm::rotate(glm::mat4(), glm::radians(30.0f) / 144.0f, { 0, 0, 1 }) * glm::vec4(_direction, 1.0f));
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-      _direction = glm::vec3(glm::rotate(glm::mat4(), -glm::radians(30.0f) / 144.0f, { 0, 0, 1 }) * glm::vec4(_direction, 1.0f));
-  }
-
-  glm::mat4 transform() const override
-  {
-    return glm::lookAt(_location, _location + _direction, { 0, 0, 1 });
-  }
-
-  glm::vec3 position() const override
-  {
-    return _location;
-  }
+  void update(GLFWwindow *window, float time) override;
+  glm::mat4 transform() const override;
+  glm::vec3 position() const override;
 };
 
 #endif // !WILT_FREECAMERA_H
