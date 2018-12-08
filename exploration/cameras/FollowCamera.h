@@ -2,16 +2,17 @@
 #define WILT_FOLLOWCAMERA_H
 
 #include "ICamera.h"
-#include "../graphics/modelInstance.h"
+
+class ModelInstance;
 
 class FollowCamera : public ICamera
 {
-public:
-  ModelInstance** _instance;
-  float optimalAngle;
-  float optimalDistance;
-  glm::vec3 optimalPosition; // world space
-  glm::vec3 currentPosition; // world space
+private:
+  ModelInstance** instance_;
+  float desiredAngle_;
+  float desiredDistance_;
+  glm::vec3 desiredPosition_; // world space
+  glm::vec3 currentPosition_; // world space
 
 public:
   FollowCamera(ModelInstance** instance);

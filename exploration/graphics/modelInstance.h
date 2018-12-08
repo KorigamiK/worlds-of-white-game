@@ -8,8 +8,9 @@ class IAnimator;
 class Model;
 class Program;
 
-struct ModelInstance
+class ModelInstance
 {
+public:
   Model* model;
   glm::vec3 position;
   float rotation;
