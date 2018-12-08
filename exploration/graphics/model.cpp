@@ -1,7 +1,11 @@
 #include "model.h"
 
 #include <fstream>
+
+#include <glad/glad.h>
 #include <cimg/cimg.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 void Model::load()
 {
@@ -102,31 +106,31 @@ Model Model::read(const std::string& modelPath, const std::string& texturePath, 
   return model;
 }
 
-void Model::draw_faces(ModelInstance& instance, Program& program, float time)
+void Model::draw_faces(Program& program, float time, glm::vec3 position, float rotation, float scale, IAnimator* animator)
 {
-  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }), glm::vec3(instance.scale, instance.scale, instance.scale)));
+  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), position) * glm::rotate(transform, rotation, { 0,0,1 }), glm::vec3(scale, scale, scale)));
   program.setInt("model_texture", 0);
 
-  instance.animator->applyAnimation(program, time, instance);
+  animator->applyAnimation(program, time, joints);
 
-  glBindVertexArray(instance.model->vertexDataVAO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance.model->faceIndexesID);
-  glDrawElements(GL_TRIANGLES, instance.model->faceIndexes.size(), GL_UNSIGNED_INT, (void*)0);
+  glBindVertexArray(vertexDataVAO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceIndexesID);
+  glDrawElements(GL_TRIANGLES, faceIndexes.size(), GL_UNSIGNED_INT, (void*)0);
 
   glBindVertexArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Model::draw_lines(ModelInstance& instance, Program& program, float time)
+void Model::draw_lines(Program& program, float time, glm::vec3 position, float rotation, float scale, IAnimator* animator)
 {
-  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), instance.position) * glm::rotate(instance.model->transform, instance.rotation, { 0,0,1 }), glm::vec3(instance.scale, instance.scale, instance.scale)));
+  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), position) * glm::rotate(transform, rotation, { 0,0,1 }), glm::vec3(scale, scale, scale)));
 
-  instance.animator->applyAnimation(program, time, instance);
+  animator->applyAnimation(program, time, joints);
 
-  glBindVertexArray(instance.model->vertexDataVAO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance.model->lineIndexesID);
+  glBindVertexArray(vertexDataVAO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineIndexesID);
   glPatchParameteri(GL_PATCH_VERTICES, 4);
-  glDrawElements(GL_PATCHES, instance.model->lineIndexes.size(), GL_UNSIGNED_INT, (void*)0);
+  glDrawElements(GL_PATCHES, lineIndexes.size(), GL_UNSIGNED_INT, (void*)0);
 
   glBindVertexArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

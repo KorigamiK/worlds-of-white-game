@@ -12,12 +12,12 @@ void ModelInstance::update(GLFWwindow *window, float time) { }
 
 void ModelInstance::draw_faces(Program& program, float time)
 {
-  model->draw_faces(*this, program, time);
+  model->draw_faces(program, time, position, rotation, scale, animator);
 }
 
 void ModelInstance::draw_lines(Program& program, float time)
 {
-  model->draw_lines(*this, program, time);
+  model->draw_lines(program, time, position, rotation, scale, animator);
 }
 
 void ModelInstance::draw_debug(Program& program, float time)

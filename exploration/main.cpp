@@ -62,10 +62,10 @@ struct Animation
 class StaticAnimator : public IAnimator
 {
 public:
-  void applyAnimation(Program& program, float time, ModelInstance& instance) override
+  void applyAnimation(Program& program, float time, std::vector<Joint>& joints) override
   {
-    glm::mat4 joints[MAX_JOINTS];
-    glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(joints[0]));
+    glm::mat4 jointTransforms[MAX_JOINTS];
+    glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   }
 };
 
@@ -82,10 +82,8 @@ public:
   { }
 
 public:
-  void applyAnimation(Program& program, float time, ModelInstance& instance) override
+  void applyAnimation(Program& program, float time, std::vector<Joint>& joints) override
   {
-    auto& joints = instance.model->joints;
-
     float frame_pos = std::fmod(time * framesPerSecond, animation._frames.size());
     int frame1 = (int)frame_pos;
     int frame2 = (frame1 + 1) % animation._frames.size();

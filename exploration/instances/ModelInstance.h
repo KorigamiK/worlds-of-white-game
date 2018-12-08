@@ -1,9 +1,13 @@
 #ifndef WILT_MODELINSTANCE_H
 #define WILT_MODELINSTANCE_H
 
+#include <vector>
+
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
+
+#include "../graphics/IAnimator.h"
 
 class IAnimator;
 class Model;
@@ -28,14 +32,8 @@ public:
 
 }; // class ModelInstance
 
-class IAnimator
-{
-public:
-  virtual void applyAnimation(Program& program, float time, ModelInstance& instance) = 0;
-
-}; // class IAnimator
-
 #include "../graphics/model.h"
 #include "../graphics/program.h"
+#include "../graphics/IAnimator.h"
 
 #endif // !WILT_MODELINSTANCE_H

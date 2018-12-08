@@ -4,15 +4,12 @@
 #include <vector>
 #include <string>
 
-#include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #include "joint.h"
 #include "texture.h"
 #include "program.h"
-#include "../instances/ModelInstance.h"
+#include "IAnimator.h"
 #include "../utilities/narray/narray.hpp"
 
 class Model
@@ -33,8 +30,8 @@ public:
 public:
   void load();
 
-  void draw_faces(ModelInstance& instance, Program& program, float time);
-  void draw_lines(ModelInstance& instance, Program& program, float time);
+  void draw_faces(Program& program, float time, glm::vec3 position, float rotation, float scale, IAnimator* animator);
+  void draw_lines(Program& program, float time, glm::vec3 position, float rotation, float scale, IAnimator* animator);
 
 public:
   static Model read(const std::string& modelPath, const std::string& texturePath, float scale = 1.0f);

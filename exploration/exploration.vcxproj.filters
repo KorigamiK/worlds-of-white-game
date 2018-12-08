@@ -57,5 +57,6 @@
     <ClInclude Include="cameras\TrackCamera.h" />
     <ClInclude Include="cameras\FreeCamera.h" />
     <ClInclude Include="instances\ModelInstance.h" />
+    <ClInclude Include="graphics\IAnimator.h" />
   </ItemGroup>
 </Project>
