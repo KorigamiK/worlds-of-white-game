@@ -17,7 +17,7 @@ public:
   { }
 
 public:
-  virtual void update(GLFWwindow *window, float time)
+  void update(GLFWwindow *window, float time) override
   {
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
       distance -= 0.01f;
@@ -29,12 +29,12 @@ public:
       offsetAngle -= 0.01f;
   }
 
-  virtual glm::mat4 transform() const
+  glm::mat4 transform() const override
   {
     return glm::lookAt(position(), (*_instance)->position + glm::vec3(0, 0, 1), { 0, 0, 1 });
   }
 
-  virtual glm::vec3 position() const
+  glm::vec3 position() const override
   {
     return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), /*(*_instance)->rotation +*/ offsetAngle, { 0, 0, 1 }) * glm::vec4(0, 4, 2, 1)) * distance;
   }

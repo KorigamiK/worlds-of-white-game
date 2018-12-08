@@ -15,17 +15,17 @@ public:
   { }
 
 public:
-  virtual void update(GLFWwindow *window, float time)
+  void update(GLFWwindow *window, float time) override
   {
 
   }
 
-  virtual glm::mat4 transform() const
+  glm::mat4 transform() const override
   {
     return glm::lookAt({ 0, 0, 1 }, (*_instance)->position, { 0, 0, 1 });
   }
 
-  virtual glm::vec3 position() const
+  glm::vec3 position() const override
   {
     return { 0, 0, 1 };
   }

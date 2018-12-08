@@ -19,7 +19,7 @@ public:
   { }
 
 public:
-  virtual void update(GLFWwindow *window, float time)
+  void update(GLFWwindow *window, float time) override
   {
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
       _location += _direction * CAMERA_SPEED;
@@ -31,12 +31,12 @@ public:
       _direction = glm::vec3(glm::rotate(glm::mat4(), -glm::radians(30.0f) / 144.0f, { 0, 0, 1 }) * glm::vec4(_direction, 1.0f));
   }
 
-  virtual glm::mat4 transform() const
+  glm::mat4 transform() const override
   {
     return glm::lookAt(_location, _location + _direction, { 0, 0, 1 });
   }
 
-  virtual glm::vec3 position() const
+  glm::vec3 position() const override
   {
     return _location;
   }
