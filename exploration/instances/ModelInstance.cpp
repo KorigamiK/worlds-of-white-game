@@ -1,4 +1,4 @@
-#include "modelInstance.h"
+#include "ModelInstance.h"
 
 ModelInstance::ModelInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale)
   : model{ model }

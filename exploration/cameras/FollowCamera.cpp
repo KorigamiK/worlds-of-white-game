@@ -1,6 +1,6 @@
 #include "FollowCamera.h"
 
-#include "../graphics/modelInstance.h"
+#include "../instances/modelInstance.h"
 
 const auto CAMERA_DEADZONE = 0.12f;
 const auto CAMERA_ROTATION_RATE = 0.05f;

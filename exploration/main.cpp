@@ -28,7 +28,7 @@
 #include "graphics/joint.h"
 #include "graphics/jointPose.h"
 #include "graphics/model.h"
-#include "graphics/modelInstance.h"
+#include "instances/modelInstance.h"
 #include "utilities/narray/narray.hpp"
 #include "cameras/FollowCamera.h"
 #include "cameras/TrackCamera.h"

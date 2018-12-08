@@ -20,7 +20,7 @@
     <ClCompile Include="cameras\FollowCamera.cpp" />
     <ClCompile Include="cameras\FreeCamera.cpp" />
     <ClCompile Include="cameras\TrackCamera.cpp" />
-    <ClCompile Include="graphics\modelInstance.cpp" />
+    <ClCompile Include="instances\ModelInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -52,10 +52,10 @@
     <ClInclude Include="graphics\joint.h" />
     <ClInclude Include="graphics\model.h" />
     <ClInclude Include="graphics\jointPose.h" />
-    <ClInclude Include="graphics\modelInstance.h" />
     <ClInclude Include="cameras\ICamera.h" />
     <ClInclude Include="cameras\FollowCamera.h" />
     <ClInclude Include="cameras\TrackCamera.h" />
     <ClInclude Include="cameras\FreeCamera.h" />
+    <ClInclude Include="instances\ModelInstance.h" />
   </ItemGroup>
 </Project>

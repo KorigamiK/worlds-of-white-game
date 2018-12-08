@@ -2,7 +2,7 @@
 #define WILT_TRACKCAMERA_H
 
 #include "ICamera.h"
-#include "../graphics/modelInstance.h"
+#include "../instances/modelInstance.h"
 
 class TrackCamera : public ICamera
 {

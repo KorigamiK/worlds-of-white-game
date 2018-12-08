@@ -12,7 +12,7 @@
 #include "joint.h"
 #include "texture.h"
 #include "program.h"
-#include "modelInstance.h"
+#include "../instances/ModelInstance.h"
 #include "../utilities/narray/narray.hpp"
 
 class Model

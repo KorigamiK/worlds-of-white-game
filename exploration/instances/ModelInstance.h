@@ -35,7 +35,7 @@ public:
 
 }; // class IAnimator
 
-#include "model.h"
-#include "program.h"
+#include "../graphics/model.h"
+#include "../graphics/program.h"
 
 #endif // !WILT_MODELINSTANCE_H
