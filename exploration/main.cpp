@@ -752,7 +752,7 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (auto& instance : instances)
-      instance->model->draw_faces(*instance, depthProgram, time);
+      instance->draw_faces(depthProgram, time);
 
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -776,7 +776,7 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (auto& instance : instances)
-      instance->model->draw_lines(*instance, lineProgram, time);
+      instance->draw_lines(lineProgram, time);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

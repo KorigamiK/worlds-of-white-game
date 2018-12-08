@@ -1,7 +1,8 @@
 #ifndef WILT_MODELINSTANCE_H
 #define WILT_MODELINSTANCE_H
 
-#include <GLFW/glfw3.h>
+#include <glad/glad.h>
+#include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 
 class IAnimator;
@@ -17,15 +18,13 @@ public:
   IAnimator* animator;
   float scale;
 
-  ModelInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale = 1.0f)
-    : model{ model }
-    , position{ position }
-    , rotation{ rotation }
-    , animator{ animator }
-    , scale{ scale }
-  { }
+  ModelInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale = 1.0f);
 
-  virtual void update(GLFWwindow *window, float time) { }
+  virtual void update(GLFWwindow *window, float time);
+
+  virtual void draw_faces(Program& program, float time);
+  virtual void draw_lines(Program& program, float time);
+  virtual void draw_debug(Program& program, float time);
 
 }; // class ModelInstance
 

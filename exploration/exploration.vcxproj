@@ -144,6 +144,7 @@
     <ClCompile Include="graphics\joint.cpp" />
     <ClCompile Include="graphics\jointPose.cpp" />
     <ClCompile Include="graphics\model.cpp" />
+    <ClCompile Include="graphics\modelInstance.cpp" />
     <ClCompile Include="graphics\program.cpp" />
     <ClCompile Include="graphics\shader.cpp" />
     <ClCompile Include="graphics\texture.cpp" />
