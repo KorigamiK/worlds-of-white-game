@@ -30,6 +30,9 @@
 #include "graphics/model.h"
 #include "graphics/modelInstance.h"
 #include "utilities/narray/narray.hpp"
+#include "cameras/FollowCamera.h"
+#include "cameras/TrackCamera.h"
+#include "cameras/FreeCamera.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -199,115 +202,6 @@ Animation read_animation(std::string path)
 
   return ret;
 }
-
-class ICamera
-{
-public:
-  virtual void update(GLFWwindow *window, float time) = 0;
-  virtual glm::mat4 transform() const = 0;
-  virtual glm::vec3 position() const = 0;
-};
-
-class FollowCamera : public ICamera
-{
-public:
-  ModelInstance** _instance;
-  float distance = 1.5f;
-  float offsetAngle = 0.0f;
-
-public:
-  FollowCamera(ModelInstance** instance)
-    : _instance{ instance }
-  { }
-
-public:
-  virtual void update(GLFWwindow *window, float time)
-  {
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-      distance -= 0.01f;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-      distance += 0.01f;
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-      offsetAngle += 0.01f;
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-      offsetAngle -= 0.01f;
-  }
-
-  virtual glm::mat4 transform() const
-  {
-    return glm::lookAt(position(), (*_instance)->position + glm::vec3(0, 0, 1), { 0, 0, 1 });
-  }
-
-  virtual glm::vec3 position() const
-  {
-    return (*_instance)->position + glm::vec3(glm::rotate(glm::mat4(), /*(*_instance)->rotation +*/ offsetAngle, { 0, 0, 1 }) * glm::vec4(0, 4, 2, 1)) * distance;
-  }
-};
-
-class TrackCamera : public ICamera
-{
-public:
-  ModelInstance** _instance;
-
-public:
-  TrackCamera(ModelInstance** instance)
-    : _instance{ instance }
-  { }
-
-public:
-  virtual void update(GLFWwindow *window, float time)
-  {
-
-  }
-
-  virtual glm::mat4 transform() const
-  {
-    return glm::lookAt({ 0, 0, 1 }, (*_instance)->position, { 0, 0, 1 });
-  }
-
-  virtual glm::vec3 position() const
-  {
-    return { 0, 0, 1 };
-  }
-};
-
-class FreeCamera : public ICamera
-{
-private:
-  glm::vec3 _location;
-  glm::vec3 _direction;
-
-  float CAMERA_SPEED = 0.05f;
-
-public:
-  FreeCamera()
-    : _location { 0, -0.5, 1 }
-    , _direction { 0, 1, 0 }
-  { }
-
-public:
-  virtual void update(GLFWwindow *window, float time)
-  {
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-      _location += _direction * CAMERA_SPEED;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-      _location -= _direction * CAMERA_SPEED;
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-      _direction = glm::vec3(glm::rotate(glm::mat4(), glm::radians(30.0f) / 144.0f, { 0, 0, 1 }) * glm::vec4(_direction, 1.0f));
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-      _direction = glm::vec3(glm::rotate(glm::mat4(),-glm::radians(30.0f) / 144.0f, { 0, 0, 1 }) * glm::vec4(_direction, 1.0f));
-  }
-
-  virtual glm::mat4 transform() const
-  {
-    return glm::lookAt(_location, _location + _direction, { 0, 0, 1 });
-  }
-
-  virtual glm::vec3 position() const
-  {
-    return _location;
-  }
-};
 
 void doCharacterDeformation(ModelInstance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh)
 {

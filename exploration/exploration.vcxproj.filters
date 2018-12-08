@@ -49,5 +49,9 @@
     <ClInclude Include="graphics\model.h" />
     <ClInclude Include="graphics\jointPose.h" />
     <ClInclude Include="graphics\modelInstance.h" />
+    <ClInclude Include="cameras\ICamera.h" />
+    <ClInclude Include="cameras\FollowCamera.h" />
+    <ClInclude Include="cameras\TrackCamera.h" />
+    <ClInclude Include="cameras\FreeCamera.h" />
   </ItemGroup>
 </Project>

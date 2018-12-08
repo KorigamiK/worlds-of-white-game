@@ -153,6 +153,10 @@
     <ClCompile Include="utilities\ring.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cameras\FollowCamera.h" />
+    <ClInclude Include="cameras\FreeCamera.h" />
+    <ClInclude Include="cameras\ICamera.h" />
+    <ClInclude Include="cameras\TrackCamera.h" />
     <ClInclude Include="graphics\framebuffer.h" />
     <ClInclude Include="graphics\joint.h" />
     <ClInclude Include="graphics\jointPose.h" />
