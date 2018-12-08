@@ -10,19 +10,18 @@ public:
   ModelInstance** _instance;
   float optimalAngle;
   float optimalDistance;
-  float distance;
-  float offsetAngle;
   glm::vec3 optimalPosition; // world space
   glm::vec3 currentPosition; // world space
 
 public:
   FollowCamera(ModelInstance** instance);
 
-  // ICamera overrides
 public:
+  // ICamera overrides
   void update(GLFWwindow *window, float time, int selectedJoystickId) override;
-  glm::mat4 transform() const override;
-  glm::vec3 position() const override;
+  glm::mat4 getTransform() const override;
+  glm::vec3 getPosition() const override;
+  float getAngle() const override;
 };
 
 #endif // !WILT_FOLLOWCAMERA_H

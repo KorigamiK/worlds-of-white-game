@@ -675,7 +675,7 @@ int main()
 
       if (magnitude > CHARACTER_DEADZONE)
       {
-        angle += followCam->offsetAngle + glm::radians(90.0f);
+        angle += followCam->getAngle() + glm::radians(90.0f);
         character->rotation =  angle;
 
         auto old_velocity = characterBody->getLinearVelocity();
@@ -734,7 +734,7 @@ int main()
       cam->update(window, time, selectedJoystickId);
     }
 
-    glm::mat4 view = cam->transform();
+    glm::mat4 view = cam->getTransform();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
     doCharacterDeformation(character, dynamicsWorld, terrainShape);
@@ -815,7 +815,7 @@ int main()
       if (i % 24 == 0)
       {
         selected_perlin = (selected_perlin + (rand() % 7) + 1) % 8;
-        view_reference = cam->position();
+        view_reference = cam->getPosition();
       }
     }
   }

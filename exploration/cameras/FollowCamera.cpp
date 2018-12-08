@@ -12,8 +12,6 @@ FollowCamera::FollowCamera(ModelInstance** instance)
   : _instance{ instance }
   , optimalDistance{ 1.5f }
   , optimalAngle{ 0.0f }
-  , distance{ 1.5f }
-  , offsetAngle{ 0.0f }
   , optimalPosition{ 0, 6, 3 }
   , currentPosition{ }
 { }
@@ -49,12 +47,17 @@ void FollowCamera::update(GLFWwindow *window, float time, int selectedJoystickId
   currentPosition = (currentPosition) * (1 - CAMERA_DRIFT_CORRECTION_RATE) + (optimalPosition) * CAMERA_DRIFT_CORRECTION_RATE;
 }
 
-glm::mat4 FollowCamera::transform() const
+glm::mat4 FollowCamera::getTransform() const
 {
-  return glm::lookAt(position(), (*_instance)->position + glm::vec3(0, 0, 1), { 0, 0, 1 });
+  return glm::lookAt(getPosition(), (*_instance)->position + glm::vec3(0, 0, 1), { 0, 0, 1 });
 }
 
-glm::vec3 FollowCamera::position() const
+glm::vec3 FollowCamera::getPosition() const
 {
   return currentPosition;
+}
+
+float FollowCamera::getAngle() const
+{
+  return optimalAngle;
 }
