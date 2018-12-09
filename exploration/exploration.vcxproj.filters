@@ -23,6 +23,7 @@
     <ClCompile Include="instances\CharacterInstance.cpp" />
     <ClCompile Include="instances\Instance.cpp" />
     <ClCompile Include="instances\AnimatedInstance.cpp" />
+    <ClCompile Include="instances\PhysicsInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -63,5 +64,6 @@
     <ClInclude Include="GameState.h" />
     <ClInclude Include="instances\Instance.h" />
     <ClInclude Include="instances\AnimatedInstance.h" />
+    <ClInclude Include="instances\PhysicsInstance.h" />
   </ItemGroup>
 </Project>

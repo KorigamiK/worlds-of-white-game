@@ -1,5 +1,5 @@
-#ifndef WILT_MODELINSTANCE_H
-#define WILT_MODELINSTANCE_H
+#ifndef WILT_INSTANCE_H
+#define WILT_INSTANCE_H
 
 #include <vector>
 
@@ -34,4 +34,4 @@ public:
 #include "../graphics/model.h"
 #include "../graphics/program.h"
 
-#endif // !WILT_MODELINSTANCE_H
+#endif // !WILT_INSTANCE_H

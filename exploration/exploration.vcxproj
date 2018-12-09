@@ -150,6 +150,7 @@
     <ClCompile Include="graphics\program.cpp" />
     <ClCompile Include="graphics\shader.cpp" />
     <ClCompile Include="graphics\texture.cpp" />
+    <ClCompile Include="instances\PhysicsInstance.cpp" />
     <ClCompile Include="libraries\glad\src\glad.c" />
     <ClCompile Include="logging\loggers\FileLogger.cpp" />
     <ClCompile Include="logging\loggers\StreamLogger.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="graphics\program.h" />
     <ClInclude Include="graphics\shader.h" />
     <ClInclude Include="graphics\texture.h" />
+    <ClInclude Include="instances\PhysicsInstance.h" />
     <ClInclude Include="logging\ILogger.h" />
     <ClInclude Include="logging\loggers\FileLogger.h" />
     <ClInclude Include="logging\loggers\StreamLogger.h" />
