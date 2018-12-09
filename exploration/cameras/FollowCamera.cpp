@@ -1,6 +1,6 @@
 #include "FollowCamera.h"
 
-#include "../instances/modelInstance.h"
+#include "../instances/Instance.h"
 
 const auto CAMERA_DEADZONE = 0.12f;
 const auto CAMERA_ROTATION_RATE = 0.05f;
@@ -12,7 +12,7 @@ const auto CAMERA_HEIGHT_ANGLE = 0.5f;
 
 glm::vec3 calcPosition(float angle, float distance);
 
-FollowCamera::FollowCamera(ModelInstance** instance)
+FollowCamera::FollowCamera(Instance** instance)
   : instance_{ instance }
   , desiredAngle_{ 0.0f }
   , desiredDistance_{ CAMERA_DISTANCE }

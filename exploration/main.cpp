@@ -33,7 +33,7 @@
 #include "cameras/FollowCamera.h"
 #include "cameras/TrackCamera.h"
 #include "cameras/FreeCamera.h"
-#include "instances/ModelInstance.h"
+#include "instances/Instance.h"
 #include "instances/CharacterInstance.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -112,10 +112,10 @@ public:
   }
 };
 
-class SpiritInstance : public ModelInstance
+class SpiritInstance : public Instance
 {
 public:
-  using ModelInstance::ModelInstance;
+  using Instance::Instance;
 
   float height = 1.0f;
 
@@ -156,7 +156,7 @@ Animation read_animation(std::string path)
   return ret;
 }
 
-void doCharacterDeformation(ModelInstance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh)
+void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh)
 {
   auto& characterModel = *character->model;
   auto characterRotation = character->rotation;
@@ -371,10 +371,10 @@ int main()
   auto testlandModel = Model::read("models/testland_model.txt", "models/testland_texture.jpg", 1.0f);
   auto ballModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 1.0f);
 
-  std::vector<ModelInstance*> instances =
+  std::vector<Instance*> instances =
   {
     new CharacterInstance(&ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), new StaticAnimator{}, 0.5f),
-    new ModelInstance(&testlandModel, { 0, 0, 0 }, 0.0, new StaticAnimator{}, 1.0f)
+    new Instance(&testlandModel, { 0, 0, 0 }, 0.0, new StaticAnimator{}, 1.0f)
   };
 
   // load models
@@ -427,7 +427,7 @@ int main()
   glm::vec3 view_reference;
 
   int instanceIndex = 0;
-  ModelInstance* currentInstance = instances[instanceIndex];
+  Instance* currentInstance = instances[instanceIndex];
   FreeCamera* freeCam = new FreeCamera();
   TrackCamera* trackCam = new TrackCamera(&currentInstance);
   FollowCamera* followCam = new FollowCamera(&currentInstance);
@@ -490,7 +490,7 @@ int main()
     glm::vec3 offset = glm::vec3();
   };
 
-  std::map<ModelInstance*, InstanceBinding> instancesToBodies;
+  std::map<Instance*, InstanceBinding> instancesToBodies;
 
   // create character
   auto characterShape = new btSphereShape(0.25);

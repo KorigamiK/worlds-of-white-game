@@ -1,7 +1,7 @@
 #include "TrackCamera.h"
 
 
-TrackCamera::TrackCamera(ModelInstance** instance)
+TrackCamera::TrackCamera(Instance** instance)
   : _instance{ instance }
 { }
 

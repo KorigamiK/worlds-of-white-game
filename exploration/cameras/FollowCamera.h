@@ -3,19 +3,19 @@
 
 #include "ICamera.h"
 
-class ModelInstance;
+class Instance;
 
 class FollowCamera : public ICamera
 {
 private:
-  ModelInstance** instance_;
+  Instance** instance_;
   float desiredAngle_;
   float desiredDistance_;
   glm::vec3 desiredPosition_; // world space
   glm::vec3 currentPosition_; // world space
 
 public:
-  FollowCamera(ModelInstance** instance);
+  FollowCamera(Instance** instance);
 
 public:
   // ICamera overrides

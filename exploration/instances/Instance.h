@@ -14,7 +14,7 @@ class IAnimator;
 class Model;
 class Program;
 
-class ModelInstance
+class Instance
 {
 public:
   Model* model;
@@ -23,7 +23,7 @@ public:
   IAnimator* animator;
   float scale;
 
-  ModelInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale = 1.0f);
+  Instance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale = 1.0f);
 
   virtual void update(GameState& state, float time);
 
@@ -31,7 +31,7 @@ public:
   virtual void draw_lines(Program& program, float time);
   virtual void draw_debug(Program& program, float time);
 
-}; // class ModelInstance
+}; // class Instance
 
 #include "../graphics/model.h"
 #include "../graphics/program.h"
