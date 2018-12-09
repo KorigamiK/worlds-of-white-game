@@ -110,22 +110,6 @@ public:
   }
 };
 
-class SpiritInstance : public Instance
-{
-public:
-  using Instance::Instance;
-
-  float height = 1.0f;
-
-public:
-  void update(GameState& state, float time) override
-  {
-    position += (glm::mat3)glm::rotate(glm::mat4(), rotation, { 0, 0, 1 }) * glm::vec3(0.005f, 0, 0);
-    rotation += 0.005f;
-    position.z = 1.0f + 0.5f * std::sin(time + rotation);
-  }
-};
-
 Animation read_animation(std::string path)
 {
   std::ifstream file(path);
