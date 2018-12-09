@@ -1,10 +1,12 @@
 #version 420
  
 layout(isolines) in;
-
-uniform float frame;
+in float order_tesc_out[];
 
 out vec4 tess_vertex_offset;
+out float order_tess_out;
+
+uniform float frame;
 
 float point_variation(float t)
 {
@@ -24,6 +26,7 @@ void main()
 	float t = gl_TessCoord.x;
 
 	gl_Position = mix(gl_in[1].gl_Position, gl_in[2].gl_Position, t);
+	order_tess_out = mix(order_tesc_out[1], order_tesc_out[2], t);
 	tess_vertex_offset = vec4(
 		point_variation(t+0),
 		point_variation(t+1),

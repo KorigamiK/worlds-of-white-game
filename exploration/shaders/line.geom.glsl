@@ -1,14 +1,16 @@
 #version 420 core
 
 layout(lines) in;
-layout(triangle_strip, max_vertices = 8) out;
-
 in vec4 tess_vertex_offset[2];
+in float order_tess_out[2];
+
+layout(triangle_strip, max_vertices = 8) out;
 
 uniform sampler2D depth_texture;
 
 uniform float frame;
 uniform float ratio;
+uniform float draw_percentage;
 
 // Keeping the ratio correct is a pain, so I just convert to screen space, do
 // any manipulations, then put it back into the projection space. This might be 
@@ -92,6 +94,16 @@ float get_depth(vec2 v)
 bool is_hidden(vec4 p)
 {
 	return p.z / p.w > get_depth(p.xy / p.w);
+}
+
+bool is_hidden_start()
+{
+	return is_hidden(gl_in[0].gl_Position) || (1.0f - order_tess_out[0]) > draw_percentage;
+}
+
+bool is_hidden_end()
+{
+	return is_hidden(gl_in[1].gl_Position) || (1.0f - order_tess_out[1]) > draw_percentage;
 }
 
 void _draw_segment(vec4 p, vec4 perp, float thickness)
@@ -196,8 +208,8 @@ void main()
     vec4 start = gl_in[0].gl_Position;
 	vec4 end = gl_in[1].gl_Position;
 
-	bool start_shown = !is_hidden(start);
-	bool end_shown   = !is_hidden(end);
+	bool start_shown = !is_hidden_start();
+	bool end_shown   = !is_hidden_end();
 
 	if (start_shown && end_shown)
 	{

@@ -1,6 +1,9 @@
 #version 420 core
+
+in float order_vert_out[];
  
 layout(vertices = 4) out;
+out float order_tesc_out[];
 
 uniform float frame;
 uniform float ratio;
@@ -53,6 +56,8 @@ vec2 get_screen_space_vector()
 void main()
 {
 	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+	order_tesc_out[gl_InvocationID] = order_vert_out[gl_InvocationID];
+
 	if (gl_InvocationID == 0)
 	{
 		// Zero here means don't draw the line (create no segments). This

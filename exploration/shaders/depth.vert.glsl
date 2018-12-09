@@ -5,7 +5,7 @@ layout (location = 1) in vec3 aGroups;
 layout (location = 2) in vec3 aWeights;
 layout (location = 3) in float order;
 
-// out vec2 uv_coords;
+out float order_vert_out;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -75,5 +75,5 @@ void main()
 	vec4 pos2 = projection * view * model * positions[int(aGroups.z)] * vec4(aPos, 1.0f);
 	
 	gl_Position = (aWeights[0] * pos0) + (aWeights[1] * pos1) + (aWeights[2] * pos2);
-	// uv_coords = uv_coords_in;
+	order_vert_out = order;
 }
