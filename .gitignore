@@ -8,3 +8,5 @@ exploration/nsight_profiler.cfg
 *.sublime-project
 *.sublime-workspace
 
+# blender
+*.blend1

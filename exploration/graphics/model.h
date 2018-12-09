@@ -35,6 +35,9 @@ public:
 public:
   static Model read(const std::string& modelPath, float scale = 1.0f);
 
+public:
+  static const unsigned int DATA_COUNT_PER_VERTEX = 10;
+
 }; // class Model
 
 #endif // !WILT_MODEL_H

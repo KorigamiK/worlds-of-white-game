@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 void readVersion1(Model& model, std::ifstream& file);
+void readVersion2(Model& model, std::ifstream& file);
 
 void Model::load()
 {
@@ -18,11 +19,13 @@ void Model::load()
   glBindBuffer(GL_ARRAY_BUFFER, vertexDataVBO);
   glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(3 * sizeof(float)));
   glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(6 * sizeof(float)));
+  glEnableVertexAttribArray(3);
+  glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void*)(9 * sizeof(float)));
 
   // load faces (again)
   glGenBuffers(1, &faceIndexesID);
@@ -55,6 +58,7 @@ Model Model::read(const std::string& modelPath, float scale)
     switch (version)
     {
     case 1: readVersion1(model, file); break;
+    case 2: readVersion2(model, file); break;
     }
   }
 
@@ -92,9 +96,79 @@ void readVersion1(Model& model, std::ifstream& file)
   // read vertices
   int vertexCount;
   file >> vertexCount;
-  model.vertexData.resize(vertexCount * 9); // 9 floats per vertex (x, y, z, g1, g2, g3, w1, w2, w3)
-  for (std::size_t i = 0; i < model.vertexData.size(); ++i)
-    file >> model.vertexData[i];
+  model.vertexData.resize(vertexCount * 10); // 10 floats per vertex (x, y, z, g1, g2, g3, w1, w2, w3, o)
+  for (std::size_t i = 0; i < model.vertexData.size(); i += 10)
+  {
+    file >> model.vertexData[i + 0];
+    file >> model.vertexData[i + 1];
+    file >> model.vertexData[i + 2];
+    file >> model.vertexData[i + 3];
+    file >> model.vertexData[i + 4];
+    file >> model.vertexData[i + 5];
+    file >> model.vertexData[i + 6];
+    file >> model.vertexData[i + 7];
+    file >> model.vertexData[i + 8];
+    model.vertexData[i + 9] = 1.0f;
+  }
+
+  // read faces
+  int faceCount;
+  file >> faceCount;
+  model.faceIndexes.resize(faceCount * 3); // 3 ints per line (vId1, vId2, vId3)
+  for (std::size_t i = 0; i < model.faceIndexes.size(); ++i)
+    file >> model.faceIndexes[i];
+
+  // read lines
+  int lineCount;
+  file >> lineCount;
+  model.lineIndexes.resize(lineCount * 4); // 4 ints per line (vId1, vId2, vId3, vId4)
+  for (std::size_t i = 0; i < model.lineIndexes.size(); ++i)
+    file >> model.lineIndexes[i];
+
+  // read bones
+  int jointCount;
+  file >> jointCount;
+  model.joints.resize(jointCount);
+  for (int i = 0; i < jointCount; ++i)
+  {
+    int parentIndex;
+    glm::vec3 location;
+    glm::quat rotation;
+
+    file >> parentIndex;
+
+    file >> location[0];
+    file >> location[1];
+    file >> location[2];
+
+    file >> rotation[3]; // w
+    file >> rotation[0]; // x
+    file >> rotation[1]; // y
+    file >> rotation[2]; // z
+
+    model.joints[i] = Joint(parentIndex, location, rotation);
+  }
+}
+
+void readVersion2(Model& model, std::ifstream& file)
+{
+  // read vertices
+  int vertexCount;
+  file >> vertexCount;
+  model.vertexData.resize(vertexCount * 10); // 10 floats per vertex (x, y, z, g1, g2, g3, w1, w2, w3, o)
+  for (std::size_t i = 0; i < model.vertexData.size(); i += 10)
+  {
+    file >> model.vertexData[i + 0];
+    file >> model.vertexData[i + 1];
+    file >> model.vertexData[i + 2];
+    file >> model.vertexData[i + 3];
+    file >> model.vertexData[i + 4];
+    file >> model.vertexData[i + 5];
+    file >> model.vertexData[i + 6];
+    file >> model.vertexData[i + 7];
+    file >> model.vertexData[i + 8];
+    file >> model.vertexData[i + 9];
+  }
 
   // read faces
   int faceCount;

@@ -3,7 +3,7 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aGroups;
 layout (location = 2) in vec3 aWeights;
-// layout (location = 3) in vec2 uv_coords_in;
+layout (location = 3) in float order;
 
 // out vec2 uv_coords;
 
@@ -15,7 +15,7 @@ uniform vec3 view_reference;
 
 uniform float ratio;
 uniform float frame;
-
+uniform float draw_percentage;
 uniform mat4 positions[24];
 
 float variation(float v)

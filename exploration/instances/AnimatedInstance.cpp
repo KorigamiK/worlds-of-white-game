@@ -8,12 +8,14 @@ AnimatedInstance::AnimatedInstance(Model* model, glm::vec3 position, float rotat
 void AnimatedInstance::draw_faces(GameState& state, Program& program, float time)
 {
   animator->applyAnimation(program, time, model->joints);
+  program.setFloat("draw_percentage", 1.0f);
   model->draw_faces(program, time, position, rotation, scale);
 }
 
 void AnimatedInstance::draw_lines(GameState& state, Program& program, float time)
 {
   animator->applyAnimation(program, time, model->joints);
+  program.setFloat("draw_percentage", 1.0f);
   model->draw_lines(program, time, position, rotation, scale);
 }
 

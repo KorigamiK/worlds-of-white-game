@@ -299,7 +299,7 @@ int main()
   // create terrain
   auto terrainIndices = testlandModel.faceIndexes;
   auto terrainVertices = testlandModel.vertexData;
-  auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, (int*)terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / 9, terrainVertices.data(), 9 * sizeof(float));
+  auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, (int*)terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / Model::DATA_COUNT_PER_VERTEX, terrainVertices.data(), Model::DATA_COUNT_PER_VERTEX * sizeof(float));
   auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
   auto terrainMotionState = new btDefaultMotionState();
   auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShape);

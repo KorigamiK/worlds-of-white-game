@@ -173,9 +173,7 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
     character->position.y,
     character->position.z);
 
-  const auto DATA_COUNT_PER_VERTEX = 9;
-
-  const auto POINT_COUNT = characterModel.vertexData.size() / 9;
+  const auto POINT_COUNT = characterModel.vertexData.size() / Model::DATA_COUNT_PER_VERTEX;
   const auto POINT_DISTANCE_MAX = 2.0f;
   const auto POINT_WORLD_MARGIN = 0.0625f;
 
@@ -268,7 +266,7 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
   };
 
   auto newVertexData = characterModel.vertexData;
-  for (std::size_t i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
+  for (std::size_t i = 0; i < newVertexData.size(); i += Model::DATA_COUNT_PER_VERTEX)
   {
     // should be a unit vector
     auto point = btVector3(
@@ -282,7 +280,7 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
     auto closestFraction = getRayIntersectionMesh(rayStart, rayEnd);
     auto closestAmount = closestFraction * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
 
-    pointBounds[i / DATA_COUNT_PER_VERTEX] = closestAmount - POINT_WORLD_MARGIN;
+    pointBounds[i / Model::DATA_COUNT_PER_VERTEX] = closestAmount - POINT_WORLD_MARGIN;
 
     if (closestAmount < 1.0f)
     {
@@ -295,9 +293,9 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
     }
   }
 
-  for (std::size_t i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
+  for (std::size_t i = 0; i < newVertexData.size(); i += Model::DATA_COUNT_PER_VERTEX)
   {
-    auto pointBound = pointBounds[i / DATA_COUNT_PER_VERTEX];
+    auto pointBound = pointBounds[i / Model::DATA_COUNT_PER_VERTEX];
 
     auto x = newVertexData[i + 0];
     auto y = newVertexData[i + 1];
