@@ -1,6 +1,8 @@
 #ifndef WILT_CHARACTERINSTANCE_H
 #define WILT_CHARACTERINSTANCE_H
 
+#include <chrono>
+
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
@@ -12,8 +14,12 @@ class CharacterInstance : public PhysicsInstance
 public:
   CharacterInstance(Model* model, glm::vec3 position, float rotation, float scale = 1.0f);
 
-  float speed = 0.0;
-  glm::vec3 velocity{ 0, 1, 0 };
+  glm::vec3 velocity;
+  
+  bool dashing;
+  bool dashUsed;
+  std::chrono::time_point<std::chrono::high_resolution_clock> dashTime;
+  glm::vec3 dashDirection;
 
 public:
   // Instance overrides

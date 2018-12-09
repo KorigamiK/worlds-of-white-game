@@ -2,10 +2,13 @@
 
 #include <glm/gtx/intersect.hpp>
 
+using namespace std::chrono_literals;
+
 const auto CHARACTER_SPEED = 4.0f;
 const auto CHARACTER_JUMP_SPEED = 4.0f;
 const auto CHARACTER_JUMP_RISE_SPEED = 0.04f;
 const auto CHARACTER_DASH_SPEED = 20.0f;
+const auto CHARACTER_DASH_DURATION = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(0.125s);
 const auto CHARACTER_DEADZONE = 0.12f;
 
 const auto BUTTON_JUMP = 0;
@@ -16,94 +19,113 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
 
 CharacterInstance::CharacterInstance(Model* model, glm::vec3 position, float rotation, float scale)
   : PhysicsInstance{ model, position, rotation, createCharacterBody(position), scale }
+  , velocity{ 0, 1, 0 }
+  , dashing{ false }
+  , dashUsed{ false }
+  , dashTime{ }
+  , dashDirection{ }
 { }
 
 void CharacterInstance::update(GameState& state, float time)
 {
-  { // keyboard
-    if (glfwGetKey(state.window, GLFW_KEY_A) == GLFW_PRESS) {
-      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
-      rotation += glm::radians(1.0f);
-    }
-    if (glfwGetKey(state.window, GLFW_KEY_D) == GLFW_PRESS) {
-      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
-      rotation -= glm::radians(1.0f);
-    }
-    if (glfwGetKey(state.window, GLFW_KEY_W) == GLFW_PRESS) {
-      auto velocity = body->getLinearVelocity();
-      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, -3.0f, 0);
-      new_velocity.setZ(velocity.z());
-      body->setLinearVelocity(new_velocity);
-      body->activate();
-    }
-    if (glfwGetKey(state.window, GLFW_KEY_S) == GLFW_PRESS) {
-      auto velocity = body->getLinearVelocity();
-      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, 3.0f, 0);
-      new_velocity.setZ(velocity.z());
-      body->setLinearVelocity(new_velocity);
-      body->activate();
-    }
-    if (glfwGetKey(state.window, GLFW_KEY_SPACE) == GLFW_PRESS && state.canJump)
-    {
-      auto velocity = body->getLinearVelocity();
-      velocity.setZ(5.0f);
-      body->setLinearVelocity(velocity);
-      body->activate();
-    }
+  if (dashUsed && *state.canJump)
+  {
+    dashUsed = false;
   }
 
-  { // controller
-    auto buttonsCount = 0;
-    auto buttons = glfwGetJoystickButtons(state.selectedJoystickId, &buttonsCount);
-    auto axesCount = 0;
-    auto axes = glfwGetJoystickAxes(state.selectedJoystickId, &axesCount);
-
-    auto xAxis = axes[0];
-    auto yAxis = -axes[1];
-
-    auto angle = std::atan2(yAxis, xAxis);
-    auto magnitude = std::hypot(xAxis, yAxis);
-
-    if (magnitude > CHARACTER_DEADZONE)
-    {
-      angle += state.camera->getAngle() + glm::radians(90.0f);
-      rotation = angle;
-
-      auto old_velocity = body->getLinearVelocity();
-      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_SPEED, 0);
-      new_velocity.setZ(old_velocity.z());
-      body->setLinearVelocity(new_velocity);
-      body->activate();
+  if (dashing)
+  {
+    body->setLinearVelocity(btVector3(dashDirection.x, dashDirection.y, dashDirection.z));
+    if (dashTime <= std::chrono::high_resolution_clock::now())
+      dashing = false;
+  }
+  else
+  {
+    { // keyboard
+      if (glfwGetKey(state.window, GLFW_KEY_A) == GLFW_PRESS) {
+        velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
+        rotation += glm::radians(1.0f);
+      }
+      if (glfwGetKey(state.window, GLFW_KEY_D) == GLFW_PRESS) {
+        velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
+        rotation -= glm::radians(1.0f);
+      }
+      if (glfwGetKey(state.window, GLFW_KEY_W) == GLFW_PRESS) {
+        auto velocity = body->getLinearVelocity();
+        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, -3.0f, 0);
+        new_velocity.setZ(velocity.z());
+        body->setLinearVelocity(new_velocity);
+        body->activate();
+      }
+      if (glfwGetKey(state.window, GLFW_KEY_S) == GLFW_PRESS) {
+        auto velocity = body->getLinearVelocity();
+        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, 3.0f, 0);
+        new_velocity.setZ(velocity.z());
+        body->setLinearVelocity(new_velocity);
+        body->activate();
+      }
+      if (glfwGetKey(state.window, GLFW_KEY_SPACE) == GLFW_PRESS && *state.canJump)
+      {
+        auto velocity = body->getLinearVelocity();
+        velocity.setZ(5.0f);
+        body->setLinearVelocity(velocity);
+        body->activate();
+      }
     }
 
-    if (buttons[BUTTON_JUMP] == GLFW_PRESS && state.canJump)
-    {
-      auto velocity = body->getLinearVelocity();
-      velocity.setZ(CHARACTER_JUMP_SPEED);
-      body->setLinearVelocity(velocity);
-      body->activate();
-    }
-    if (buttons[BUTTON_JUMP] == GLFW_PRESS && !state.canJump && body->getLinearVelocity().z() > 0.0f)
-    {
-      auto velocity = body->getLinearVelocity();
-      velocity.setZ(velocity.getZ() + CHARACTER_JUMP_RISE_SPEED);
-      body->setLinearVelocity(velocity);
-      body->activate();
-    }
+    { // controller
+      auto buttonsCount = 0;
+      auto buttons = glfwGetJoystickButtons(state.selectedJoystickId, &buttonsCount);
+      auto axesCount = 0;
+      auto axes = glfwGetJoystickAxes(state.selectedJoystickId, &axesCount);
 
-    if (buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= CHARACTER_DEADZONE)
-    {
-      auto velocity = body->getLinearVelocity();
-      velocity.setZ(-CHARACTER_DASH_SPEED);
-      body->setLinearVelocity(velocity);
-      body->activate();
-    }
-    if (buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > CHARACTER_DEADZONE)
-    {
-      auto old_velocity = body->getLinearVelocity();
-      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_DASH_SPEED, 0);
-      body->setLinearVelocity(new_velocity);
-      body->activate();
+      auto xAxis = axes[0];
+      auto yAxis = -axes[1];
+
+      auto angle = std::atan2(yAxis, xAxis);
+      auto magnitude = std::hypot(xAxis, yAxis);
+
+      if (magnitude > CHARACTER_DEADZONE)
+      {
+        angle += state.camera->getAngle() + glm::radians(90.0f);
+        rotation = angle;
+
+        auto old_velocity = body->getLinearVelocity();
+        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_SPEED, 0);
+        new_velocity.setZ(old_velocity.z());
+        body->setLinearVelocity(new_velocity);
+        body->activate();
+      }
+      if (buttons[BUTTON_JUMP] == GLFW_PRESS && *state.canJump)
+      {
+        auto velocity = body->getLinearVelocity();
+        velocity.setZ(CHARACTER_JUMP_SPEED);
+        body->setLinearVelocity(velocity);
+        body->activate();
+      }
+      if (buttons[BUTTON_JUMP] == GLFW_PRESS && !*state.canJump && body->getLinearVelocity().z() > 0.0f)
+      {
+        auto velocity = body->getLinearVelocity();
+        velocity.setZ(velocity.getZ() + CHARACTER_JUMP_RISE_SPEED);
+        body->setLinearVelocity(velocity);
+        body->activate();
+      }
+      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= CHARACTER_DEADZONE)
+      {
+        dashing = true;
+        dashUsed = true;
+        dashDirection = glm::vec3(0, 0, -1) * CHARACTER_DASH_SPEED;
+        dashTime = std::chrono::high_resolution_clock::now() + CHARACTER_DASH_DURATION;
+      }
+      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > CHARACTER_DEADZONE)
+      {
+        auto direction = btVector3(0, 1, 0).rotate({ 0, 0, 1 }, rotation);
+
+        dashing = true;
+        dashUsed = true;
+        dashDirection = glm::vec3(direction.x(), direction.y(), direction.z()) * CHARACTER_DASH_SPEED;
+        dashTime = std::chrono::high_resolution_clock::now() + CHARACTER_DASH_DURATION;
+      }
     }
   }
 
