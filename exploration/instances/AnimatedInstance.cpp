@@ -5,19 +5,19 @@ AnimatedInstance::AnimatedInstance(Model* model, glm::vec3 position, float rotat
   , animator{ animator }
 { }
 
-void AnimatedInstance::draw_faces(Program& program, float time)
+void AnimatedInstance::draw_faces(GameState& state, Program& program, float time)
 {
   animator->applyAnimation(program, time, model->joints);
   model->draw_faces(program, time, position, rotation, scale);
 }
 
-void AnimatedInstance::draw_lines(Program& program, float time)
+void AnimatedInstance::draw_lines(GameState& state, Program& program, float time)
 {
   animator->applyAnimation(program, time, model->joints);
   model->draw_lines(program, time, position, rotation, scale);
 }
 
-void AnimatedInstance::draw_debug(Program& program, float time)
+void AnimatedInstance::draw_debug(GameState& state, Program& program, float time)
 {
 
 }

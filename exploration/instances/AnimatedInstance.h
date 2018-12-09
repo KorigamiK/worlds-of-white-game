@@ -14,9 +14,9 @@ public:
 
 public:
   // Instance overrides
-  void draw_faces(Program& program, float time) override;
-  void draw_lines(Program& program, float time) override;
-  void draw_debug(Program& program, float time) override;
+  void draw_faces(GameState& state, Program& program, float time) override;
+  void draw_lines(GameState& state, Program& program, float time) override;
+  void draw_debug(GameState& state, Program& program, float time) override;
 
 }; // class AnimatedInstance
 

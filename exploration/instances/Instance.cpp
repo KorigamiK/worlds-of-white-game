@@ -12,21 +12,21 @@ void Instance::update(GameState& state, float time)
 
 }
 
-void Instance::draw_faces(Program& program, float time)
+void Instance::draw_faces(GameState& state, Program& program, float time)
 {
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   model->draw_faces(program, time, position, rotation, scale);
 }
 
-void Instance::draw_lines(Program& program, float time)
+void Instance::draw_lines(GameState& state, Program& program, float time)
 {
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   model->draw_lines(program, time, position, rotation, scale);
 }
 
-void Instance::draw_debug(Program& program, float time)
+void Instance::draw_debug(GameState& state, Program& program, float time)
 {
 
 }

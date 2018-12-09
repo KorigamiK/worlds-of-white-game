@@ -25,9 +25,9 @@ public:
 
   virtual void update(GameState& state, float time);
 
-  virtual void draw_faces(Program& program, float time);
-  virtual void draw_lines(Program& program, float time);
-  virtual void draw_debug(Program& program, float time);
+  virtual void draw_faces(GameState& state, Program& program, float time);
+  virtual void draw_lines(GameState& state, Program& program, float time);
+  virtual void draw_debug(GameState& state, Program& program, float time);
 
 }; // class Instance
 
