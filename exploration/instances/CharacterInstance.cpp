@@ -2,32 +2,112 @@
 
 #include <glm/gtx/intersect.hpp>
 
+const auto CHARACTER_SPEED = 4.0f;
+const auto CHARACTER_JUMP_SPEED = 4.0f;
+const auto CHARACTER_JUMP_RISE_SPEED = 0.04f;
+const auto CHARACTER_DASH_SPEED = 20.0f;
+const auto CHARACTER_DEADZONE = 0.12f;
+
+const auto BUTTON_JUMP = 0;
+const auto BUTTON_DASH = 2;
+
+btRigidBody* createCharacterBody(glm::vec3 position);
 void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh);
+
+CharacterInstance::CharacterInstance(Model* model, glm::vec3 position, float rotation, float scale)
+  : PhysicsInstance{ model, position, rotation, createCharacterBody(position), scale }
+{ }
 
 void CharacterInstance::update(GameState& state, float time)
 {
-  if (glfwGetKey(state.window, GLFW_KEY_A) == GLFW_PRESS) {
-    velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
-    rotation += glm::radians(1.0f);
-  }
-  if (glfwGetKey(state.window, GLFW_KEY_D) == GLFW_PRESS) {
-    velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
-    rotation -= glm::radians(1.0f);
+  { // keyboard
+    if (glfwGetKey(state.window, GLFW_KEY_A) == GLFW_PRESS) {
+      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
+      rotation += glm::radians(1.0f);
+    }
+    if (glfwGetKey(state.window, GLFW_KEY_D) == GLFW_PRESS) {
+      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
+      rotation -= glm::radians(1.0f);
+    }
+    if (glfwGetKey(state.window, GLFW_KEY_W) == GLFW_PRESS) {
+      auto velocity = body->getLinearVelocity();
+      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, -3.0f, 0);
+      new_velocity.setZ(velocity.z());
+      body->setLinearVelocity(new_velocity);
+      body->activate();
+    }
+    if (glfwGetKey(state.window, GLFW_KEY_S) == GLFW_PRESS) {
+      auto velocity = body->getLinearVelocity();
+      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, 3.0f, 0);
+      new_velocity.setZ(velocity.z());
+      body->setLinearVelocity(new_velocity);
+      body->activate();
+    }
+    if (glfwGetKey(state.window, GLFW_KEY_SPACE) == GLFW_PRESS && state.canJump)
+    {
+      auto velocity = body->getLinearVelocity();
+      velocity.setZ(5.0f);
+      body->setLinearVelocity(velocity);
+      body->activate();
+    }
   }
 
-  if (glfwGetKey(state.window, GLFW_KEY_W) == GLFW_PRESS)
-  {
-    if (glfwGetKey(state.window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-      speed = 0.003f;
-    else
-      speed = 0.0005f;
-  }
-  else
-  {
-    speed = 0.0f;
+  { // controller
+    auto buttonsCount = 0;
+    auto buttons = glfwGetJoystickButtons(state.selectedJoystickId, &buttonsCount);
+    auto axesCount = 0;
+    auto axes = glfwGetJoystickAxes(state.selectedJoystickId, &axesCount);
+
+    auto xAxis = axes[0];
+    auto yAxis = -axes[1];
+
+    auto angle = std::atan2(yAxis, xAxis);
+    auto magnitude = std::hypot(xAxis, yAxis);
+
+    if (magnitude > CHARACTER_DEADZONE)
+    {
+      angle += state.camera->getAngle() + glm::radians(90.0f);
+      rotation = angle;
+
+      auto old_velocity = body->getLinearVelocity();
+      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_SPEED, 0);
+      new_velocity.setZ(old_velocity.z());
+      body->setLinearVelocity(new_velocity);
+      body->activate();
+    }
+
+    if (buttons[BUTTON_JUMP] == GLFW_PRESS && state.canJump)
+    {
+      auto velocity = body->getLinearVelocity();
+      velocity.setZ(CHARACTER_JUMP_SPEED);
+      body->setLinearVelocity(velocity);
+      body->activate();
+    }
+    if (buttons[BUTTON_JUMP] == GLFW_PRESS && !state.canJump && body->getLinearVelocity().z() > 0.0f)
+    {
+      auto velocity = body->getLinearVelocity();
+      velocity.setZ(velocity.getZ() + CHARACTER_JUMP_RISE_SPEED);
+      body->setLinearVelocity(velocity);
+      body->activate();
+    }
+
+    if (buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= CHARACTER_DEADZONE)
+    {
+      auto velocity = body->getLinearVelocity();
+      velocity.setZ(-CHARACTER_DASH_SPEED);
+      body->setLinearVelocity(velocity);
+      body->activate();
+    }
+    if (buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > CHARACTER_DEADZONE)
+    {
+      auto old_velocity = body->getLinearVelocity();
+      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_DASH_SPEED, 0);
+      body->setLinearVelocity(new_velocity);
+      body->activate();
+    }
   }
 
-  position += velocity * speed;
+  PhysicsInstance::update(state, time);
 }
 
 void CharacterInstance::draw_faces(GameState& state, Program& program, float time)
@@ -44,6 +124,21 @@ void CharacterInstance::draw_lines(GameState& state, Program& program, float tim
 void CharacterInstance::draw_debug(GameState& state, Program& program, float time)
 {
 
+}
+
+btRigidBody* createCharacterBody(glm::vec3 position)
+{
+  auto characterShape = new btSphereShape(0.25);
+  auto characterMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, position.z + 1.0f)));
+  auto characterBody = new btRigidBody(1.0, characterMotionState, characterShape);
+  characterBody->setAngularFactor(0);
+  characterBody->setFriction(0.95f);
+  characterBody->setDamping(0.5f, 0.0f);
+  characterBody->setRestitution(0.0f);
+  characterBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+  characterBody->setCcdSweptSphereRadius(0.25f);
+  characterBody->setCcdMotionThreshold(0.00000001f);
+  return characterBody;
 }
 
 void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh)
@@ -136,7 +231,7 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
     auto rayLength = (rayStart - rayEnd).length();
     auto closestFraction = 1.0f;
 
-    for (int i = 0; i < meshTriangles.size(); i += 3)
+    for (std::size_t i = 0; i < meshTriangles.size(); i += 3)
     {
       glm::vec3 data;
       if (glm::intersectRayTriangle(rayStart, rayEnd - rayStart, meshTriangles[i], meshTriangles[i + 1], meshTriangles[i + 2], data))
@@ -151,7 +246,7 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
   };
 
   auto newVertexData = characterModel.vertexData;
-  for (int i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
+  for (std::size_t i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
   {
     // should be a unit vector
     auto point = btVector3(
@@ -169,7 +264,7 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
 
     if (closestAmount < 1.0f)
     {
-      for (int j = 0; j < probeVectors.size(); ++j)
+      for (std::size_t j = 0; j < probeVectors.size(); ++j)
       {
         auto& ang = probeVectors[j];
         float PI = 3.14159265358979f;
@@ -178,16 +273,16 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
     }
   }
 
-  for (int i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
+  for (std::size_t i = 0; i < newVertexData.size(); i += DATA_COUNT_PER_VERTEX)
   {
     auto pointBound = pointBounds[i / DATA_COUNT_PER_VERTEX];
 
     auto x = newVertexData[i + 0];
     auto y = newVertexData[i + 1];
     auto z = newVertexData[i + 2];
-    auto g1 = newVertexData[i + 3];
-    auto g2 = newVertexData[i + 4];
-    auto g3 = newVertexData[i + 5];
+    auto g1 = (std::size_t)newVertexData[i + 3];
+    auto g2 = (std::size_t)newVertexData[i + 4];
+    auto g3 = (std::size_t)newVertexData[i + 5];
     auto w1 = newVertexData[i + 6];
     auto w2 = newVertexData[i + 7];
     auto w3 = newVertexData[i + 8];

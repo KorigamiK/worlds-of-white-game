@@ -5,6 +5,8 @@
 #include <glfw/glfw3.h>
 #include <btBulletDynamicsCommon.h>
 
+class ICamera;
+
 class GameState
 {
 public:
@@ -12,6 +14,10 @@ public:
   int selectedJoystickId; 
   btCollisionWorld* world;
   btBvhTriangleMeshShape* terrain;
+  bool* canJump;
+  ICamera* camera;
 };
+
+#include "cameras/ICamera.h"
 
 #endif // !WILT_GAMESTATE_H

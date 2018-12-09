@@ -5,6 +5,11 @@ PhysicsInstance::PhysicsInstance(Model* model, glm::vec3 position, float rotatio
   , body{ body }
 { }
 
+btRigidBody* PhysicsInstance::getBody()
+{
+  return body;
+}
+
 void PhysicsInstance::update(GameState& state, float time)
 {
   btTransform bodyTransform;

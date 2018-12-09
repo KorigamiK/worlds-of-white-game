@@ -5,11 +5,14 @@
 
 class PhysicsInstance : public Instance
 {
-public:
+protected:
   btRigidBody* body;
 
 public:
   PhysicsInstance(Model* model, glm::vec3 position, float rotation, btRigidBody* body, float scale = 1.0f);
+
+public:
+  btRigidBody* getBody();
 
 public:
   // Instance overrides

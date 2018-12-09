@@ -5,12 +5,12 @@
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "Instance.h"
+#include "PhysicsInstance.h"
 
-class CharacterInstance : public Instance
+class CharacterInstance : public PhysicsInstance
 {
 public:
-  using Instance::Instance;
+  CharacterInstance(Model* model, glm::vec3 position, float rotation, float scale = 1.0f);
 
   float speed = 0.0;
   glm::vec3 velocity{ 0, 1, 0 };

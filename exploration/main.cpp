@@ -207,9 +207,10 @@ int main()
   auto testlandModel = Model::read("models/testland_model.txt", "models/testland_texture.jpg", 1.0f);
   auto ballModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 1.0f);
 
+  auto character = CharacterInstance{ &ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), 0.5f };
   std::vector<Instance*> instances =
   {
-    new CharacterInstance(&ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), 0.5f),
+    &character,
     new Instance(&testlandModel, { 0, 0, 0 }, 0.0, 1.0f)
   };
 
@@ -321,26 +322,8 @@ int main()
   terrainShape->setMargin(0.0f);
   dynamicsWorld->addRigidBody(terrainBody);
 
-  struct InstanceBinding {
-    btRigidBody* body = nullptr;
-    glm::vec3 offset = glm::vec3();
-  };
-
-  std::map<Instance*, InstanceBinding> instancesToBodies;
-
   // create character
-  auto characterShape = new btSphereShape(0.25);
-  auto characterMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, currentInstance->position.z + 1.0f)));
-  auto characterBody = new btRigidBody(1.0, characterMotionState, characterShape);
-  characterBody->setAngularFactor(0);
-  characterBody->setFriction(0.95f);
-  characterBody->setDamping(0.5f, 0.0f);
-  characterBody->setRestitution(0.0f);
-  characterBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
-  characterBody->setCcdSweptSphereRadius(0.25f);
-  characterBody->setCcdMotionThreshold(0.00000001f);
-  dynamicsWorld->addRigidBody(characterBody);
-  instancesToBodies[instances[0]] = { characterBody, glm::vec3(0, 0, 0) };
+  dynamicsWorld->addRigidBody(character.getBody());
 
   auto printJoystickInfo = [&](int joystickId)
   {
@@ -390,9 +373,8 @@ int main()
   if (selectedJoystickId == -1)
     return -1;
 
-  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape };
+  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam };
 
-  auto character = instances[0];
   while (!glfwWindowShouldClose(window))
   {
     float time = i / 144.0f;
@@ -424,104 +406,14 @@ int main()
       instanceIndex = (instanceIndex != 0) ? instanceIndex - 1 : instances.size() - 1;
       currentInstance = instances[instanceIndex];
     }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-      auto rotation = character->rotation;
-      auto velocity = characterBody->getLinearVelocity();
-      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, -3.0f, 0);
-      new_velocity.setZ(velocity.z());
-      characterBody->setLinearVelocity(new_velocity);
-      characterBody->activate();
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-      auto rotation = character->rotation;
-      auto velocity = characterBody->getLinearVelocity();
-      auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, 3.0f, 0);
-      new_velocity.setZ(velocity.z());
-      characterBody->setLinearVelocity(new_velocity);
-      characterBody->activate();
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && canJump)
-    {
-      auto velocity = characterBody->getLinearVelocity();
-      velocity.setZ(5.0f);
-      characterBody->setLinearVelocity(velocity);
-      characterBody->activate();
-    }
-
-    { // do character movement
-      const auto CHARACTER_SPEED = 4.0f;
-      const auto CHARACTER_JUMP_SPEED = 4.0f;
-      const auto CHARACTER_JUMP_RISE_SPEED = 0.04f;
-      const auto CHARACTER_DASH_SPEED = 20.0f;
-      const auto CHARACTER_DEADZONE = 0.12f;
-
-      const auto BUTTON_JUMP = 0;
-      const auto BUTTON_DASH = 2;
-
-      auto xAxis =  axes[0];
-      auto yAxis = -axes[1];
-
-      auto angle = std::atan2(yAxis, xAxis);
-      auto magnitude = std::hypot(xAxis, yAxis);
-
-      if (magnitude > CHARACTER_DEADZONE)
-      {
-        angle += followCam->getAngle() + glm::radians(90.0f);
-        character->rotation =  angle;
-
-        auto old_velocity = characterBody->getLinearVelocity();
-        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_SPEED, 0);
-        new_velocity.setZ(old_velocity.z());
-        characterBody->setLinearVelocity(new_velocity);
-        characterBody->activate();
-      }
-
-      if (buttons[BUTTON_JUMP] == GLFW_PRESS && canJump)
-      {
-        auto velocity = characterBody->getLinearVelocity();
-        velocity.setZ(CHARACTER_JUMP_SPEED);
-        characterBody->setLinearVelocity(velocity);
-        characterBody->activate();
-      }
-      if (buttons[BUTTON_JUMP] == GLFW_PRESS && !canJump && characterBody->getLinearVelocity().z() > 0.0f)
-      {
-        auto velocity = characterBody->getLinearVelocity();
-        velocity.setZ(velocity.getZ() + CHARACTER_JUMP_RISE_SPEED);
-        characterBody->setLinearVelocity(velocity);
-        characterBody->activate();
-      }
-
-      if (buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= CHARACTER_DEADZONE)
-      {
-        auto velocity = characterBody->getLinearVelocity();
-        velocity.setZ(-CHARACTER_DASH_SPEED);
-        characterBody->setLinearVelocity(velocity);
-        characterBody->activate();
-      }
-      if (buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > CHARACTER_DEADZONE)
-      {
-        auto old_velocity = characterBody->getLinearVelocity();
-        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_DASH_SPEED, 0);
-        characterBody->setLinearVelocity(new_velocity);
-        characterBody->activate();
-      }
-    }
 
     if (!paused)
     {
       dynamicsWorld->stepSimulation(1.0f / 144.0f, 2, 1.0f / 120.0f);
 
       for (auto& instance : instances)
-      {
         instance->update(gameState, time);
-        if (instancesToBodies[instance].body != nullptr)
-        {
-          btTransform bodyTransform;
-          instancesToBodies[instance].body->getMotionState()->getWorldTransform(bodyTransform);
-          btVector3 bodyPosition = bodyTransform.getOrigin();
-          instance->position = glm::vec3(bodyPosition.x(), bodyPosition.y(), bodyPosition.z()) + instancesToBodies[instance].offset;
-        }
-      }
+
       cam->update(gameState, time);
     }
 
