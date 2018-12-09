@@ -28,11 +28,12 @@
 #include "graphics/joint.h"
 #include "graphics/jointPose.h"
 #include "graphics/model.h"
-#include "instances/modelInstance.h"
 #include "utilities/narray/narray.hpp"
 #include "cameras/FollowCamera.h"
 #include "cameras/TrackCamera.h"
 #include "cameras/FreeCamera.h"
+#include "instances/ModelInstance.h"
+#include "instances/CharacterInstance.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -107,53 +108,6 @@ public:
     }
 
     glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), animatedTransforms.size(), false, glm::value_ptr(animatedTransforms[0]));
-  }
-};
-
-//IAnimator* walk_animator;
-//IAnimator* trudge_animator;
-//IAnimator* stand_animator;
-
-class CharacterInstance : public ModelInstance
-{
-public:
-  using ModelInstance::ModelInstance;
-
-  float speed = 0.0;
-  glm::vec3 velocity{ 0, 1, 0 };
-
-public:
-  void update(GLFWwindow *window, float time) override
-  {
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
-      rotation += glm::radians(1.0f);
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-      velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
-      rotation -= glm::radians(1.0f);
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-      if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-      {
-        speed = 0.003f;
-        //animator = trudge_animator;
-      }
-      else
-      {
-        speed = 0.0005f;
-        //animator = walk_animator;
-      }
-    }
-    else
-    {
-      speed = 0.0f;
-      //animator = stand_animator;
-    }
-
-    position += velocity * speed;
   }
 };
 

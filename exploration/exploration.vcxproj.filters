@@ -21,6 +21,7 @@
     <ClCompile Include="cameras\FreeCamera.cpp" />
     <ClCompile Include="cameras\TrackCamera.cpp" />
     <ClCompile Include="instances\ModelInstance.cpp" />
+    <ClCompile Include="instances\CharacterInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -58,5 +59,6 @@
     <ClInclude Include="cameras\FreeCamera.h" />
     <ClInclude Include="instances\ModelInstance.h" />
     <ClInclude Include="graphics\IAnimator.h" />
+    <ClInclude Include="instances\CharacterInstance.h" />
   </ItemGroup>
 </Project>
