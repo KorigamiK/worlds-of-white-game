@@ -9,6 +9,9 @@ file = open('./temp_model.txt', 'w+')
 mesh = obj.data;
 alwaysDrawGroupId = obj.vertex_groups.find("always_draw");
 
+# write version
+print(1, file=file)
+
 # write vertices
 print(len(mesh.vertices), file=file)
 for vertex in mesh.vertices:

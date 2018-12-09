@@ -7,6 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+void readVersion1(Model& model, std::ifstream& file);
+
 void Model::load()
 {
   // load vertices
@@ -46,49 +48,13 @@ Model Model::read(const std::string& modelPath, float scale)
   {
     std::ifstream file(modelPath);
 
-    // read vertices
-    int vertexCount;
-    file >> vertexCount;
-    model.vertexData.resize(vertexCount * 9); // 9 floats per vertex (x, y, z, g1, g2, g3, w1, w2, w3)
-    for (std::size_t i = 0; i < model.vertexData.size(); ++i)
-      file >> model.vertexData[i];
+    // read version
+    int version;
+    file >> version;
 
-    // read faces
-    int faceCount;
-    file >> faceCount;
-    model.faceIndexes.resize(faceCount * 3); // 3 ints per line (vId1, vId2, vId3)
-    for (std::size_t i = 0; i < model.faceIndexes.size(); ++i)
-      file >> model.faceIndexes[i];
-
-    // read lines
-    int lineCount;
-    file >> lineCount;
-    model.lineIndexes.resize(lineCount * 4); // 4 ints per line (vId1, vId2, vId3, vId4)
-    for (std::size_t i = 0; i < model.lineIndexes.size(); ++i)
-      file >> model.lineIndexes[i];
-
-    // read bones
-    int jointCount;
-    file >> jointCount;
-    model.joints.resize(jointCount);
-    for (int i = 0; i < jointCount; ++i)
+    switch (version)
     {
-      int parentIndex;
-      glm::vec3 location;
-      glm::quat rotation;
-
-      file >> parentIndex;
-
-      file >> location[0];
-      file >> location[1];
-      file >> location[2];
-
-      file >> rotation[3]; // w
-      file >> rotation[0]; // x
-      file >> rotation[1]; // y
-      file >> rotation[2]; // z
-
-      model.joints[i] = Joint(parentIndex, location, rotation);
+    case 1: readVersion1(model, file); break;
     }
   }
 
@@ -119,4 +85,52 @@ void Model::draw_lines(Program& program, float time, glm::vec3 position, float r
 
   glBindVertexArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void readVersion1(Model& model, std::ifstream& file)
+{
+  // read vertices
+  int vertexCount;
+  file >> vertexCount;
+  model.vertexData.resize(vertexCount * 9); // 9 floats per vertex (x, y, z, g1, g2, g3, w1, w2, w3)
+  for (std::size_t i = 0; i < model.vertexData.size(); ++i)
+    file >> model.vertexData[i];
+
+  // read faces
+  int faceCount;
+  file >> faceCount;
+  model.faceIndexes.resize(faceCount * 3); // 3 ints per line (vId1, vId2, vId3)
+  for (std::size_t i = 0; i < model.faceIndexes.size(); ++i)
+    file >> model.faceIndexes[i];
+
+  // read lines
+  int lineCount;
+  file >> lineCount;
+  model.lineIndexes.resize(lineCount * 4); // 4 ints per line (vId1, vId2, vId3, vId4)
+  for (std::size_t i = 0; i < model.lineIndexes.size(); ++i)
+    file >> model.lineIndexes[i];
+
+  // read bones
+  int jointCount;
+  file >> jointCount;
+  model.joints.resize(jointCount);
+  for (int i = 0; i < jointCount; ++i)
+  {
+    int parentIndex;
+    glm::vec3 location;
+    glm::quat rotation;
+
+    file >> parentIndex;
+
+    file >> location[0];
+    file >> location[1];
+    file >> location[2];
+
+    file >> rotation[3]; // w
+    file >> rotation[0]; // x
+    file >> rotation[1]; // y
+    file >> rotation[2]; // z
+
+    model.joints[i] = Joint(parentIndex, location, rotation);
+  }
 }
