@@ -10,7 +10,6 @@
 #include "texture.h"
 #include "program.h"
 #include "IAnimator.h"
-#include "../utilities/narray/narray.hpp"
 
 constexpr int MAX_JOINTS = 24;
 
@@ -24,8 +23,6 @@ public:
   unsigned int vertexDataVAO;
   unsigned int lineIndexesID;
   unsigned int faceIndexesID;
-  wilt::NArray<unsigned char, 3> textureData;
-  Texture texture;
   glm::mat4 transform;
   std::vector<Joint> joints;
 
@@ -36,7 +33,7 @@ public:
   void draw_lines(Program& program, float time, glm::vec3 position, float rotation, float scale);
 
 public:
-  static Model read(const std::string& modelPath, const std::string& texturePath, float scale = 1.0f);
+  static Model read(const std::string& modelPath, float scale = 1.0f);
 
 }; // class Model
 

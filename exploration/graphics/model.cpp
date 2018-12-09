@@ -34,14 +34,9 @@ void Model::load()
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-  // load texture
-  texture = Texture::fromMemory((const char*)textureData._basePtr(), GL_RGB, textureData.width(), textureData.height());
-  texture.setMinFilter(GL_LINEAR);
-  texture.setMagFilter(GL_LINEAR);
 }
 
-Model Model::read(const std::string& modelPath, const std::string& texturePath, float scale)
+Model Model::read(const std::string& modelPath, float scale)
 {
   Model model;
 
@@ -96,12 +91,6 @@ Model Model::read(const std::string& modelPath, const std::string& texturePath, 
       model.joints[i] = Joint(parentIndex, location, rotation);
     }
   }
-
-  // read texture
-  cimg_library::CImg<unsigned char> texture;
-  texture.load_jpeg(texturePath.c_str());
-  model.textureData = wilt::NArray<unsigned char, 3>{ { 3, texture.width(), texture.height() }, texture.data(), wilt::PTR::REF };
-  model.textureData = model.textureData.t(0, 1).t(1, 2).clone();
 
   return model;
 }

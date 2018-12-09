@@ -188,8 +188,8 @@ int main()
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
-  auto testlandModel = Model::read("models/testland_model.txt", "models/testland_texture.jpg", 1.0f);
-  auto ballModel = Model::read("models/spirit_model.txt", "models/spirit_texture.jpg", 1.0f);
+  auto testlandModel = Model::read("models/testland_model.txt");
+  auto ballModel = Model::read("models/spirit_model.txt");
 
   auto character = CharacterInstance{ &ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), 0.5f };
   std::vector<Instance*> instances =
@@ -365,11 +365,6 @@ int main()
 
     // input
     processInput(window);
-
-    auto buttonsCount = 0;
-    auto buttons = glfwGetJoystickButtons(selectedJoystickId, &buttonsCount);
-    auto axesCount = 0;
-    auto axes = glfwGetJoystickAxes(selectedJoystickId, &axesCount);
 
     if (i % 15 == 0)
       printJoystickInfo(selectedJoystickId);
