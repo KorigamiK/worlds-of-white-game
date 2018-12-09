@@ -35,6 +35,7 @@
 #include "cameras/FreeCamera.h"
 #include "instances/Instance.h"
 #include "instances/CharacterInstance.h"
+#include "instances/DecorationInstance.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -197,7 +198,7 @@ int main()
   {
     &character,
     new Instance(&testlandModel, { 0, 0, 0 }, 0.0, 1.0f),
-    new Instance(&grassModel, { -5, -5, -0.01f }, 0, 1.0f)
+    new DecorationInstance(&grassModel, { -5, -5, -0.01f }, 0, 1.0f)
   };
 
   // load models
