@@ -190,12 +190,14 @@ int main()
 
   auto testlandModel = Model::read("models/testland_model.txt");
   auto ballModel = Model::read("models/spirit_model.txt");
+  auto grassModel = Model::read("models/tallgrass_model.txt", 0.1f);
 
   auto character = CharacterInstance{ &ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), 0.5f };
   std::vector<Instance*> instances =
   {
     &character,
-    new Instance(&testlandModel, { 0, 0, 0 }, 0.0, 1.0f)
+    new Instance(&testlandModel, { 0, 0, 0 }, 0.0, 1.0f),
+    new Instance(&grassModel, { -5, -5, -0.01f }, 0, 1.0f)
   };
 
   // load models

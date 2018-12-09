@@ -1,6 +1,6 @@
 import os
 import bmesh
-os.chdir('C:\\Users\\kmdre\\Downloads')
+os.chdir('C:\\src\\kmdreko\\exploration\\exploration\\models')
 
 obj = bpy.data.objects['Character'];
 
