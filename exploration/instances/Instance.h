@@ -8,7 +8,6 @@
 #include <glm/glm.hpp>
 
 #include "../GameState.h"
-#include "../graphics/IAnimator.h"
 
 class IAnimator;
 class Model;
@@ -20,10 +19,9 @@ public:
   Model* model;
   glm::vec3 position;
   float rotation;
-  IAnimator* animator;
   float scale;
 
-  Instance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale = 1.0f);
+  Instance(Model* model, glm::vec3 position, float rotation, float scale = 1.0f);
 
   virtual void update(GameState& state, float time);
 
@@ -35,6 +33,5 @@ public:
 
 #include "../graphics/model.h"
 #include "../graphics/program.h"
-#include "../graphics/IAnimator.h"
 
 #endif // !WILT_MODELINSTANCE_H

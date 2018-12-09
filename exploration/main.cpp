@@ -49,8 +49,6 @@ float character_scale = 1.0f;
 Framebuffer faceFramebuffer;
 Framebuffer lineFramebuffer;
 
-constexpr int MAX_JOINTS = 24;
-
 struct AnimationFrame
 {
   std::vector<JointPose> _poses;
@@ -373,8 +371,8 @@ int main()
 
   std::vector<Instance*> instances =
   {
-    new CharacterInstance(&ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), new StaticAnimator{}, 0.5f),
-    new Instance(&testlandModel, { 0, 0, 0 }, 0.0, new StaticAnimator{}, 1.0f)
+    new CharacterInstance(&ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), 0.5f),
+    new Instance(&testlandModel, { 0, 0, 0 }, 0.0, 1.0f)
   };
 
   // load models

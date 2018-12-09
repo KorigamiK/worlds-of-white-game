@@ -12,6 +12,8 @@
 #include "IAnimator.h"
 #include "../utilities/narray/narray.hpp"
 
+constexpr int MAX_JOINTS = 24;
+
 class Model
 {
 public:
@@ -30,8 +32,8 @@ public:
 public:
   void load();
 
-  void draw_faces(Program& program, float time, glm::vec3 position, float rotation, float scale, IAnimator* animator);
-  void draw_lines(Program& program, float time, glm::vec3 position, float rotation, float scale, IAnimator* animator);
+  void draw_faces(Program& program, float time, glm::vec3 position, float rotation, float scale);
+  void draw_lines(Program& program, float time, glm::vec3 position, float rotation, float scale);
 
 public:
   static Model read(const std::string& modelPath, const std::string& texturePath, float scale = 1.0f);

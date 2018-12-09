@@ -22,6 +22,7 @@
     <ClCompile Include="cameras\TrackCamera.cpp" />
     <ClCompile Include="instances\CharacterInstance.cpp" />
     <ClCompile Include="instances\Instance.cpp" />
+    <ClCompile Include="instances\AnimatedInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -61,5 +62,6 @@
     <ClInclude Include="instances\CharacterInstance.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="instances\Instance.h" />
+    <ClInclude Include="instances\AnimatedInstance.h" />
   </ItemGroup>
 </Project>

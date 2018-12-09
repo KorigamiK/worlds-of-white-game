@@ -16,7 +16,11 @@ public:
   glm::vec3 velocity{ 0, 1, 0 };
 
 public:
+  // Instance overrides
   void update(GameState& state, float time) override;
+  void draw_faces(Program& program, float time) override;
+  void draw_lines(Program& program, float time) override;
+  void draw_debug(Program& program, float time) override;
 };
 
 #endif // !WILT_CHARACTERINSTANCE_H

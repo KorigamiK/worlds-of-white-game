@@ -25,3 +25,18 @@ void CharacterInstance::update(GameState& state, float time)
 
   position += velocity * speed;
 }
+
+void CharacterInstance::draw_faces(Program& program, float time)
+{
+  Instance::draw_faces(program, time);
+}
+
+void CharacterInstance::draw_lines(Program& program, float time)
+{
+  Instance::draw_lines(program, time);
+}
+
+void CharacterInstance::draw_debug(Program& program, float time)
+{
+
+}
