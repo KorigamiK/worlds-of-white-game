@@ -20,6 +20,7 @@
 #include <numeric>
 #include <cmath>
 
+#include "GameState.h"
 #include "logging/LoggingManager.h"
 #include "logging/loggers/StreamLogger.h"
 #include "graphics/program.h"
@@ -119,7 +120,7 @@ public:
   float height = 1.0f;
 
 public:
-  void update(GLFWwindow *window, float time) override
+  void update(GameState& state, float time) override
   {
     position += (glm::mat3)glm::rotate(glm::mat4(), rotation, { 0, 0, 1 }) * glm::vec3(0.005f, 0, 0);
     rotation += 0.005f;
@@ -553,6 +554,8 @@ int main()
   if (selectedJoystickId == -1)
     return -1;
 
+  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape };
+
   auto character = instances[0];
   while (!glfwWindowShouldClose(window))
   {
@@ -674,7 +677,7 @@ int main()
 
       for (auto& instance : instances)
       {
-        instance->update(window, time);
+        instance->update(gameState, time);
         if (instancesToBodies[instance].body != nullptr)
         {
           btTransform bodyTransform;
@@ -683,7 +686,7 @@ int main()
           instance->position = glm::vec3(bodyPosition.x(), bodyPosition.y(), bodyPosition.z()) + instancesToBodies[instance].offset;
         }
       }
-      cam->update(window, time, selectedJoystickId);
+      cam->update(gameState, time);
     }
 
     glm::mat4 view = cam->getTransform();

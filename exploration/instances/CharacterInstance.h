@@ -16,7 +16,7 @@ public:
   glm::vec3 velocity{ 0, 1, 0 };
 
 public:
-  void update(GLFWwindow* window, float time) override;
+  void update(GameState& state, float time) override;
 };
 
 #endif // !WILT_CHARACTERINSTANCE_H

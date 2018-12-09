@@ -168,6 +168,7 @@
     <ClInclude Include="graphics\jointPose.h" />
     <ClInclude Include="graphics\model.h" />
     <ClInclude Include="instances\CharacterInstance.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="instances\ModelInstance.h" />
     <ClInclude Include="graphics\program.h" />
     <ClInclude Include="graphics\shader.h" />

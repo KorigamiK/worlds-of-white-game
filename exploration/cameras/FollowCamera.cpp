@@ -20,7 +20,7 @@ FollowCamera::FollowCamera(ModelInstance** instance)
   , currentPosition_{ desiredPosition_ }
 { }
 
-void FollowCamera::update(GLFWwindow *window, float time, int selectedJoystickId)
+void FollowCamera::update(GameState& state, float time)
 {
   { // adjustments based on previous position
     auto dx = (*instance_)->position.x - desiredPosition_.x;
@@ -29,19 +29,19 @@ void FollowCamera::update(GLFWwindow *window, float time, int selectedJoystickId
   }
 
   { // keyboard
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    if (glfwGetKey(state.window, GLFW_KEY_UP) == GLFW_PRESS)
       desiredDistance_ -= CAMERA_ROTATION_RATE;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    if (glfwGetKey(state.window, GLFW_KEY_DOWN) == GLFW_PRESS)
       desiredDistance_ += CAMERA_ROTATION_RATE;
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    if (glfwGetKey(state.window, GLFW_KEY_RIGHT) == GLFW_PRESS)
       desiredAngle_ += CAMERA_ROTATION_RATE;
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    if (glfwGetKey(state.window, GLFW_KEY_LEFT) == GLFW_PRESS)
       desiredAngle_ -= CAMERA_ROTATION_RATE;
   }
 
   { // controller
     auto axesCount = 0;
-    auto axes = glfwGetJoystickAxes(selectedJoystickId, &axesCount);
+    auto axes = glfwGetJoystickAxes(state.selectedJoystickId, &axesCount);
     auto cameraXAxis = axes[4];
     auto cameraYAxis = axes[3]; // not used yet
     desiredAngle_ += std::abs(cameraXAxis) < CAMERA_DEADZONE ? 0.0f : cameraXAxis * CAMERA_ROTATION_RATE;

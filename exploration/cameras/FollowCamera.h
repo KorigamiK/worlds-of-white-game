@@ -19,7 +19,7 @@ public:
 
 public:
   // ICamera overrides
-  void update(GLFWwindow *window, float time, int selectedJoystickId) override;
+  void update(GameState& state, float time) override;
   glm::mat4 getTransform() const override;
   glm::vec3 getPosition() const override;
   float getAngle() const override;

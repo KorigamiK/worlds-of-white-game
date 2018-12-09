@@ -8,7 +8,10 @@ ModelInstance::ModelInstance(Model* model, glm::vec3 position, float rotation, I
   , scale{ scale }
 { }
 
-void ModelInstance::update(GLFWwindow *window, float time) { }
+void ModelInstance::update(GameState& state, float time)
+{
+
+}
 
 void ModelInstance::draw_faces(Program& program, float time)
 {

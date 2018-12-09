@@ -7,6 +7,7 @@
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 
+#include "../GameState.h"
 #include "../graphics/IAnimator.h"
 
 class IAnimator;
@@ -24,7 +25,7 @@ public:
 
   ModelInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale = 1.0f);
 
-  virtual void update(GLFWwindow *window, float time);
+  virtual void update(GameState& state, float time);
 
   virtual void draw_faces(Program& program, float time);
   virtual void draw_lines(Program& program, float time);

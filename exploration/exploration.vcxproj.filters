@@ -60,5 +60,6 @@
     <ClInclude Include="instances\ModelInstance.h" />
     <ClInclude Include="graphics\IAnimator.h" />
     <ClInclude Include="instances\CharacterInstance.h" />
+    <ClInclude Include="GameState.h" />
   </ItemGroup>
 </Project>
