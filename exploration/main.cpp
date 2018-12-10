@@ -198,7 +198,7 @@ int main()
   {
     &character,
     new Instance(&testlandModel, { 0, 0, 0 }, 0.0, 1.0f),
-    new DecorationInstance(&grassModel, { -5, -5, -0.01f }, 0, 1.0f)
+    new DecorationInstance(&grassModel, { -5, -5, -0.02f }, 0, 1.0f)
   };
 
   // load models

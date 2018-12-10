@@ -98,12 +98,12 @@ bool is_hidden(vec4 p)
 
 bool is_hidden_start()
 {
-	return is_hidden(gl_in[0].gl_Position) || (1.0f - order_tess_out[0]) > draw_percentage;
+	return (1.0f - order_tess_out[0]) >= draw_percentage || is_hidden(gl_in[0].gl_Position);
 }
 
 bool is_hidden_end()
 {
-	return is_hidden(gl_in[1].gl_Position) || (1.0f - order_tess_out[1]) > draw_percentage;
+	return (1.0f - order_tess_out[1]) >= draw_percentage || is_hidden(gl_in[1].gl_Position);
 }
 
 void _draw_segment(vec4 p, vec4 perp, float thickness)
@@ -143,16 +143,24 @@ void _draw_end_endcap(vec4 p, vec4 perp)
 	EmitVertex();
 }
 
-vec4 _find_intermediate(vec4 p_hidden, vec4 p_shown)
+vec4 _find_intermediate(vec4 p_hidden, vec4 p_shown, float t_hidden, float t_shown)
 {
 	vec4 middle;
 	for (int i = 0; (distance(p_hidden.xy / p_hidden.w, p_shown.xy / p_shown.w) > EDGE_OFFSET * 2) && (i < 5); ++i)
 	{
-		vec4 middle = mix(p_hidden, p_shown, 0.5);
-		if (is_hidden(middle))
-			p_hidden = middle;
+		vec4 p_middle = mix(p_hidden, p_shown, 0.5);
+		float t_middle = mix(t_hidden, t_shown, 0.5);
+		float o_middle = mix(order_tess_out[0], order_tess_out[1], t_middle);
+		if ((1.0f - o_middle) > draw_percentage || is_hidden(p_middle))
+		{
+			t_hidden = t_middle;
+			p_hidden = p_middle;
+		}
 		else
-			p_shown = middle;
+		{
+			t_shown = t_middle;
+			p_shown = p_middle;
+		}
 	}
 	return p_shown;
 }
@@ -217,12 +225,12 @@ void main()
 	}
 	else if (start_shown && !end_shown)
 	{
-		vec4 new_end = _find_intermediate(end, start);
+		vec4 new_end = _find_intermediate(end, start, 1, 0);
 		draw_segment(start, new_end);
 	}
 	else if (!start_shown && end_shown)
 	{
-		vec4 new_start = _find_intermediate(start, end);
+		vec4 new_start = _find_intermediate(start, end, 0, 1);
 		draw_segment(new_start, end);
 	}
 	else if (start_shown && end_shown)

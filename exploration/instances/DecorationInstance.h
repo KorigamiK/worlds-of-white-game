@@ -21,12 +21,12 @@ public:
   DecorationState drawState = HIDDEN;
 
   // move these to a model
-  float farHideDistance = 6.0f;
-  float farDrawDistance = 5.0f;
+  float farHideDistance = 8.5f;
+  float farDrawDistance = 7.0f;
   float farDrawRate = 1.0f;
   float nearHideDistance = 1.5f;
   float nearDrawDistance = 2.5f;
-  float nearDrawRate = 2.0f;
+  float nearDrawRate = 4.0f;
 
 public:
   using Instance::Instance;
