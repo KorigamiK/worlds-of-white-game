@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 #include <btBulletDynamicsCommon.h>
+#include <glm/glm.hpp>
 
 class ICamera;
 
@@ -16,6 +17,7 @@ public:
   btBvhTriangleMeshShape* terrain;
   bool* canJump;
   ICamera* camera;
+  glm::vec3 playerPosition;
 };
 
 #include "cameras/ICamera.h"

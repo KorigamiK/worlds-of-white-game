@@ -360,7 +360,7 @@ int main()
   if (selectedJoystickId == -1)
     return -1;
 
-  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam };
+  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, character.position };
 
   while (!glfwWindowShouldClose(window))
   {

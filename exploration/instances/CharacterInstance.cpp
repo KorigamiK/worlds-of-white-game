@@ -130,6 +130,8 @@ void CharacterInstance::update(GameState& state, float time)
   }
 
   PhysicsInstance::update(state, time);
+
+  state.playerPosition = position;
 }
 
 void CharacterInstance::draw_faces(GameState& state, Program& program, float time)
