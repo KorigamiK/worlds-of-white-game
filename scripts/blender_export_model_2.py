@@ -2,7 +2,7 @@ import os
 import bmesh
 os.chdir('C:\\src\\kmdreko\\exploration\\exploration\\models')
 
-obj = bpy.data.objects['Character'];
+obj = bpy.context.selected_objects[0];
 
 file = open('./temp_model.txt', 'w+')
 

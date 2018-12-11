@@ -139,6 +139,60 @@ Animation read_animation(std::string path)
   return ret;
 }
 
+class LevelInstanceInfo
+{
+public:
+  std::string name;
+  glm::vec3 location;
+  glm::vec3 rotation;
+  glm::vec3 scale;
+};
+
+class Level
+{
+public:
+  std::vector<LevelInstanceInfo> instances;
+
+  static Level read(const std::string& filename)
+  {
+    Level level;
+
+    std::ifstream file(filename);
+
+    // read type
+    std::string type;
+    file >> type;
+    if (type != "level")
+      return level;
+
+    // read version
+    int version;
+    file >> version;
+    if (version != 1)
+      return level;
+
+    // read data
+    int instanceCount;
+    file >> instanceCount;
+    level.instances.resize(instanceCount);
+    for (std::size_t i = 0; i < level.instances.size(); ++i)
+    {
+      file >> level.instances[i].name;
+      file >> level.instances[i].location[0];
+      file >> level.instances[i].location[1];
+      file >> level.instances[i].location[2];
+      file >> level.instances[i].rotation[0];
+      file >> level.instances[i].rotation[1];
+      file >> level.instances[i].rotation[2];
+      file >> level.instances[i].scale[0];
+      file >> level.instances[i].scale[1];
+      file >> level.instances[i].scale[2];
+    }
+
+    return level;
+  }
+};
+
 int main()
 {
   wilt::logging.setLogger<wilt::StreamLogger>(std::cout);
@@ -192,6 +246,8 @@ int main()
   auto testlandModel = Model::read("models/testland_model.txt");
   auto ballModel = Model::read("models/spirit_model.txt");
   auto grassModel = Model::read("models/tallgrass_model.txt", 0.1f);
+
+  auto testLevel = Level::read("levels/testing_level.txt");
 
   auto character = CharacterInstance{ &ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), 0.5f };
   std::vector<Instance*> instances =
