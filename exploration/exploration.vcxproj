@@ -166,11 +166,13 @@
     <ClInclude Include="cameras\FreeCamera.h" />
     <ClInclude Include="cameras\ICamera.h" />
     <ClInclude Include="cameras\TrackCamera.h" />
+    <ClInclude Include="CharacterModel.h" />
     <ClInclude Include="graphics\framebuffer.h" />
     <ClInclude Include="graphics\IAnimator.h" />
     <ClInclude Include="graphics\joint.h" />
     <ClInclude Include="graphics\jointPose.h" />
     <ClInclude Include="InstanceSpawnInfo.h" />
+    <ClInclude Include="DecorationModel.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="instances\AnimatedInstance.h" />
     <ClInclude Include="instances\CharacterInstance.h" />
@@ -188,6 +190,7 @@
     <ClInclude Include="logging\LoggingLevel.h" />
     <ClInclude Include="logging\LoggingManager.h" />
     <ClInclude Include="logging\SourceLogger.h" />
+    <ClInclude Include="ModelReader.h" />
     <ClInclude Include="utilities\narray\borders.hpp" />
     <ClInclude Include="utilities\narray\core.hpp" />
     <ClInclude Include="utilities\narray\filters.hpp" />

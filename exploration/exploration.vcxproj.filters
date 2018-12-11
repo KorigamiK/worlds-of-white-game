@@ -70,5 +70,8 @@
     <ClInclude Include="instances\DecorationInstance.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="InstanceSpawnInfo.h" />
+    <ClInclude Include="DecorationModel.h" />
+    <ClInclude Include="CharacterModel.h" />
+    <ClInclude Include="ModelReader.h" />
   </ItemGroup>
 </Project>
