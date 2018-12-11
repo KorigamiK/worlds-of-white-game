@@ -246,10 +246,9 @@ int main()
 
   auto testLevel = Level::read("levels/testing_level.txt");
 
-  auto character = CharacterInstance{ &ballModel, { "oops",  { 0, 0, 0.5f + 0.001f }, { 0, 0, glm::radians(90.0f) }, { 0.5f, 0.5f, 0.5f } } };
   std::vector<Instance*> instances =
   {
-    &character,
+    new CharacterInstance(&ballModel, { "oops", { 0, 0, 0.5f + 0.001f }, { 0, 0, glm::radians(90.0f) }, { 0.5f, 0.5f, 0.5f } }),
     new Instance(&testlandModel, { "oops", { 0, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 } }),
     new DecorationInstance(&grassModel, { "oops", { -5, -5, -0.02f }, { 0, 0, 0 }, { 1, 1, 1 } })
   };
@@ -362,8 +361,24 @@ int main()
   terrainShape->setMargin(0.0f);
   dynamicsWorld->addRigidBody(terrainBody);
 
-  // create character
-  dynamicsWorld->addRigidBody(character.getBody());
+  // load character
+  CharacterInstance* character = nullptr;
+  for (auto instance : instances)
+  {
+    auto characterInstance = dynamic_cast<CharacterInstance*>(instance);
+    if (characterInstance)
+      character = characterInstance;
+  }
+  if (character == nullptr)
+    return -1;
+
+  // load physics objects
+  for (auto instance : instances)
+  {
+    auto physicsInstance = dynamic_cast<PhysicsInstance*>(instance);
+    if (physicsInstance)
+      dynamicsWorld->addRigidBody(physicsInstance->getBody());
+  }
 
   auto printJoystickInfo = [&](int joystickId)
   {
@@ -413,7 +428,7 @@ int main()
   if (selectedJoystickId == -1)
     return -1;
 
-  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, character.position };
+  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, character->position };
 
   while (!glfwWindowShouldClose(window))
   {
