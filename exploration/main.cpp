@@ -246,12 +246,12 @@ int main()
 
   auto testLevel = Level::read("levels/testing_level.txt");
 
-  auto character = CharacterInstance{ &ballModel,{ 0, 0, 0.5f + 0.001f },  glm::radians(90.0f), 0.5f };
+  auto character = CharacterInstance{ &ballModel, { "oops",  { 0, 0, 0.5f + 0.001f }, { 0, 0, glm::radians(90.0f) }, { 0.5f, 0.5f, 0.5f } } };
   std::vector<Instance*> instances =
   {
     &character,
-    new Instance(&testlandModel, { 0, 0, 0 }, 0.0, 1.0f),
-    new DecorationInstance(&grassModel, { -5, -5, -0.02f }, 0, 1.0f)
+    new Instance(&testlandModel, { "oops", { 0, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 } }),
+    new DecorationInstance(&grassModel, { "oops", { -5, -5, -0.02f }, { 0, 0, 0 }, { 1, 1, 1 } })
   };
 
   // load models

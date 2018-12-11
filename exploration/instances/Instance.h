@@ -7,6 +7,7 @@
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 
+#include "../InstanceSpawnInfo.h"
 #include "../GameState.h"
 
 class IAnimator;
@@ -21,7 +22,7 @@ public:
   float rotation;
   float scale;
 
-  Instance(Model* model, glm::vec3 position, float rotation, float scale = 1.0f);
+  Instance(Model* model, const InstanceSpawnInfo& info);
 
   virtual void update(GameState& state, float time);
 

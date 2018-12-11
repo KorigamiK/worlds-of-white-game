@@ -17,8 +17,8 @@ const auto BUTTON_DASH = 2;
 btRigidBody* createCharacterBody(glm::vec3 position);
 void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh);
 
-CharacterInstance::CharacterInstance(Model* model, glm::vec3 position, float rotation, float scale)
-  : PhysicsInstance{ model, position, rotation, createCharacterBody(position), scale }
+CharacterInstance::CharacterInstance(Model* model, const InstanceSpawnInfo& info)
+  : PhysicsInstance{ model, info, createCharacterBody(info.location) }
   , velocity{ 0, 1, 0 }
   , dashing{ false }
   , dashUsed{ false }

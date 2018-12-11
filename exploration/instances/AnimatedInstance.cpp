@@ -1,7 +1,7 @@
 #include "AnimatedInstance.h"
 
-AnimatedInstance::AnimatedInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale)
-  : Instance{ model, position, rotation, scale }
+AnimatedInstance::AnimatedInstance(Model* model, const InstanceSpawnInfo& info, IAnimator* animator)
+  : Instance{ model, info }
   , animator{ animator }
 { }
 

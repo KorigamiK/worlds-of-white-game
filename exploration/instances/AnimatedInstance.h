@@ -10,7 +10,7 @@ public:
   IAnimator* animator;
 
 public:
-  AnimatedInstance(Model* model, glm::vec3 position, float rotation, IAnimator* animator, float scale = 1.0f);
+  AnimatedInstance(Model* model, const InstanceSpawnInfo& info, IAnimator* animator);
 
 public:
   // Instance overrides

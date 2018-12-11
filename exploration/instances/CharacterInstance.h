@@ -12,7 +12,7 @@
 class CharacterInstance : public PhysicsInstance
 {
 public:
-  CharacterInstance(Model* model, glm::vec3 position, float rotation, float scale = 1.0f);
+  CharacterInstance(Model* model, const InstanceSpawnInfo& info);
 
   glm::vec3 velocity;
   

@@ -93,7 +93,7 @@ void Model::draw_lines(Program& program, float time, glm::vec3 position, float r
 
 Instance* Model::spawn(const InstanceSpawnInfo& info)
 {
-  return new Instance(this, info.location, info.rotation.z, info.scale.x);
+  return new Instance(this, info);
 }
 
 void readVersion1(Model& model, std::ifstream& file)

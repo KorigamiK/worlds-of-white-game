@@ -1,10 +1,10 @@
 #include "Instance.h"
 
-Instance::Instance(Model* model, glm::vec3 position, float rotation, float scale)
+Instance::Instance(Model* model, const InstanceSpawnInfo& info)
   : model{ model }
-  , position{ position }
-  , rotation{ rotation }
-  , scale{ scale }
+  , position{ info.location}
+  , rotation{ info.rotation.z } // TODO: use full rotation info
+  , scale{ info.scale.x }       // TODO: use full scale info
 { }
 
 void Instance::update(GameState& state, float time)

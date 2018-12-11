@@ -1,7 +1,7 @@
 #include "PhysicsInstance.h"
 
-PhysicsInstance::PhysicsInstance(Model* model, glm::vec3 position, float rotation, btRigidBody* body, float scale)
-  : Instance{ model, position, rotation, scale }
+PhysicsInstance::PhysicsInstance(Model* model, const InstanceSpawnInfo& info, btRigidBody* body)
+  : Instance{ model, info }
   , body{ body }
 { }
 

@@ -9,7 +9,7 @@ protected:
   btRigidBody* body;
 
 public:
-  PhysicsInstance(Model* model, glm::vec3 position, float rotation, btRigidBody* body, float scale = 1.0f);
+  PhysicsInstance(Model* model, const InstanceSpawnInfo& info, btRigidBody* body);
 
 public:
   btRigidBody* getBody();
