@@ -21,6 +21,7 @@
 #include <cmath>
 
 #include "Model.h"
+#include "ModelReader.h"
 #include "GameState.h"
 #include "InstanceSpawnInfo.h"
 #include "logging/LoggingManager.h"
@@ -235,31 +236,26 @@ int main()
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
-  auto testlandModel = Model::read("models/testland_model.txt");
-  auto ballModel = Model::read("models/spirit_model.txt");
-  auto grassModel = Model::read("models/tallgrass_model.txt", 0.1f);
-
-  std::map<std::string, Model*> models2;
-  models2["_spawn"]    = &ballModel;
-  models2["testland"]  = &testlandModel;
-  models2["tallgrass"] = &grassModel;
-
+  // read in level
   auto testLevel = Level::read("levels/testing_level.txt");
 
-  std::vector<Instance*> instances =
-  {
-    new CharacterInstance(&ballModel, { "oops", { 0, 0, 0.5f + 0.001f }, { 0, 0, glm::radians(90.0f) }, { 0.5f, 0.5f, 0.5f } }),
-    new Instance(&testlandModel, { "oops", { 0, 0, 0 }, { 0, 0, 0 }, { 1, 1, 1 } }),
-    new DecorationInstance(&grassModel, { "oops", { -5, -5, -0.02f }, { 0, 0, 0 }, { 1, 1, 1 } })
-  };
+  // read in models
+  auto testlandModel = ModelReader::read("models/testland_model.txt");
+  auto ballModel = ModelReader::read("models/spirit_model.txt");
+  auto grassModel = ModelReader::read("models/tallgrass_model.txt");
+  std::map<std::string, Model*> models;
+  models["_spawn"]    = ballModel;
+  models["testland"]  = testlandModel;
+  models["tallgrass"] = grassModel;
+
+  // load level
+  auto instances = std::vector<Instance*>();
+  for (auto& info : testLevel.instances)
+    instances.push_back(models[info.name]->spawn(info));
 
   // load models
-  std::set<Model*> models;
-  models.insert(&ballModel);
-  for (auto instance : instances)
-    models.insert(instance->model);
-  for (auto model : models)
-    model->load();
+  for (auto& entry : models)
+    entry.second->load();
 
   // load quad
   float quadVertices[] = {
@@ -350,8 +346,8 @@ int main()
   }, &canJump);
 
   // create terrain
-  auto terrainIndices = testlandModel.faceIndexes;
-  auto terrainVertices = testlandModel.vertexData;
+  auto terrainIndices = testlandModel->faceIndexes;
+  auto terrainVertices = testlandModel->vertexData;
   auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, (int*)terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / Model::DATA_COUNT_PER_VERTEX, terrainVertices.data(), Model::DATA_COUNT_PER_VERTEX * sizeof(float));
   auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
   auto terrainMotionState = new btDefaultMotionState();

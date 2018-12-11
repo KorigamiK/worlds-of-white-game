@@ -7,9 +7,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-void readVersion1(Model& model, std::ifstream& file);
-void readVersion2(Model& model, std::ifstream& file);
-
 void Model::load()
 {
   // load vertices
@@ -39,30 +36,6 @@ void Model::load()
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-Model Model::read(const std::string& modelPath, float scale)
-{
-  Model model;
-
-  // get rotations
-  model.transform = glm::scale(glm::mat4(), { scale, scale, scale });
-
-  {
-    std::ifstream file(modelPath);
-
-    // read version
-    int version;
-    file >> version;
-
-    switch (version)
-    {
-    case 1: readVersion1(model, file); break;
-    case 2: readVersion2(model, file); break;
-    }
-  }
-
-  return model;
 }
 
 void Model::draw_faces(Program& program, float time, glm::vec3 position, float rotation, float scale)
@@ -96,7 +69,27 @@ Instance* Model::spawn(const InstanceSpawnInfo& info)
   return new Instance(this, info);
 }
 
-void readVersion1(Model& model, std::ifstream& file)
+Model* Model::read(std::ifstream& file)
+{
+  auto model = new Model();
+
+  // get rotations
+  model->transform = glm::scale(glm::mat4(), { 1.0f, 1.0f, 1.0f });
+
+  // read version
+  int version;
+  file >> version;
+
+  switch (version)
+  {
+  case 1: readVersion1(*model, file); break;
+  case 2: readVersion2(*model, file); break;
+  }
+
+  return model;
+}
+
+void Model::readVersion1(Model& model, std::ifstream& file)
 {
   // read vertices
   int vertexCount;
@@ -155,7 +148,7 @@ void readVersion1(Model& model, std::ifstream& file)
   }
 }
 
-void readVersion2(Model& model, std::ifstream& file)
+void Model::readVersion2(Model& model, std::ifstream& file)
 {
   // read vertices
   int vertexCount;

@@ -37,7 +37,9 @@ public:
   virtual Instance* spawn(const InstanceSpawnInfo& info);
 
 public:
-  static Model read(const std::string& modelPath, float scale = 1.0f);
+  static Model* read(std::ifstream& file);
+  static void readVersion1(Model& model, std::ifstream& file);
+  static void readVersion2(Model& model, std::ifstream& file);
 
 public:
   static const unsigned int DATA_COUNT_PER_VERTEX = 10;
