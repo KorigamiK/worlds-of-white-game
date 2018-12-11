@@ -91,6 +91,11 @@ void Model::draw_lines(Program& program, float time, glm::vec3 position, float r
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+Instance* Model::spawn(const InstanceSpawnInfo& info)
+{
+  return new Instance(this, info.location, info.rotation.z, info.scale.x);
+}
+
 void readVersion1(Model& model, std::ifstream& file)
 {
   // read vertices

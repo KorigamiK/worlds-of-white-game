@@ -6,10 +6,12 @@
 
 #include <glm/glm.hpp>
 
-#include "joint.h"
-#include "texture.h"
-#include "program.h"
-#include "IAnimator.h"
+#include "instances/Instance.h"
+#include "InstanceSpawnInfo.h"
+#include "graphics/joint.h"
+#include "graphics/texture.h"
+#include "graphics/program.h"
+#include "graphics/IAnimator.h"
 
 constexpr int MAX_JOINTS = 24;
 
@@ -31,6 +33,8 @@ public:
 
   void draw_faces(Program& program, float time, glm::vec3 position, float rotation, float scale);
   void draw_lines(Program& program, float time, glm::vec3 position, float rotation, float scale);
+
+  virtual Instance* spawn(const InstanceSpawnInfo& info);
 
 public:
   static Model read(const std::string& modelPath, float scale = 1.0f);

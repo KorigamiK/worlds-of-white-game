@@ -31,7 +31,7 @@ public:
 
 }; // class Instance
 
-#include "../graphics/model.h"
+#include "../model.h"
 #include "../graphics/program.h"
 
 #endif // !WILT_INSTANCE_H

@@ -20,7 +20,9 @@
 #include <numeric>
 #include <cmath>
 
+#include "Model.h"
 #include "GameState.h"
+#include "InstanceSpawnInfo.h"
 #include "logging/LoggingManager.h"
 #include "logging/loggers/StreamLogger.h"
 #include "graphics/program.h"
@@ -28,7 +30,6 @@
 #include "graphics/framebuffer.h"
 #include "graphics/joint.h"
 #include "graphics/jointPose.h"
-#include "graphics/model.h"
 #include "utilities/narray/narray.hpp"
 #include "cameras/FollowCamera.h"
 #include "cameras/TrackCamera.h"
@@ -139,19 +140,10 @@ Animation read_animation(std::string path)
   return ret;
 }
 
-class LevelInstanceInfo
-{
-public:
-  std::string name;
-  glm::vec3 location;
-  glm::vec3 rotation;
-  glm::vec3 scale;
-};
-
 class Level
 {
 public:
-  std::vector<LevelInstanceInfo> instances;
+  std::vector<InstanceSpawnInfo> instances;
 
   static Level read(const std::string& filename)
   {
@@ -246,6 +238,11 @@ int main()
   auto testlandModel = Model::read("models/testland_model.txt");
   auto ballModel = Model::read("models/spirit_model.txt");
   auto grassModel = Model::read("models/tallgrass_model.txt", 0.1f);
+
+  std::map<std::string, Model*> models2;
+  models2["_spawn"]    = &ballModel;
+  models2["testland"]  = &testlandModel;
+  models2["tallgrass"] = &grassModel;
 
   auto testLevel = Level::read("levels/testing_level.txt");
 

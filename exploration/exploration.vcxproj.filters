@@ -15,7 +15,6 @@
     <ClCompile Include="graphics\texture.cpp" />
     <ClCompile Include="graphics\framebuffer.cpp" />
     <ClCompile Include="graphics\joint.cpp" />
-    <ClCompile Include="graphics\model.cpp" />
     <ClCompile Include="graphics\jointPose.cpp" />
     <ClCompile Include="cameras\FollowCamera.cpp" />
     <ClCompile Include="cameras\FreeCamera.cpp" />
@@ -26,6 +25,7 @@
     <ClCompile Include="instances\PhysicsInstance.cpp" />
     <ClCompile Include="instances\SpiritInstance.cpp" />
     <ClCompile Include="instances\DecorationInstance.cpp" />
+    <ClCompile Include="Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -55,7 +55,6 @@
     <ClInclude Include="graphics\texture.h" />
     <ClInclude Include="graphics\framebuffer.h" />
     <ClInclude Include="graphics\joint.h" />
-    <ClInclude Include="graphics\model.h" />
     <ClInclude Include="graphics\jointPose.h" />
     <ClInclude Include="cameras\ICamera.h" />
     <ClInclude Include="cameras\FollowCamera.h" />
@@ -69,5 +68,7 @@
     <ClInclude Include="instances\PhysicsInstance.h" />
     <ClInclude Include="instances\SpiritInstance.h" />
     <ClInclude Include="instances\DecorationInstance.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="InstanceSpawnInfo.h" />
   </ItemGroup>
 </Project>

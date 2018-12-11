@@ -143,7 +143,7 @@
     <ClCompile Include="graphics\framebuffer.cpp" />
     <ClCompile Include="graphics\joint.cpp" />
     <ClCompile Include="graphics\jointPose.cpp" />
-    <ClCompile Include="graphics\model.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="instances\AnimatedInstance.cpp" />
     <ClCompile Include="instances\CharacterInstance.cpp" />
     <ClCompile Include="instances\DecorationInstance.cpp" />
@@ -170,7 +170,8 @@
     <ClInclude Include="graphics\IAnimator.h" />
     <ClInclude Include="graphics\joint.h" />
     <ClInclude Include="graphics\jointPose.h" />
-    <ClInclude Include="graphics\model.h" />
+    <ClInclude Include="InstanceSpawnInfo.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="instances\AnimatedInstance.h" />
     <ClInclude Include="instances\CharacterInstance.h" />
     <ClInclude Include="GameState.h" />
