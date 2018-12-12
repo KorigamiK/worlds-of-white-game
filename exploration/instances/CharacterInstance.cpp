@@ -14,11 +14,11 @@ const auto CHARACTER_DEADZONE = 0.12f;
 const auto BUTTON_JUMP = 0;
 const auto BUTTON_DASH = 2;
 
-btRigidBody* createCharacterBody(glm::vec3 position);
+btRigidBody* createCharacterBody(glm::vec3 position, glm::vec3 rotation);
 void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh);
 
 CharacterInstance::CharacterInstance(Model* model, const InstanceSpawnInfo& info)
-  : PhysicsInstance{ model, info, createCharacterBody(info.location) }
+  : PhysicsInstance{ model, info, createCharacterBody(info.location, info.rotation) }
   , velocity{ 0, 1, 0 }
   , dashing{ false }
   , dashUsed{ false }
@@ -150,18 +150,26 @@ void CharacterInstance::draw_debug(GameState& state, Program& program, float tim
 
 }
 
-btRigidBody* createCharacterBody(glm::vec3 position)
+btRigidBody* createCharacterBody(glm::vec3 position, glm::vec3 rotation)
 {
-  auto characterShape = new btSphereShape(0.25);
-  auto characterMotionState = new btDefaultMotionState(btTransform(btMatrix3x3::getIdentity(), btVector3(0, 0, position.z + 1.0f)));
-  auto characterBody = new btRigidBody(1.0, characterMotionState, characterShape);
+  const auto CHARACTER_BODY_MASS = 1.0f;
+  const auto CHARACTER_BODY_RADIUS = 0.25f;
+
+  auto characterTransform = btTransform();
+  characterTransform.setRotation({ rotation.x, rotation.y, rotation.z }); // might need to by YXZ, i dunno
+  characterTransform.setOrigin({ position.x, position.y, position.z });
+
+  auto characterShape = new btSphereShape(CHARACTER_BODY_RADIUS);
+  auto characterMotionState = new btDefaultMotionState(characterTransform);
+  auto characterBody = new btRigidBody(CHARACTER_BODY_MASS, characterMotionState, characterShape);
   characterBody->setAngularFactor(0);
   characterBody->setFriction(0.95f);
   characterBody->setDamping(0.5f, 0.0f);
   characterBody->setRestitution(0.0f);
   characterBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
-  characterBody->setCcdSweptSphereRadius(0.25f);
+  characterBody->setCcdSweptSphereRadius(CHARACTER_BODY_RADIUS);
   characterBody->setCcdMotionThreshold(0.00000001f);
+
   return characterBody;
 }
 

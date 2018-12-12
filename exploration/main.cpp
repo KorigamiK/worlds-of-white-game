@@ -298,13 +298,6 @@ int main()
   int selected_perlin = 0;
   glm::vec3 view_reference;
 
-  int instanceIndex = 0;
-  Instance* currentInstance = instances[instanceIndex];
-  FreeCamera* freeCam = new FreeCamera();
-  TrackCamera* trackCam = new TrackCamera(&currentInstance);
-  FollowCamera* followCam = new FollowCamera(&currentInstance);
-  ICamera* cam = followCam;
-
   // create the physics world
   auto collisionConfiguration = new btDefaultCollisionConfiguration(); // I don't
   auto dispatcher = new	btCollisionDispatcher(collisionConfiguration); // know what
@@ -358,7 +351,7 @@ int main()
   dynamicsWorld->addRigidBody(terrainBody);
 
   // load character
-  CharacterInstance* character = nullptr;
+  Instance* character = nullptr;
   for (auto instance : instances)
   {
     auto characterInstance = dynamic_cast<CharacterInstance*>(instance);
@@ -375,6 +368,14 @@ int main()
     if (physicsInstance)
       dynamicsWorld->addRigidBody(physicsInstance->getBody());
   }
+
+  // load camera
+  int instanceIndex = 0;
+  Instance* currentInstance = instances[instanceIndex];
+  FreeCamera* freeCam = new FreeCamera();
+  TrackCamera* trackCam = new TrackCamera(&character);
+  FollowCamera* followCam = new FollowCamera(&character);
+  ICamera* cam = followCam;
 
   auto printJoystickInfo = [&](int joystickId)
   {

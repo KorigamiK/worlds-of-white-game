@@ -1,5 +1,7 @@
 #include "FollowCamera.h"
 
+#include <glm/gtx/rotate_vector.hpp>
+
 #include "../instances/Instance.h"
 
 const auto CAMERA_DEADZONE = 0.12f;
@@ -14,9 +16,9 @@ glm::vec3 calcPosition(float angle, float distance);
 
 FollowCamera::FollowCamera(Instance** instance)
   : instance_{ instance }
-  , desiredAngle_{ 0.0f }
+  , desiredAngle_{ (*instance)->rotation }
   , desiredDistance_{ CAMERA_DISTANCE }
-  , desiredPosition_{ 0, 6, 3 }
+  , desiredPosition_{ (*instance)->position + glm::rotateZ(glm::vec3(0, 6, 3), (*instance)->rotation) }
   , currentPosition_{ desiredPosition_ }
 { }
 
