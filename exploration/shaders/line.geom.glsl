@@ -121,11 +121,11 @@ void _draw_start_endcap(vec4 p, vec4 perp)
 {
 	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
 
-	gl_Position = p + para * EDGE_OFFSET * 0.66f * p.w + perp * EDGE_OFFSET / 2 * p.w;
+	gl_Position = p - para * EDGE_OFFSET * 0.66f * p.w + perp * EDGE_OFFSET / 2 * p.w;
 	gl_Position = from_screen_space * gl_Position;
 	EmitVertex();
 	
-	gl_Position = p + para * EDGE_OFFSET * 0.66f * p.w - perp * EDGE_OFFSET / 2 * p.w;
+	gl_Position = p - para * EDGE_OFFSET * 0.66f * p.w - perp * EDGE_OFFSET / 2 * p.w;
 	gl_Position = from_screen_space * gl_Position;
 	EmitVertex();
 }
@@ -134,11 +134,11 @@ void _draw_end_endcap(vec4 p, vec4 perp)
 {
 	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
 
-	gl_Position = p - para * EDGE_OFFSET * 0.66f * p.w + perp * EDGE_OFFSET / 2 * p.w;
+	gl_Position = p + para * EDGE_OFFSET * 0.66f * p.w + perp * EDGE_OFFSET / 2 * p.w;
 	gl_Position = from_screen_space * gl_Position;
 	EmitVertex();
 	
-	gl_Position = p - para * EDGE_OFFSET * 0.66f * p.w - perp * EDGE_OFFSET / 2 * p.w;
+	gl_Position = p + para * EDGE_OFFSET * 0.66f * p.w - perp * EDGE_OFFSET / 2 * p.w;
 	gl_Position = from_screen_space * gl_Position;
 	EmitVertex();
 }
@@ -204,8 +204,8 @@ void draw_segment(vec4 p1, vec4 p2)
 	perp = normalize(vec4(p1.y / p1.w - p2.y / p2.w, p2.x / p2.w - p1.x / p1.w, 0.0f, 0.0f));
 	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
 
-	p1 = p1 - para * EDGE_OFFSET;
-	p2 = p2 + para * EDGE_OFFSET;
+	p1 = p1 - para * EDGE_OFFSET / 2;
+	p2 = p2 + para * EDGE_OFFSET / 2;
 
 	_draw_start_endcap(p1, perp);
 	_draw_segment(p1, perp, tess_vertex_offset[0].x);
