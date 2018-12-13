@@ -10,7 +10,7 @@ mesh = obj.data;
 alwaysDrawGroupId = obj.vertex_groups.find("always_draw");
 
 # write version
-print(1, file=file)
+print('model', 1, file=file)
 
 # write vertices
 print(len(mesh.vertices), file=file)

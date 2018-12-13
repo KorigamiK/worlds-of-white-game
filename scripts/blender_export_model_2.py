@@ -11,7 +11,7 @@ alwaysDrawGroupId = obj.vertex_groups.find("always_draw");
 orderGroupId = obj.vertex_groups.find("order");
 
 # write version
-print(2, file=file)
+print('decoration', 2, file=file)
 
 # write vertices
 print(len(mesh.vertices), file=file)

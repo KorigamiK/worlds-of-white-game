@@ -238,19 +238,24 @@ int main()
 
   // read in level
   auto testLevel = Level::read("levels/testing_level.txt");
+  auto floatingLevel = Level::read("levels/floating_level.txt");
 
   // read in models
-  auto testlandModel = ModelReader::read("models/testland_model.txt");
-  auto ballModel = ModelReader::read("models/spirit_model.txt");
-  auto grassModel = ModelReader::read("models/tallgrass_model.txt");
   std::map<std::string, Model*> models;
-  models["_spawn"]    = ballModel;
-  models["testland"]  = testlandModel;
-  models["tallgrass"] = grassModel;
+  models["_spawn"]          = ModelReader::read("models/spirit_model.txt");
+  models["tallgrass"]       = ModelReader::read("models/tallgrass_model.txt");
+  models["tree"]            = ModelReader::read("models/tree_model.txt");
+  models["flower"]          = ModelReader::read("models/flower_model.txt");
+  models["testland"]        = ModelReader::read("models/testland_model.txt");
+  models["floatingisland"]  = ModelReader::read("models/floatingisland_model.txt");
 
   // load level
+  //auto& level = testLevel;
+  //auto& terrainModel = models["testland"];
+  auto& level = floatingLevel;
+  auto& terrainModel = models["floatingisland"];
   auto instances = std::vector<Instance*>();
-  for (auto& info : testLevel.instances)
+  for (auto& info : level.instances)
     instances.push_back(models[info.name]->spawn(info));
 
   // load models
@@ -339,8 +344,8 @@ int main()
   }, &canJump);
 
   // create terrain
-  auto terrainIndices = testlandModel->faceIndexes;
-  auto terrainVertices = testlandModel->vertexData;
+  auto terrainIndices = terrainModel->faceIndexes;
+  auto terrainVertices = terrainModel->vertexData;
   auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, (int*)terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / Model::DATA_COUNT_PER_VERTEX, terrainVertices.data(), Model::DATA_COUNT_PER_VERTEX * sizeof(float));
   auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
   auto terrainMotionState = new btDefaultMotionState();
