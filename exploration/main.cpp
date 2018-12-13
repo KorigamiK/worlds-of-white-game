@@ -39,6 +39,8 @@
 #include "instances/CharacterInstance.h"
 #include "instances/DecorationInstance.h"
 
+namespace { auto logger = wilt::logging.createLogger("main"); }
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
@@ -186,11 +188,53 @@ public:
   }
 };
 
+void logError(const std::string &name)
+{
+  auto error = glGetError();
+  if (error == GL_NO_ERROR)
+    return;
+
+  switch (error)
+  {
+  case GL_INVALID_ENUM:
+    logger.error("GL_INVALID_ENUM");
+    logger.error(name);
+    break;
+  case GL_INVALID_VALUE:
+    logger.error("GL_INVALID_VALUE");
+    logger.error(name);
+    break;
+  case GL_INVALID_OPERATION:
+    logger.error("GL_INVALID_OPERATION");
+    logger.error(name);
+    break;
+  case GL_INVALID_FRAMEBUFFER_OPERATION:
+    logger.error("GL_INVALID_FRAMEBUFFER_OPERATION");
+    logger.error(name);
+    break;
+  case GL_OUT_OF_MEMORY:
+    logger.error("GL_OUT_OF_MEMORY");
+    logger.error(name);
+    break;
+  case GL_STACK_UNDERFLOW:
+    logger.error("GL_STACK_UNDERFLOW");
+    logger.error(name);
+    break;
+  case GL_STACK_OVERFLOW:
+    logger.error("GL_STACK_OVERFLOW");
+    logger.error(name);
+    break;
+  default:
+    logger.error("UNKNOWN");
+    logger.error(name);
+    break;
+  }
+}
+
 int main()
 {
   wilt::logging.setLogger<wilt::StreamLogger>(std::cout);
   wilt::logging.setLevel(wilt::LoggingLevel::DEBUG);
-  auto log = wilt::logging.createLogger("main");
 
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -406,7 +450,7 @@ int main()
   //printJoystickInfo(GLFW_JOYSTICK_3);
   //printJoystickInfo(GLFW_JOYSTICK_4);
 
-  auto selectedJoystickId = [&log]() -> int
+  auto selectedJoystickId = []() -> int
   {
     auto selectedJoystickId = -1;
     for (auto joystickId : { GLFW_JOYSTICK_1, GLFW_JOYSTICK_2, GLFW_JOYSTICK_3, GLFW_JOYSTICK_4 })
@@ -415,13 +459,13 @@ int main()
         selectedJoystickId = joystickId;
 
       const char* name = glfwJoystickPresent(joystickId) ? glfwGetJoystickName(joystickId) : "<none>";
-      log.debug(std::to_string(joystickId) + " " + name);
+      logger.debug(std::to_string(joystickId) + " " + name);
     }
 
     if (selectedJoystickId == -1)
-      log.info("no controller connected");
+      logger.info("no controller connected");
     else
-      log.info("using controller " + std::to_string(selectedJoystickId));
+      logger.info("using controller " + std::to_string(selectedJoystickId));
 
     return selectedJoystickId;
   } ();
@@ -519,15 +563,12 @@ int main()
     screenProgram.setInt("bkgd_texture", 2);
 
     glActiveTexture(GL_TEXTURE0);
-    glEnable(faceFramebuffer.colorTexture().target());
     glBindTexture(faceFramebuffer.colorTexture().target(), faceFramebuffer.colorTexture().id());
 
     glActiveTexture(GL_TEXTURE1);
-    glEnable(lineFramebuffer.colorTexture().target());
     glBindTexture(lineFramebuffer.colorTexture().target(), lineFramebuffer.colorTexture().id());
 
     glActiveTexture(GL_TEXTURE2);
-    glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, paperTexture.id());
 
     glDisable(GL_DEPTH_TEST);
@@ -540,6 +581,7 @@ int main()
     // -------------------------------------------------------------------------------
     glfwSwapBuffers(window);
     glfwPollEvents();
+    logError("any");
 
     if (!paused)
     {

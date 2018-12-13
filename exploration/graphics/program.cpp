@@ -91,47 +91,103 @@ void Program::release()
   }
 }
 
+namespace {
+  // TODO: move this to a utility function or something
+
+  void logError(const std::string &name)
+  {
+    auto error = glGetError();
+    if (error == GL_NO_ERROR)
+      return;
+
+    switch (error)
+    {
+    case GL_INVALID_ENUM:
+      logger.error("GL_INVALID_ENUM");
+      logger.error(name);
+      break;
+    case GL_INVALID_VALUE:
+      logger.error("GL_INVALID_VALUE");
+      logger.error(name);
+      break;
+    case GL_INVALID_OPERATION:
+      logger.error("GL_INVALID_OPERATION");
+      logger.error(name);
+      break;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      logger.error("GL_INVALID_FRAMEBUFFER_OPERATION");
+      logger.error(name);
+      break;
+    case GL_OUT_OF_MEMORY:
+      logger.error("GL_OUT_OF_MEMORY");
+      logger.error(name);
+      break;
+    case GL_STACK_UNDERFLOW:
+      logger.error("GL_STACK_UNDERFLOW");
+      logger.error(name);
+      break;
+    case GL_STACK_OVERFLOW:
+      logger.error("GL_STACK_OVERFLOW");
+      logger.error(name);
+      break;
+    default:
+      logger.error("UNKNOWN");
+      logger.error(name);
+      break;
+    }
+  }
+}
+
 void Program::setBool(const std::string &name, bool value) const
 {
   glUniform1i(glGetUniformLocation(_id, name.c_str()), (int)value);
+  logError(name);
 }
 
 void Program::setInt(const std::string &name, int value) const
 {
   glUniform1i(glGetUniformLocation(_id, name.c_str()), value);
+  logError(name);
 }
 
 void Program::setFloat(const std::string &name, float value) const
 {
   glUniform1f(glGetUniformLocation(_id, name.c_str()), value);
+  logError(name);
 }
 
 void Program::setVec2(const std::string &name, const glm::vec2 &value) const
 {
   glUniform2fv(glGetUniformLocation(_id, name.c_str()), 1, &value[0]);
+  logError(name);
 }
 
 void Program::setVec3(const std::string &name, const glm::vec3 &value) const
 {
   glUniform3fv(glGetUniformLocation(_id, name.c_str()), 1, &value[0]);
+  logError(name);
 }
 
 void Program::setVec4(const std::string &name, const glm::vec4 &value) const
 {
   glUniform4fv(glGetUniformLocation(_id, name.c_str()), 1, &value[0]);
+  logError(name);
 }
 
 void Program::setMat2(const std::string &name, const glm::mat2 &mat) const
 {
   glUniformMatrix2fv(glGetUniformLocation(_id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+  logError(name);
 }
 
 void Program::setMat3(const std::string &name, const glm::mat3 &mat) const
 {
   glUniformMatrix3fv(glGetUniformLocation(_id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+  logError(name);
 }
 
 void Program::setMat4(const std::string &name, const glm::mat4 &mat) const
 {
   glUniformMatrix4fv(glGetUniformLocation(_id, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+  logError(name);
 }
