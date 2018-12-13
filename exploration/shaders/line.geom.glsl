@@ -93,7 +93,7 @@ float get_depth(vec2 v)
 
 bool is_hidden(vec4 p)
 {
-	return p.z / p.w > get_depth(p.xy / p.w);
+	return p.z / p.w > get_depth(p.xy / p.w) + 0.000001;
 }
 
 bool is_hidden_start()
@@ -202,6 +202,10 @@ void draw_segment(vec4 p1, vec4 p2)
 	//p2 += vec4(normalize(p2.xy / p2.w - center), 0, 0) * transform1(tess_vertex_offset[1].y) * 0.2f * p2.w;
 
 	perp = normalize(vec4(p1.y / p1.w - p2.y / p2.w, p2.x / p2.w - p1.x / p1.w, 0.0f, 0.0f));
+	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
+
+	p1 = p1 - para * EDGE_OFFSET;
+	p2 = p2 + para * EDGE_OFFSET;
 
 	_draw_start_endcap(p1, perp);
 	_draw_segment(p1, perp, tess_vertex_offset[0].x);
