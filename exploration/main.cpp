@@ -334,7 +334,7 @@ int main()
   );
 
   lineFramebuffer = Framebuffer(
-    Texture::fromMemory(NULL, GL_RGBA8, SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D_MULTISAMPLE)
+    Texture::fromMemory(NULL, GL_RGBA8, SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D_MULTISAMPLE, 8)
   );
 
   Texture paperTexture = Texture::fromFile("models/paper_texture.jpg");
@@ -543,7 +543,6 @@ int main()
     lineProgram.setVec3("view_reference", view_reference);
 
     glActiveTexture(GL_TEXTURE0);
-    glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, faceFramebuffer.depthTexture().id());
 
     glBindFramebuffer(GL_FRAMEBUFFER, lineFramebuffer.id());
@@ -560,6 +559,7 @@ int main()
     screenProgram.use();
     screenProgram.setInt("face_texture", 0);
     screenProgram.setInt("line_texture", 1);
+    screenProgram.setInt("line_texture_samples", lineFramebuffer.colorTexture().samples());
     screenProgram.setInt("bkgd_texture", 2);
 
     glActiveTexture(GL_TEXTURE0);

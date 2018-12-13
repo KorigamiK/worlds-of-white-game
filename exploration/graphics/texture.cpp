@@ -13,22 +13,26 @@ Texture::Texture()
   : _id{ 0 }
   , _format{ GL_NONE }
   , _target{ GL_NONE }
+  , _samples{ 0 }
 { }
 
-Texture::Texture(GLuint id, GLint format, GLenum target)
+Texture::Texture(GLuint id, GLint format, GLenum target, GLint samples)
   : _id{ id }
   , _format{ format }
   , _target{ target }
+  , _samples{ samples }
 { }
 
 Texture::Texture(Texture&& s)
   : _id{ s._id }
   , _format{ s._format }
   , _target{ s._target }
+  , _samples{ s._samples }
 {
   s._id = 0;
   s._format = GL_NONE;
   s._target = GL_NONE;
+  s._samples = 0;
 }
 
 Texture& Texture::operator= (Texture&& s)
@@ -38,10 +42,12 @@ Texture& Texture::operator= (Texture&& s)
   _id = s._id;
   _format = s._format;
   _target = s._target;
+  _samples = s._samples;
 
   s._id = 0;
   s._format = GL_NONE;
   s._target = GL_NONE;
+  s._samples = 0;
 
   return *this;
 }
@@ -66,6 +72,11 @@ GLenum Texture::target() const
   return _target;
 }
 
+GLint Texture::samples() const
+{
+  return _samples;
+}
+
 void Texture::release()
 {
   if (_id != 0)
@@ -74,6 +85,7 @@ void Texture::release()
     _id = 0;
     _format = GL_NONE;
     _target = GL_NONE;
+    _samples = 0;
   }
 }
 
@@ -86,7 +98,7 @@ void Texture::resize(const char* data, GLsizei width, GLsizei height)
 {
   glBindTexture(_target, _id);
   if (_target == GL_TEXTURE_2D_MULTISAMPLE)
-    glTexImage2DMultisample(_target, 4, _format, width, height, false);
+    glTexImage2DMultisample(_target, _samples, _format, width, height, false);
   else
     glTexImage2D(_target, 0, _format, width, height, 0, _format, GL_UNSIGNED_BYTE, data);
   glBindTexture(_target, 0);
@@ -132,14 +144,14 @@ void Texture::setWrapT(GLint value)
   glBindTexture(_target, 0);
 }
 
-GLuint load(const char* source, const char* data, GLint format, GLsizei width, GLsizei height, GLenum target)
+GLuint load(const char* source, const char* data, GLint format, GLsizei width, GLsizei height, GLenum target, GLint samples)
 {
   GLuint id;
   glCreateTextures(target, 1, &id);
 
   glBindTexture(target, id);
   if (target == GL_TEXTURE_2D_MULTISAMPLE)
-    glTexImage2DMultisample(target, 4, format, width, height, false);
+    glTexImage2DMultisample(target, samples, format, width, height, false);
   else
     glTexImage2D(target, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
   glBindTexture(target, 0);
@@ -147,9 +159,9 @@ GLuint load(const char* source, const char* data, GLint format, GLsizei width, G
   return id;
 }
 
-Texture Texture::fromMemory(const char* data, GLint format, GLsizei width, GLsizei height, GLenum target)
+Texture Texture::fromMemory(const char* data, GLint format, GLsizei width, GLsizei height, GLenum target, GLint samples)
 {
-  return Texture{ load("<memory>", data, format, width, height, target), format, target };
+  return Texture{ load("<memory>", data, format, width, height, target, samples), format, target, samples };
 }
 
 Texture Texture::fromFile(const char* filename)
@@ -160,5 +172,5 @@ Texture Texture::fromFile(const char* filename)
   wilt::NArray<unsigned char, 3>textureData = { { 3, texture.width(), texture.height() }, texture.data(), wilt::PTR::REF };
   textureData = textureData.t(0, 1).t(1, 2).clone();
 
-  return Texture{ load(filename, (const char*)textureData._basePtr(), GL_RGB, textureData.width(), textureData.height(), GL_TEXTURE_2D), GL_RGB };
+  return Texture{ load(filename, (const char*)textureData._basePtr(), GL_RGB, textureData.width(), textureData.height(), GL_TEXTURE_2D, 1), GL_RGB };
 }

@@ -6,6 +6,7 @@ in vec2 TexCoords;
 uniform sampler2D face_texture;
 uniform sampler2DMS line_texture;
 uniform sampler2D bkgd_texture;
+uniform int line_texture_samples;
 
 vec4 textureMultisample(sampler2DMS sampler, vec2 uv)
 {
@@ -13,9 +14,9 @@ vec4 textureMultisample(sampler2DMS sampler, vec2 uv)
 	ivec2 coord = ivec2(uv * ssize);
 
     vec4 color = vec4(0.0);
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < line_texture_samples; i++)
         color += texelFetch(sampler, coord, i);
-    color /= float(4);
+    color /= float(line_texture_samples);
 
     return color;
 }
