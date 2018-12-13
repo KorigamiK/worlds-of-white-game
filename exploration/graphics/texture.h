@@ -8,10 +8,11 @@ class Texture
 private:
   GLuint _id;
   GLint _format;
+  GLenum _target;
 
 public:
   Texture();
-  explicit Texture(GLuint id, GLint format);
+  explicit Texture(GLuint id, GLint format, GLenum target = GL_TEXTURE_2D);
   Texture(const Texture& s) = delete;
   Texture(Texture&& s);
 
@@ -23,6 +24,7 @@ public:
 public:
   GLuint id() const;
   GLint format() const;
+  GLenum target() const;
 
   void release();
   bool loaded() const;
@@ -36,7 +38,7 @@ public:
   void setWrapT(GLint param);
 
 public:
-  static Texture fromMemory(const char* data, GLint format, GLsizei width, GLsizei height);
+  static Texture fromMemory(const char* data, GLint format, GLsizei width, GLsizei height, GLenum target = GL_TEXTURE_2D);
   static Texture fromFile(const char* filename);
 
 }; // class Texture

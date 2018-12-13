@@ -34,7 +34,7 @@ Framebuffer::Framebuffer(Texture colorTexture, Texture depthTexture, Texture ste
     _colorTexture.setMinFilter(GL_LINEAR);
     _colorTexture.setMagFilter(GL_LINEAR);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _colorTexture.id(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _colorTexture.target(), _colorTexture.id(), 0);
   }
 
   if (_depthTexture.loaded())
@@ -44,11 +44,44 @@ Framebuffer::Framebuffer(Texture colorTexture, Texture depthTexture, Texture ste
     _depthTexture.setWrapS(GL_CLAMP_TO_EDGE);
     _depthTexture.setWrapT(GL_CLAMP_TO_EDGE);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _depthTexture.id(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexture.target(), _depthTexture.id(), 0);
   }
 
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+  auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+  if (status != GL_FRAMEBUFFER_COMPLETE)
+  {
     logger.error("framebuffer is incomplete");
+    switch (status)
+    {
+    case GL_FRAMEBUFFER_UNDEFINED:
+      logger.error("reason: GL_FRAMEBUFFER_UNDEFINED");
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+      logger.error("reason: GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+      logger.error("reason: GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+      logger.error("reason: GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+      logger.error("reason: GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+      break;
+    case GL_FRAMEBUFFER_UNSUPPORTED:
+      logger.error("reason: GL_FRAMEBUFFER_UNSUPPORTED");
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+      logger.error("reason: GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+      break;
+    case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+      logger.error("reason: GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+      break;
+    default:
+      logger.error("reason: UNKNOWN");
+      break;
+    }
+  }
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
