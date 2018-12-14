@@ -1,0 +1,50 @@
+Changelog (2018-12-13)
+
+
+Dashing
+
+  Had to move a whole bunch of code into a separate character-controller class so that I can keep track of the player state better. I kind of needed to do this because I required a number of variables to keep track of the dash mechanic and didn't want to just throw variables around main() any more. So the dash works for a certain amount of time and you cannot re-dash until you hit the ground. So thats cool.
+
+  A few issues though: it doesn't have a cool down and doesn't require you to release the dash button, so you can just stay along the ground and hold the button to zoom around. Also if you don't have your controller pointed in a direction when the dash ends, the speed will be kept letting you shoot yourself across the map.
+
+
+Better Camera
+
+  Gave the main camera some TLC by making it more fluid when following the player around. It keeps track of the desired camera position, but allows the actual camera position to float towards it so that jumps, dashes, and turns aren't so much of a jolt. Because of this, it has the nice effect that the player is able to get closer or further away from the camera when dashing, which gives the dash a more powerful feeling.
+
+  The camera ignores geometry, so that'll have to be dealt with eventually. There was a GDC talk about the camera in the game Journey that I'd like to incorporate since I think they did a good job with making the camera responsive to the player and the environment. Also the camera doesn't tilt up or down, so yeah.
+
+
+Decoration Models
+
+  A visual effect that I had actually implemented before and was always going to add to this project was to have environment decorations "grow" into being (decorations are things that don't affect gameplay). I was able to get this effect by channeling a variable through the shader pipeline that dictates how much of the model to draw and have each vertex have a level at which it is drawn. I was initially going to have the line-shader work more simply by having the single-line draw be all-or-nothing, but that ended up with a choppy look so I make the lines grow properly. 
+
+  Also a neat effect is that I've made them shrink back if the player gets too close which I think is adorable but also allows me to ignore the problems that come with player/decoration intersections. 
+
+
+Model File Designation and Versioning
+
+  With model format changes I'd previously always have to re-create old models in the new format, which would be particularly annoying to account for the decoration change because some stuff won't need that vertex data created or stored. Re-creating the model files also inflates the version control storage needlessly. 
+
+  So I added some metadata to the model files, namely a "type" and "version" so that I can switch between various format types so that newer models can have the newer stuff and I don't have to re-create the older format files unless I need to. I also split up my blender scripts into separate files so they can be managed better.
+
+
+Levels
+
+  So before, if I wanted to add a new model, add a new instance of a model, or move it, I'd always have to make a code change to do it; entities were hard-coded in main(). What I finally got around to was being able to design a scene in blender (with all the benefits therein with regards to multiple instances with different scales, positions, and rotations) and be able to export and import that information into the game.
+
+  Not everything is perfect yet. A code change is needed to select the level to load and whenever new types of models are added. But good enough for now, it at least allows me to focus a bit more on level design. 
+
+  I made the testing level with some more grass instances, but also modeled a new level with more complex geometry and more aesthetically pleasing areas that will be more reminicent of the first area that I design.
+
+
+New Models
+
+  With the new level, I imported the tree model I'd had before as well as created a new flower model to give the level a nicer touch.
+
+
+Rendering Improvements
+
+  I finally, finally, got around to implementing anti-aliasing into the rendering. It wasn't hard to add in there cuz I just had to modify a framebuffer texture and the combination shader. And the result is just so pleasing to the eye. 
+
+  Also I'd discovered some of the line-end-drawing was wrong and not drawing a rounded end (I swear it was working in the past). So I got that working which makes the rendering look even more pleasing to the eye.

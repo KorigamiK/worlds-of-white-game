@@ -1,6 +1,11 @@
 Changelog (2018-12-06)
 
 
+Physics
+
+  After testing and rejecting RealPhysics3D as a physics engine, I'd landed on bullet physics and was able to get that working with proper collisions and player controller. 
+
+
 Changing Gears
 
   So... I had become a bit unmotivated with the work I was going to. I don't think my ideas were bad, but all the work that would be needed to achieve it would be daunting (I already knew that) and I was doing stuff I wasn't really into (rigging, animating, questing, weapons, etc). So I was turned off from the project and worked on some other things. 
