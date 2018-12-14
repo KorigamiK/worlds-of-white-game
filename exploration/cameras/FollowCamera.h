@@ -9,7 +9,8 @@ class FollowCamera : public ICamera
 {
 private:
   Instance** instance_;
-  float desiredAngle_;
+  float desiredXAngle_;
+  float desiredYAngle_;
   float desiredDistance_;
   glm::vec3 desiredPosition_; // world space
   glm::vec3 currentPosition_; // world space
