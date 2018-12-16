@@ -24,6 +24,7 @@
 #include "DecorationModel.h"
 #include "GameState.h"
 #include "EntitySpawnInfo.h"
+#include "EntityType.h"
 #include "logging/LoggingManager.h"
 #include "logging/loggers/StreamLogger.h"
 #include "graphics/program.h"
@@ -228,56 +229,6 @@ void logError(const std::string &name)
     break;
   }
 }
-
-class IEntityType
-{
-public:
-  virtual void read() = 0;
-  virtual void load() = 0;
-
-  virtual Model* getModel() const = 0;
-  virtual Entity* spawn(const EntitySpawnInfo& info) = 0;
-};
-
-template <class TEntity, class TModel>
-class EntityType : public IEntityType
-{
-private:
-  std::string filename;
-  TModel* model;
-
-public:
-  EntityType(std::string filename)
-    : filename{ filename }
-    , model{ nullptr }
-  { }
-
-public:
-  void read() override
-  {
-    std::ifstream file(filename);
-
-    std::string type;
-    file >> type;
-
-    model = (TModel*)TModel::read(file);
-  }
-
-  void load() override
-  {
-    model->load();
-  }
-
-  virtual Model* getModel() const
-  {
-    return model;
-  }
-
-  virtual Entity* spawn(const EntitySpawnInfo& info)
-  {
-    return new TEntity(model, info);
-  }
-};
 
 int main()
 {

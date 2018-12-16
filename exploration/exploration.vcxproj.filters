@@ -71,5 +71,6 @@
     <ClInclude Include="entities\PlayerEntity.h" />
     <ClInclude Include="entities\SpiritEntity.h" />
     <ClInclude Include="EntitySpawnInfo.h" />
+    <ClInclude Include="EntityType.h" />
   </ItemGroup>
 </Project>

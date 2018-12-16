@@ -168,6 +168,7 @@
     <ClInclude Include="cameras\FreeCamera.h" />
     <ClInclude Include="cameras\ICamera.h" />
     <ClInclude Include="cameras\TrackCamera.h" />
+    <ClInclude Include="EntityType.h" />
     <ClInclude Include="graphics\framebuffer.h" />
     <ClInclude Include="graphics\IAnimator.h" />
     <ClInclude Include="graphics\joint.h" />
