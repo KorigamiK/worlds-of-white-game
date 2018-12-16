@@ -336,7 +336,7 @@ int main()
   std::map<std::string, IEntityType*> entityTypes;
   entityTypes["_spawn"]         = new EntityType<PlayerEntity, Model>{ "models/player_model.txt" };
   entityTypes["tallgrass"]      = new EntityType<DecorationEntity, DecorationModel>{ "models/tallgrass_model.txt" };
-  entityTypes["tree"]           = new EntityType<Entity, Model>{ "models/tree_model.txt" };
+  entityTypes["tree"]           = new EntityType<DecorationEntity, DecorationModel>{ "models/tree_model.txt" };
   entityTypes["flower"]         = new EntityType<DecorationEntity, DecorationModel>{ "models/flower_model.txt" };
   entityTypes["testland"]       = new EntityType<Entity, Model>{ "models/testland_model.txt" };
   entityTypes["floatingisland"] = new EntityType<Entity, Model>{ "models/floatingisland_model.txt" };
