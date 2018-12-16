@@ -1,24 +1,24 @@
-#include "CharacterInstance.h"
+#include "PlayerInstance.h"
 
 #include <glm/gtx/intersect.hpp>
 
 using namespace std::chrono_literals;
 
-const auto CHARACTER_SPEED = 4.0f;
-const auto CHARACTER_JUMP_SPEED = 4.0f;
-const auto CHARACTER_JUMP_RISE_SPEED = 0.04f;
-const auto CHARACTER_DASH_SPEED = 20.0f;
-const auto CHARACTER_DASH_DURATION = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(0.125s);
-const auto CHARACTER_DEADZONE = 0.12f;
+const auto PLAYER_SPEED = 4.0f;
+const auto PLAYER_JUMP_SPEED = 4.0f;
+const auto PLAYER_JUMP_RISE_SPEED = 0.04f;
+const auto PLAYER_DASH_SPEED = 20.0f;
+const auto PLAYER_DASH_DURATION = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(0.125s);
+const auto PLAYER_DEADZONE = 0.12f;
 
 const auto BUTTON_JUMP = 0;
 const auto BUTTON_DASH = 2;
 
-btRigidBody* createCharacterBody(glm::vec3 position, glm::vec3 rotation);
-void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh);
+btRigidBody* createPlayerBody(glm::vec3 position, glm::vec3 rotation);
+void doPlayerDeformation(Instance* player, btCollisionWorld* world, btBvhTriangleMeshShape* mesh);
 
-CharacterInstance::CharacterInstance(Model* model, const InstanceSpawnInfo& info)
-  : PhysicsInstance{ model, info, createCharacterBody(info.location, info.rotation) }
+PlayerInstance::PlayerInstance(Model* model, const InstanceSpawnInfo& info)
+  : PhysicsInstance{ model, info, createPlayerBody(info.location, info.rotation) }
   , velocity{ 0, 1, 0 }
   , dashing{ false }
   , dashUsed{ false }
@@ -26,7 +26,7 @@ CharacterInstance::CharacterInstance(Model* model, const InstanceSpawnInfo& info
   , dashDirection{ }
 { }
 
-void CharacterInstance::update(GameState& state, float time)
+void PlayerInstance::update(GameState& state, float time)
 {
   if (dashUsed && *state.canJump)
   {
@@ -85,13 +85,13 @@ void CharacterInstance::update(GameState& state, float time)
       auto angle = std::atan2(yAxis, xAxis);
       auto magnitude = std::hypot(xAxis, yAxis);
 
-      if (magnitude > CHARACTER_DEADZONE)
+      if (magnitude > PLAYER_DEADZONE)
       {
         angle += state.camera->getAngle() + glm::radians(90.0f);
         rotation = angle;
 
         auto old_velocity = body->getLinearVelocity();
-        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * CHARACTER_SPEED, 0);
+        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * PLAYER_SPEED, 0);
         new_velocity.setZ(old_velocity.z());
         body->setLinearVelocity(new_velocity);
         body->activate();
@@ -99,32 +99,32 @@ void CharacterInstance::update(GameState& state, float time)
       if (buttons[BUTTON_JUMP] == GLFW_PRESS && *state.canJump)
       {
         auto velocity = body->getLinearVelocity();
-        velocity.setZ(CHARACTER_JUMP_SPEED);
+        velocity.setZ(PLAYER_JUMP_SPEED);
         body->setLinearVelocity(velocity);
         body->activate();
       }
       if (buttons[BUTTON_JUMP] == GLFW_PRESS && !*state.canJump && body->getLinearVelocity().z() > 0.0f)
       {
         auto velocity = body->getLinearVelocity();
-        velocity.setZ(velocity.getZ() + CHARACTER_JUMP_RISE_SPEED);
+        velocity.setZ(velocity.getZ() + PLAYER_JUMP_RISE_SPEED);
         body->setLinearVelocity(velocity);
         body->activate();
       }
-      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= CHARACTER_DEADZONE)
+      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= PLAYER_DEADZONE)
       {
         dashing = true;
         dashUsed = true;
-        dashDirection = glm::vec3(0, 0, -1) * CHARACTER_DASH_SPEED;
-        dashTime = std::chrono::high_resolution_clock::now() + CHARACTER_DASH_DURATION;
+        dashDirection = glm::vec3(0, 0, -1) * PLAYER_DASH_SPEED;
+        dashTime = std::chrono::high_resolution_clock::now() + PLAYER_DASH_DURATION;
       }
-      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > CHARACTER_DEADZONE)
+      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > PLAYER_DEADZONE)
       {
         auto direction = btVector3(0, 1, 0).rotate({ 0, 0, 1 }, rotation);
 
         dashing = true;
         dashUsed = true;
-        dashDirection = glm::vec3(direction.x(), direction.y(), direction.z()) * CHARACTER_DASH_SPEED;
-        dashTime = std::chrono::high_resolution_clock::now() + CHARACTER_DASH_DURATION;
+        dashDirection = glm::vec3(direction.x(), direction.y(), direction.z()) * PLAYER_DASH_SPEED;
+        dashTime = std::chrono::high_resolution_clock::now() + PLAYER_DASH_DURATION;
       }
     }
   }
@@ -134,56 +134,56 @@ void CharacterInstance::update(GameState& state, float time)
   state.playerPosition = position;
 }
 
-void CharacterInstance::draw_faces(GameState& state, Program& program, float time)
+void PlayerInstance::draw_faces(GameState& state, Program& program, float time)
 {
-  doCharacterDeformation(this, state.world, state.terrain);
+  doPlayerDeformation(this, state.world, state.terrain);
   Instance::draw_faces(state, program, time);
 }
 
-void CharacterInstance::draw_lines(GameState& state, Program& program, float time)
+void PlayerInstance::draw_lines(GameState& state, Program& program, float time)
 {
   Instance::draw_lines(state, program, time);
 }
 
-void CharacterInstance::draw_debug(GameState& state, Program& program, float time)
+void PlayerInstance::draw_debug(GameState& state, Program& program, float time)
 {
 
 }
 
-btRigidBody* createCharacterBody(glm::vec3 position, glm::vec3 rotation)
+btRigidBody* createPlayerBody(glm::vec3 position, glm::vec3 rotation)
 {
-  const auto CHARACTER_BODY_MASS = 1.0f;
-  const auto CHARACTER_BODY_RADIUS = 0.25f;
+  const auto PLAYER_BODY_MASS = 1.0f;
+  const auto PLAYER_BODY_RADIUS = 0.25f;
 
-  auto characterTransform = btTransform();
-  characterTransform.setRotation({ rotation.x, rotation.y, rotation.z }); // might need to by YXZ, i dunno
-  characterTransform.setOrigin({ position.x, position.y, position.z });
+  auto playerTransform = btTransform();
+  playerTransform.setRotation({ rotation.x, rotation.y, rotation.z }); // might need to by YXZ, i dunno
+  playerTransform.setOrigin({ position.x, position.y, position.z });
 
-  auto characterShape = new btSphereShape(CHARACTER_BODY_RADIUS);
-  auto characterMotionState = new btDefaultMotionState(characterTransform);
-  auto characterBody = new btRigidBody(CHARACTER_BODY_MASS, characterMotionState, characterShape);
-  characterBody->setAngularFactor(0);
-  characterBody->setFriction(0.95f);
-  characterBody->setDamping(0.5f, 0.0f);
-  characterBody->setRestitution(0.0f);
-  characterBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
-  characterBody->setCcdSweptSphereRadius(CHARACTER_BODY_RADIUS);
-  characterBody->setCcdMotionThreshold(0.00000001f);
+  auto playerShape = new btSphereShape(PLAYER_BODY_RADIUS);
+  auto playerMotionState = new btDefaultMotionState(playerTransform);
+  auto playerBody = new btRigidBody(PLAYER_BODY_MASS, playerMotionState, playerShape);
+  playerBody->setAngularFactor(0);
+  playerBody->setFriction(0.95f);
+  playerBody->setDamping(0.5f, 0.0f);
+  playerBody->setRestitution(0.0f);
+  playerBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+  playerBody->setCcdSweptSphereRadius(PLAYER_BODY_RADIUS);
+  playerBody->setCcdMotionThreshold(0.00000001f);
 
-  return characterBody;
+  return playerBody;
 }
 
-void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhTriangleMeshShape* mesh)
+void doPlayerDeformation(Instance* player, btCollisionWorld* world, btBvhTriangleMeshShape* mesh)
 {
-  auto& characterModel = *character->model;
-  auto characterRotation = character->rotation;
-  auto characterScale = character->scale;
-  auto characterPosition = btVector3(
-    character->position.x,
-    character->position.y,
-    character->position.z);
+  auto& playerModel = *player->model;
+  auto playerRotation = player->rotation;
+  auto playerScale = player->scale;
+  auto playerPosition = btVector3(
+    player->position.x,
+    player->position.y,
+    player->position.z);
 
-  const auto POINT_COUNT = characterModel.vertexData.size() / Model::DATA_COUNT_PER_VERTEX;
+  const auto POINT_COUNT = playerModel.vertexData.size() / Model::DATA_COUNT_PER_VERTEX;
   const auto POINT_DISTANCE_MAX = 2.0f;
   const auto POINT_WORLD_MARGIN = 0.0625f;
 
@@ -244,8 +244,8 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
       }
     };
 
-    auto boundingBoxMin = characterPosition - btVector3(POINT_DISTANCE_MAX, POINT_DISTANCE_MAX, POINT_DISTANCE_MAX) * characterScale;
-    auto boundingBoxMax = characterPosition + btVector3(POINT_DISTANCE_MAX, POINT_DISTANCE_MAX, POINT_DISTANCE_MAX) * characterScale;
+    auto boundingBoxMin = playerPosition - btVector3(POINT_DISTANCE_MAX, POINT_DISTANCE_MAX, POINT_DISTANCE_MAX) * playerScale;
+    auto boundingBoxMax = playerPosition + btVector3(POINT_DISTANCE_MAX, POINT_DISTANCE_MAX, POINT_DISTANCE_MAX) * playerScale;
     auto triangleCallback = CustomTriangleCallback();
 
     mesh->processAllTriangles(&triangleCallback, boundingBoxMin, boundingBoxMax);
@@ -275,7 +275,7 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
     return closestFraction;
   };
 
-  auto newVertexData = characterModel.vertexData;
+  auto newVertexData = playerModel.vertexData;
   for (std::size_t i = 0; i < newVertexData.size(); i += Model::DATA_COUNT_PER_VERTEX)
   {
     // should be a unit vector
@@ -285,8 +285,8 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
       newVertexData[i + 2]);
 
     // these are in world space
-    auto rayStart = characterPosition;
-    auto rayEnd = characterPosition + point.rotate({ 0, 0, 1 }, characterRotation) * characterScale * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
+    auto rayStart = playerPosition;
+    auto rayEnd = playerPosition + point.rotate({ 0, 0, 1 }, playerRotation) * playerScale * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
     auto closestFraction = getRayIntersectionMesh(rayStart, rayEnd);
     auto closestAmount = closestFraction * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
 
@@ -328,7 +328,7 @@ void doCharacterDeformation(Instance* character, btCollisionWorld* world, btBvhT
     newVertexData[i + 2] *= amount;
   }
 
-  glBindVertexArray(characterModel.vertexDataVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, characterModel.vertexDataVBO);
+  glBindVertexArray(playerModel.vertexDataVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, playerModel.vertexDataVBO);
   glBufferSubData(GL_ARRAY_BUFFER, 0, newVertexData.size() * sizeof(float), newVertexData.data());
 }

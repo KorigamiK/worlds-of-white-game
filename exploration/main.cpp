@@ -36,7 +36,7 @@
 #include "cameras/TrackCamera.h"
 #include "cameras/FreeCamera.h"
 #include "instances/Instance.h"
-#include "instances/CharacterInstance.h"
+#include "instances/PlayerInstance.h"
 #include "instances/DecorationInstance.h"
 
 namespace { auto logger = wilt::logging.createLogger("main"); }
@@ -48,8 +48,6 @@ void processInput(GLFWwindow *window);
 unsigned int SCR_WIDTH = 1280;
 unsigned int SCR_HEIGHT = 720;
 bool paused = false;
-
-float character_scale = 1.0f;
 
 Framebuffer faceFramebuffer;
 Framebuffer lineFramebuffer;
@@ -286,7 +284,7 @@ int main()
 
   // read in models
   std::map<std::string, Model*> models;
-  models["_spawn"]          = ModelReader::read("models/spirit_model.txt");
+  models["_spawn"]          = ModelReader::read("models/player_model.txt");
   models["tallgrass"]       = ModelReader::read("models/tallgrass_model.txt");
   models["tree"]            = ModelReader::read("models/tree_model.txt");
   models["flower"]          = ModelReader::read("models/flower_model.txt");
@@ -398,15 +396,15 @@ int main()
   terrainShape->setMargin(0.0f);
   dynamicsWorld->addRigidBody(terrainBody);
 
-  // load character
-  Instance* character = nullptr;
+  // load player
+  Instance* player = nullptr;
   for (auto instance : instances)
   {
-    auto characterInstance = dynamic_cast<CharacterInstance*>(instance);
-    if (characterInstance)
-      character = characterInstance;
+    auto playerInstance = dynamic_cast<PlayerInstance*>(instance);
+    if (playerInstance)
+      player = playerInstance;
   }
-  if (character == nullptr)
+  if (player == nullptr)
     return -1;
 
   // load physics objects
@@ -421,8 +419,8 @@ int main()
   int instanceIndex = 0;
   Instance* currentInstance = instances[instanceIndex];
   FreeCamera* freeCam = new FreeCamera();
-  TrackCamera* trackCam = new TrackCamera(&character);
-  FollowCamera* followCam = new FollowCamera(&character);
+  TrackCamera* trackCam = new TrackCamera(&player);
+  FollowCamera* followCam = new FollowCamera(&player);
   ICamera* cam = followCam;
 
   auto printJoystickInfo = [&](int joystickId)
@@ -473,7 +471,7 @@ int main()
   if (selectedJoystickId == -1)
     return -1;
 
-  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, character->position };
+  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, player->position };
 
   while (!glfwWindowShouldClose(window))
   {

@@ -6,7 +6,7 @@
 
 #include "Model.h"
 #include "DecorationModel.h"
-#include "CharacterModel.h"
+#include "PlayerModel.h"
 
 class ModelReader
 {
@@ -18,8 +18,8 @@ public:
     // read type
     std::string type;
     file >> type;
-    if (type == "character")
-      return CharacterModel::read(file);
+    if (type == "player")
+      return PlayerModel::read(file);
     if (type == "decoration")
       return DecorationModel::read(file);
     else

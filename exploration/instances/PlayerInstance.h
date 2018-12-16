@@ -1,5 +1,5 @@
-#ifndef WILT_CHARACTERINSTANCE_H
-#define WILT_CHARACTERINSTANCE_H
+#ifndef WILT_PLAYERINSTANCE_H
+#define WILT_PLAYERINSTANCE_H
 
 #include <chrono>
 
@@ -9,10 +9,10 @@
 
 #include "PhysicsInstance.h"
 
-class CharacterInstance : public PhysicsInstance
+class PlayerInstance : public PhysicsInstance
 {
 public:
-  CharacterInstance(Model* model, const InstanceSpawnInfo& info);
+  PlayerInstance(Model* model, const InstanceSpawnInfo& info);
 
   glm::vec3 velocity;
   
@@ -29,4 +29,4 @@ public:
   void draw_debug(GameState& state, Program& program, float time) override;
 };
 
-#endif // !WILT_CHARACTERINSTANCE_H
+#endif // !WILT_PLAYERINSTANCE_H

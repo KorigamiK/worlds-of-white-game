@@ -19,13 +19,13 @@
     <ClCompile Include="cameras\FollowCamera.cpp" />
     <ClCompile Include="cameras\FreeCamera.cpp" />
     <ClCompile Include="cameras\TrackCamera.cpp" />
-    <ClCompile Include="instances\CharacterInstance.cpp" />
     <ClCompile Include="instances\Instance.cpp" />
     <ClCompile Include="instances\AnimatedInstance.cpp" />
     <ClCompile Include="instances\PhysicsInstance.cpp" />
     <ClCompile Include="instances\SpiritInstance.cpp" />
     <ClCompile Include="instances\DecorationInstance.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="instances\PlayerInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -61,7 +61,6 @@
     <ClInclude Include="cameras\TrackCamera.h" />
     <ClInclude Include="cameras\FreeCamera.h" />
     <ClInclude Include="graphics\IAnimator.h" />
-    <ClInclude Include="instances\CharacterInstance.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="instances\Instance.h" />
     <ClInclude Include="instances\AnimatedInstance.h" />
@@ -71,7 +70,8 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="InstanceSpawnInfo.h" />
     <ClInclude Include="DecorationModel.h" />
-    <ClInclude Include="CharacterModel.h" />
     <ClInclude Include="ModelReader.h" />
+    <ClInclude Include="PlayerModel.h" />
+    <ClInclude Include="instances\PlayerInstance.h" />
   </ItemGroup>
 </Project>

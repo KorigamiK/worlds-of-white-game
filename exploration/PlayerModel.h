@@ -1,20 +1,20 @@
-#ifndef WILT_CHARACTERMODEL_H
-#define WILT_CHARACTERMODEL_H
+#ifndef WILT_PLAYERMODEL_H
+#define WILT_PLAYERMODEL_H
 
 #include "Model.h"
-#include "instances/CharacterInstance.h"
+#include "instances/PlayerInstance.h"
 
-class CharacterModel : public Model
+class PlayerModel : public Model
 {
 public:
   Instance* spawn(const InstanceSpawnInfo& info) override
   {
-    return new CharacterInstance(this, info);
+    return new PlayerInstance(this, info);
   }
 
   static Model* read(std::ifstream& file)
   {
-    auto model = new CharacterModel();
+    auto model = new PlayerModel();
 
     // get rotations
     model->transform = glm::scale(glm::mat4(), { 1.0f, 1.0f, 1.0f });
@@ -33,4 +33,4 @@ public:
   }
 };
 
-#endif // !WILT_CHARACTERMODEL_H
+#endif // !WILT_PLAYERMODEL_H
