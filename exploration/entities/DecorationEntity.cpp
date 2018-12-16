@@ -2,39 +2,43 @@
 
 #include <iostream>
 
+#include "../DecorationModel.h"
+
 void DecorationEntity::update(GameState& state, float time)
 {
-  auto distance = glm::length(position - state.playerPosition);
-  auto middle = (farDrawDistance + nearDrawDistance) / 2;
+  auto& model = *(DecorationModel*)this->model;
 
-  if (drawState == DRAWN && distance > farHideDistance)
+  auto distance = glm::length(position - state.playerPosition);
+  auto middle = (model.farDrawDistance + model.nearDrawDistance) / 2;
+
+  if (drawState != HIDDEN && distance > model.farHideDistance)
     drawState = HIDING_FAR;
-  if (drawState == DRAWN && distance < nearHideDistance)
+  if (drawState != HIDDEN && distance < model.nearHideDistance)
     drawState = HIDING_NEAR;
-  if (drawState == HIDDEN && distance < farDrawDistance && distance > middle)
+  if (drawState == HIDDEN && distance < model.farDrawDistance && distance > middle)
     drawState = DRAWING_FAR;
-  if (drawState == HIDDEN && distance > nearDrawDistance && distance < middle)
+  if (drawState == HIDDEN && distance > model.nearDrawDistance && distance < middle)
     drawState = DRAWING_NEAR;
 
   switch (drawState)
   {
   case DRAWING_FAR: 
-    drawPercentage += farDrawRate / 144.0f; // TODO: use time delta
+    drawPercentage += model.farDrawRate / 144.0f; // TODO: use time delta
     if (drawPercentage >= 1.0f)
       drawState = DRAWN;
     break;
   case DRAWING_NEAR:
-    drawPercentage += nearDrawRate / 144.0f; // TODO: use time delta
+    drawPercentage += model.nearDrawRate / 144.0f; // TODO: use time delta
     if (drawPercentage >= 1.0f)
       drawState = DRAWN;
     break;
   case HIDING_FAR:
-    drawPercentage -= farDrawRate / 144.0f; // TODO: use time delta
+    drawPercentage -= model.farDrawRate / 144.0f; // TODO: use time delta
     if (drawPercentage <= 0.0f)
       drawState = HIDDEN;
     break;
   case HIDING_NEAR:
-    drawPercentage -= nearDrawRate / 144.0f; // TODO: use time delta
+    drawPercentage -= model.nearDrawRate / 144.0f; // TODO: use time delta
     if (drawPercentage <= 0.0f)
       drawState = HIDDEN;
     break;

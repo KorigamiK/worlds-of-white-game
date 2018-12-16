@@ -345,7 +345,7 @@ int main()
 
   // load level
   //auto& level = testLevel;
-  //auto& terrainModel = entityTypes["testland"]->model;
+  //auto& terrainModel = entityTypes["testland"]->getModel();
   auto& level = floatingLevel;
   auto terrainModel = entityTypes["floatingisland"]->getModel();
   auto entities = std::vector<Entity*>();

@@ -20,14 +20,6 @@ public:
   float drawPercentage = 0.0f;
   DecorationState drawState = HIDDEN;
 
-  // move these to a model
-  float farHideDistance = 8.5f;
-  float farDrawDistance = 7.0f;
-  float farDrawRate = 1.0f;
-  float nearHideDistance = 1.5f;
-  float nearDrawDistance = 2.5f;
-  float nearDrawRate = 4.0f;
-
 public:
   using Entity::Entity;
 
