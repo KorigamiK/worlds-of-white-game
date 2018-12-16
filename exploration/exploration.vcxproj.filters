@@ -64,8 +64,6 @@
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="DecorationModel.h" />
-    <ClInclude Include="ModelReader.h" />
-    <ClInclude Include="PlayerModel.h" />
     <ClInclude Include="entities\AnimatedEntity.h" />
     <ClInclude Include="entities\DecorationEntity.h" />
     <ClInclude Include="entities\Entity.h" />

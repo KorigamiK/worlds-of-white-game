@@ -21,7 +21,7 @@
 #include <cmath>
 
 #include "Model.h"
-#include "ModelReader.h"
+#include "DecorationModel.h"
 #include "GameState.h"
 #include "EntitySpawnInfo.h"
 #include "logging/LoggingManager.h"
@@ -229,6 +229,56 @@ void logError(const std::string &name)
   }
 }
 
+class IEntityType
+{
+public:
+  virtual void read() = 0;
+  virtual void load() = 0;
+
+  virtual Model* getModel() const = 0;
+  virtual Entity* spawn(const EntitySpawnInfo& info) = 0;
+};
+
+template <class TEntity, class TModel>
+class EntityType : public IEntityType
+{
+private:
+  std::string filename;
+  TModel* model;
+
+public:
+  EntityType(std::string filename)
+    : filename{ filename }
+    , model{ nullptr }
+  { }
+
+public:
+  void read() override
+  {
+    std::ifstream file(filename);
+
+    std::string type;
+    file >> type;
+
+    model = (TModel*)TModel::read(file);
+  }
+
+  void load() override
+  {
+    model->load();
+  }
+
+  virtual Model* getModel() const
+  {
+    return model;
+  }
+
+  virtual Entity* spawn(const EntitySpawnInfo& info)
+  {
+    return new TEntity(model, info);
+  }
+};
+
 int main()
 {
   wilt::logging.setLogger<wilt::StreamLogger>(std::cout);
@@ -282,27 +332,29 @@ int main()
   auto testLevel = Level::read("levels/testing_level.txt");
   auto floatingLevel = Level::read("levels/floating_level.txt");
 
-  // read in models
-  std::map<std::string, Model*> models;
-  models["_spawn"]          = ModelReader::read("models/player_model.txt");
-  models["tallgrass"]       = ModelReader::read("models/tallgrass_model.txt");
-  models["tree"]            = ModelReader::read("models/tree_model.txt");
-  models["flower"]          = ModelReader::read("models/flower_model.txt");
-  models["testland"]        = ModelReader::read("models/testland_model.txt");
-  models["floatingisland"]  = ModelReader::read("models/floatingisland_model.txt");
+  // read in entityTypes
+  std::map<std::string, IEntityType*> entityTypes;
+  entityTypes["_spawn"]         = new EntityType<PlayerEntity, Model>{ "models/player_model.txt" };
+  entityTypes["tallgrass"]      = new EntityType<DecorationEntity, DecorationModel>{ "models/tallgrass_model.txt" };
+  entityTypes["tree"]           = new EntityType<Entity, Model>{ "models/tree_model.txt" };
+  entityTypes["flower"]         = new EntityType<DecorationEntity, DecorationModel>{ "models/flower_model.txt" };
+  entityTypes["testland"]       = new EntityType<Entity, Model>{ "models/testland_model.txt" };
+  entityTypes["floatingisland"] = new EntityType<Entity, Model>{ "models/floatingisland_model.txt" };
+  for (auto& [name, type] : entityTypes)
+    type->read();
 
   // load level
   //auto& level = testLevel;
-  //auto& terrainModel = models["testland"];
+  //auto& terrainModel = entityTypes["testland"]->model;
   auto& level = floatingLevel;
-  auto& terrainModel = models["floatingisland"];
+  auto terrainModel = entityTypes["floatingisland"]->getModel();
   auto entities = std::vector<Entity*>();
   for (auto& info : level.entities)
-    entities.push_back(models[info.name]->spawn(info));
+    entities.push_back(entityTypes[info.name]->spawn(info));
 
-  // load models
-  for (auto& entry : models)
-    entry.second->load();
+  // load entityTypes
+  for (auto& [name, type] : entityTypes)
+    type->load();
 
   // load quad
   float quadVertices[] = {

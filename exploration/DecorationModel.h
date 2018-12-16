@@ -1,6 +1,8 @@
 #ifndef WILT_DECORATIONMODEL_H
 #define WILT_DECORATIONMODEL_H
 
+#include <fstream>
+
 #include "Model.h"
 #include "entities/DecorationEntity.h"
 
