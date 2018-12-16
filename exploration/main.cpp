@@ -23,7 +23,7 @@
 #include "Model.h"
 #include "ModelReader.h"
 #include "GameState.h"
-#include "InstanceSpawnInfo.h"
+#include "EntitySpawnInfo.h"
 #include "logging/LoggingManager.h"
 #include "logging/loggers/StreamLogger.h"
 #include "graphics/program.h"
@@ -35,9 +35,9 @@
 #include "cameras/FollowCamera.h"
 #include "cameras/TrackCamera.h"
 #include "cameras/FreeCamera.h"
-#include "instances/Instance.h"
-#include "instances/PlayerInstance.h"
-#include "instances/DecorationInstance.h"
+#include "entities/Entity.h"
+#include "entities/PlayerEntity.h"
+#include "entities/DecorationEntity.h"
 
 namespace { auto logger = wilt::logging.createLogger("main"); }
 
@@ -144,7 +144,7 @@ Animation read_animation(std::string path)
 class Level
 {
 public:
-  std::vector<InstanceSpawnInfo> instances;
+  std::vector<EntitySpawnInfo> entities;
 
   static Level read(const std::string& filename)
   {
@@ -165,21 +165,21 @@ public:
       return level;
 
     // read data
-    int instanceCount;
-    file >> instanceCount;
-    level.instances.resize(instanceCount);
-    for (std::size_t i = 0; i < level.instances.size(); ++i)
+    int entityCount;
+    file >> entityCount;
+    level.entities.resize(entityCount);
+    for (std::size_t i = 0; i < level.entities.size(); ++i)
     {
-      file >> level.instances[i].name;
-      file >> level.instances[i].location[0];
-      file >> level.instances[i].location[1];
-      file >> level.instances[i].location[2];
-      file >> level.instances[i].rotation[0];
-      file >> level.instances[i].rotation[1];
-      file >> level.instances[i].rotation[2];
-      file >> level.instances[i].scale[0];
-      file >> level.instances[i].scale[1];
-      file >> level.instances[i].scale[2];
+      file >> level.entities[i].name;
+      file >> level.entities[i].location[0];
+      file >> level.entities[i].location[1];
+      file >> level.entities[i].location[2];
+      file >> level.entities[i].rotation[0];
+      file >> level.entities[i].rotation[1];
+      file >> level.entities[i].rotation[2];
+      file >> level.entities[i].scale[0];
+      file >> level.entities[i].scale[1];
+      file >> level.entities[i].scale[2];
     }
 
     return level;
@@ -296,9 +296,9 @@ int main()
   //auto& terrainModel = models["testland"];
   auto& level = floatingLevel;
   auto& terrainModel = models["floatingisland"];
-  auto instances = std::vector<Instance*>();
-  for (auto& info : level.instances)
-    instances.push_back(models[info.name]->spawn(info));
+  auto entities = std::vector<Entity*>();
+  for (auto& info : level.entities)
+    entities.push_back(models[info.name]->spawn(info));
 
   // load models
   for (auto& entry : models)
@@ -397,27 +397,27 @@ int main()
   dynamicsWorld->addRigidBody(terrainBody);
 
   // load player
-  Instance* player = nullptr;
-  for (auto instance : instances)
+  Entity* player = nullptr;
+  for (auto entity : entities)
   {
-    auto playerInstance = dynamic_cast<PlayerInstance*>(instance);
-    if (playerInstance)
-      player = playerInstance;
+    auto playerEntity = dynamic_cast<PlayerEntity*>(entity);
+    if (playerEntity)
+      player = playerEntity;
   }
   if (player == nullptr)
     return -1;
 
   // load physics objects
-  for (auto instance : instances)
+  for (auto entity : entities)
   {
-    auto physicsInstance = dynamic_cast<PhysicsInstance*>(instance);
-    if (physicsInstance)
-      dynamicsWorld->addRigidBody(physicsInstance->getBody());
+    auto physicsEntity = dynamic_cast<PhysicsEntity*>(entity);
+    if (physicsEntity)
+      dynamicsWorld->addRigidBody(physicsEntity->getBody());
   }
 
   // load camera
-  int instanceIndex = 0;
-  Instance* currentInstance = instances[instanceIndex];
+  int entityIndex = 0;
+  Entity* currentEntity = entities[entityIndex];
   FreeCamera* freeCam = new FreeCamera();
   TrackCamera* trackCam = new TrackCamera(&player);
   FollowCamera* followCam = new FollowCamera(&player);
@@ -491,21 +491,21 @@ int main()
       cam = freeCam;
     if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
     {
-      instanceIndex = (instanceIndex != instances.size() - 1) ? instanceIndex + 1 : 0;
-      currentInstance = instances[instanceIndex];
+      entityIndex = (entityIndex != entities.size() - 1) ? entityIndex + 1 : 0;
+      currentEntity = entities[entityIndex];
     }
     if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
     {
-      instanceIndex = (instanceIndex != 0) ? instanceIndex - 1 : instances.size() - 1;
-      currentInstance = instances[instanceIndex];
+      entityIndex = (entityIndex != 0) ? entityIndex - 1 : entities.size() - 1;
+      currentEntity = entities[entityIndex];
     }
 
     if (!paused)
     {
       dynamicsWorld->stepSimulation(1.0f / 144.0f, 2, 1.0f / 120.0f);
 
-      for (auto& instance : instances)
-        instance->update(gameState, time);
+      for (auto& entity : entities)
+        entity->update(gameState, time);
 
       cam->update(gameState, time);
     }
@@ -525,8 +525,8 @@ int main()
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    for (auto& instance : instances)
-      instance->draw_faces(gameState, depthProgram, time);
+    for (auto& entity : entities)
+      entity->draw_faces(gameState, depthProgram, time);
 
     glBindVertexArray(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -548,8 +548,8 @@ int main()
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    for (auto& instance : instances)
-      instance->draw_lines(gameState, lineProgram, time);
+    for (auto& entity : entities)
+      entity->draw_lines(gameState, lineProgram, time);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

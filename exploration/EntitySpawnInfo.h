@@ -1,11 +1,11 @@
-#ifndef WILT_INSTANCESPAWNINFO_H
-#define WILT_INSTANCESPAWNINFO_H
+#ifndef WILT_ENTITYSPAWNINFO_H
+#define WILT_ENTITYSPAWNINFO_H
 
 #include <string>
 
 #include <glm/glm.hpp>
 
-class InstanceSpawnInfo
+class EntitySpawnInfo
 {
 public:
   std::string name;
@@ -14,4 +14,4 @@ public:
   glm::vec3 scale;
 };
 
-#endif // !WILT_INSTANCESPAWNINFO_H
+#endif // !WILT_ENTITYSPAWNINFO_H

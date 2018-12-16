@@ -1,16 +1,16 @@
-#include "PhysicsInstance.h"
+#include "PhysicsEntity.h"
 
-PhysicsInstance::PhysicsInstance(Model* model, const InstanceSpawnInfo& info, btRigidBody* body)
-  : Instance{ model, info }
+PhysicsEntity::PhysicsEntity(Model* model, const EntitySpawnInfo& info, btRigidBody* body)
+  : Entity{ model, info }
   , body{ body }
 { }
 
-btRigidBody* PhysicsInstance::getBody()
+btRigidBody* PhysicsEntity::getBody()
 {
   return body;
 }
 
-void PhysicsInstance::update(GameState& state, float time)
+void PhysicsEntity::update(GameState& state, float time)
 {
   btTransform bodyTransform;
   body->getMotionState()->getWorldTransform(bodyTransform);

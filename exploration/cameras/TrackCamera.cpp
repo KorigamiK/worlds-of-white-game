@@ -1,8 +1,8 @@
 #include "TrackCamera.h"
 
 
-TrackCamera::TrackCamera(Instance** instance)
-  : _instance{ instance }
+TrackCamera::TrackCamera(Entity** entity)
+  : entity_{ entity }
 { }
 
 void TrackCamera::update(GameState& state, float time)
@@ -12,7 +12,7 @@ void TrackCamera::update(GameState& state, float time)
 
 glm::mat4 TrackCamera::getTransform() const
 {
-  return glm::lookAt({ 0, 0, 1 }, (*_instance)->position, { 0, 0, 1 });
+  return glm::lookAt({ 0, 0, 1 }, (*entity_)->position, { 0, 0, 1 });
 }
 
 glm::vec3 TrackCamera::getPosition() const

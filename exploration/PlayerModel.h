@@ -2,14 +2,14 @@
 #define WILT_PLAYERMODEL_H
 
 #include "Model.h"
-#include "instances/PlayerInstance.h"
+#include "entities/PlayerEntity.h"
 
 class PlayerModel : public Model
 {
 public:
-  Instance* spawn(const InstanceSpawnInfo& info) override
+  Entity* spawn(const EntitySpawnInfo& info) override
   {
-    return new PlayerInstance(this, info);
+    return new PlayerEntity(this, info);
   }
 
   static Model* read(std::ifstream& file)

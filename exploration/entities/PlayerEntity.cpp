@@ -1,4 +1,4 @@
-#include "PlayerInstance.h"
+#include "PlayerEntity.h"
 
 #include <glm/gtx/intersect.hpp>
 
@@ -15,10 +15,10 @@ const auto BUTTON_JUMP = 0;
 const auto BUTTON_DASH = 2;
 
 btRigidBody* createPlayerBody(glm::vec3 position, glm::vec3 rotation);
-void doPlayerDeformation(Instance* player, btCollisionWorld* world, btBvhTriangleMeshShape* mesh);
+void doPlayerDeformation(Entity* player, btCollisionWorld* world, btBvhTriangleMeshShape* mesh);
 
-PlayerInstance::PlayerInstance(Model* model, const InstanceSpawnInfo& info)
-  : PhysicsInstance{ model, info, createPlayerBody(info.location, info.rotation) }
+PlayerEntity::PlayerEntity(Model* model, const EntitySpawnInfo& info)
+  : PhysicsEntity{ model, info, createPlayerBody(info.location, info.rotation) }
   , velocity{ 0, 1, 0 }
   , dashing{ false }
   , dashUsed{ false }
@@ -26,7 +26,7 @@ PlayerInstance::PlayerInstance(Model* model, const InstanceSpawnInfo& info)
   , dashDirection{ }
 { }
 
-void PlayerInstance::update(GameState& state, float time)
+void PlayerEntity::update(GameState& state, float time)
 {
   if (dashUsed && *state.canJump)
   {
@@ -129,23 +129,23 @@ void PlayerInstance::update(GameState& state, float time)
     }
   }
 
-  PhysicsInstance::update(state, time);
+  PhysicsEntity::update(state, time);
 
   state.playerPosition = position;
 }
 
-void PlayerInstance::draw_faces(GameState& state, Program& program, float time)
+void PlayerEntity::draw_faces(GameState& state, Program& program, float time)
 {
   doPlayerDeformation(this, state.world, state.terrain);
-  Instance::draw_faces(state, program, time);
+  Entity::draw_faces(state, program, time);
 }
 
-void PlayerInstance::draw_lines(GameState& state, Program& program, float time)
+void PlayerEntity::draw_lines(GameState& state, Program& program, float time)
 {
-  Instance::draw_lines(state, program, time);
+  Entity::draw_lines(state, program, time);
 }
 
-void PlayerInstance::draw_debug(GameState& state, Program& program, float time)
+void PlayerEntity::draw_debug(GameState& state, Program& program, float time)
 {
 
 }
@@ -173,7 +173,7 @@ btRigidBody* createPlayerBody(glm::vec3 position, glm::vec3 rotation)
   return playerBody;
 }
 
-void doPlayerDeformation(Instance* player, btCollisionWorld* world, btBvhTriangleMeshShape* mesh)
+void doPlayerDeformation(Entity* player, btCollisionWorld* world, btBvhTriangleMeshShape* mesh)
 {
   auto& playerModel = *player->model;
   auto playerRotation = player->rotation;

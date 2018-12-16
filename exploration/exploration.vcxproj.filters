@@ -19,13 +19,13 @@
     <ClCompile Include="cameras\FollowCamera.cpp" />
     <ClCompile Include="cameras\FreeCamera.cpp" />
     <ClCompile Include="cameras\TrackCamera.cpp" />
-    <ClCompile Include="instances\Instance.cpp" />
-    <ClCompile Include="instances\AnimatedInstance.cpp" />
-    <ClCompile Include="instances\PhysicsInstance.cpp" />
-    <ClCompile Include="instances\SpiritInstance.cpp" />
-    <ClCompile Include="instances\DecorationInstance.cpp" />
     <ClCompile Include="Model.cpp" />
-    <ClCompile Include="instances\PlayerInstance.cpp" />
+    <ClCompile Include="entities\AnimatedEntity.cpp" />
+    <ClCompile Include="entities\DecorationEntity.cpp" />
+    <ClCompile Include="entities\Entity.cpp" />
+    <ClCompile Include="entities\PhysicsEntity.cpp" />
+    <ClCompile Include="entities\PlayerEntity.cpp" />
+    <ClCompile Include="entities\SpiritEntity.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -62,16 +62,16 @@
     <ClInclude Include="cameras\FreeCamera.h" />
     <ClInclude Include="graphics\IAnimator.h" />
     <ClInclude Include="GameState.h" />
-    <ClInclude Include="instances\Instance.h" />
-    <ClInclude Include="instances\AnimatedInstance.h" />
-    <ClInclude Include="instances\PhysicsInstance.h" />
-    <ClInclude Include="instances\SpiritInstance.h" />
-    <ClInclude Include="instances\DecorationInstance.h" />
     <ClInclude Include="Model.h" />
-    <ClInclude Include="InstanceSpawnInfo.h" />
     <ClInclude Include="DecorationModel.h" />
     <ClInclude Include="ModelReader.h" />
     <ClInclude Include="PlayerModel.h" />
-    <ClInclude Include="instances\PlayerInstance.h" />
+    <ClInclude Include="entities\AnimatedEntity.h" />
+    <ClInclude Include="entities\DecorationEntity.h" />
+    <ClInclude Include="entities\Entity.h" />
+    <ClInclude Include="entities\PhysicsEntity.h" />
+    <ClInclude Include="entities\PlayerEntity.h" />
+    <ClInclude Include="entities\SpiritEntity.h" />
+    <ClInclude Include="EntitySpawnInfo.h" />
   </ItemGroup>
 </Project>

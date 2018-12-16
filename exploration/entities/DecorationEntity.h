@@ -1,9 +1,9 @@
-#ifndef WILT_DECORATIONINSTANCE_H
-#define WILT_DECORATIONINSTANCE_H
+#ifndef WILT_DECORATIONENTITY_H
+#define WILT_DECORATIONENTITY_H
 
-#include "Instance.h"
+#include "Entity.h"
 
-class DecorationInstance : public Instance
+class DecorationEntity : public Entity
 {
 public:
   enum DecorationState
@@ -29,15 +29,15 @@ public:
   float nearDrawRate = 4.0f;
 
 public:
-  using Instance::Instance;
+  using Entity::Entity;
 
 public:
-  // Instance overrides
+  // Entity overrides
   void update(GameState& state, float time) override;
   void draw_faces(GameState& state, Program& program, float time) override;
   void draw_lines(GameState& state, Program& program, float time) override;
   void draw_debug(GameState& state, Program& program, float time) override;
 
-}; // class DecorationInstance
+}; // class DecorationEntity
 
-#endif // !WILT_DECORATIONINSTANCE_H
+#endif // !WILT_DECORATIONENTITY_H

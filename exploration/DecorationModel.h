@@ -2,14 +2,14 @@
 #define WILT_DECORATIONMODEL_H
 
 #include "Model.h"
-#include "instances/DecorationInstance.h"
+#include "entities/DecorationEntity.h"
 
 class DecorationModel : public Model
 {
 public:
-  Instance* spawn(const InstanceSpawnInfo& info) override
+  Entity* spawn(const EntitySpawnInfo& info) override
   {
-    return new DecorationInstance(this, info);
+    return new DecorationEntity(this, info);
   }
 
   static Model* read(std::ifstream& file)

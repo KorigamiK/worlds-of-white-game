@@ -1,5 +1,5 @@
-#ifndef WILT_INSTANCE_H
-#define WILT_INSTANCE_H
+#ifndef WILT_ENTITY_H
+#define WILT_ENTITY_H
 
 #include <vector>
 
@@ -7,14 +7,14 @@
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "../InstanceSpawnInfo.h"
+#include "../EntitySpawnInfo.h"
 #include "../GameState.h"
 
 class IAnimator;
 class Model;
 class Program;
 
-class Instance
+class Entity
 {
 public:
   Model* model;
@@ -22,7 +22,7 @@ public:
   float rotation;
   float scale;
 
-  Instance(Model* model, const InstanceSpawnInfo& info);
+  Entity(Model* model, const EntitySpawnInfo& info);
 
   virtual void update(GameState& state, float time);
 
@@ -30,9 +30,9 @@ public:
   virtual void draw_lines(GameState& state, Program& program, float time);
   virtual void draw_debug(GameState& state, Program& program, float time);
 
-}; // class Instance
+}; // class Entity
 
 #include "../model.h"
 #include "../graphics/program.h"
 
-#endif // !WILT_INSTANCE_H
+#endif // !WILT_ENTITY_H

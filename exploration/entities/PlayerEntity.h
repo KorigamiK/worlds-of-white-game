@@ -1,5 +1,5 @@
-#ifndef WILT_PLAYERINSTANCE_H
-#define WILT_PLAYERINSTANCE_H
+#ifndef WILT_PLAYERENTITY_H
+#define WILT_PLAYERENTITY_H
 
 #include <chrono>
 
@@ -7,12 +7,12 @@
 #include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "PhysicsInstance.h"
+#include "PhysicsEntity.h"
 
-class PlayerInstance : public PhysicsInstance
+class PlayerEntity : public PhysicsEntity
 {
 public:
-  PlayerInstance(Model* model, const InstanceSpawnInfo& info);
+  PlayerEntity(Model* model, const EntitySpawnInfo& info);
 
   glm::vec3 velocity;
   
@@ -22,11 +22,11 @@ public:
   glm::vec3 dashDirection;
 
 public:
-  // Instance overrides
+  // Entity overrides
   void update(GameState& state, float time) override;
   void draw_faces(GameState& state, Program& program, float time) override;
   void draw_lines(GameState& state, Program& program, float time) override;
   void draw_debug(GameState& state, Program& program, float time) override;
 };
 
-#endif // !WILT_PLAYERINSTANCE_H
+#endif // !WILT_PLAYERENTITY_H

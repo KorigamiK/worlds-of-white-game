@@ -2,7 +2,7 @@
 
 #include <glm/gtx/rotate_vector.hpp>
 
-#include "../instances/Instance.h"
+#include "../entities/Entity.h"
 
 const auto CAMERA_DEADZONE = 0.12f;
 const auto CAMERA_ROTATION_RATE = 0.05f;
@@ -14,20 +14,20 @@ const auto CAMERA_HEIGHT_ANGLE = 0.5f;
 
 glm::vec3 calcPosition(float xangle, float yangle, float distance);
 
-FollowCamera::FollowCamera(Instance** instance)
-  : instance_{ instance }
-  , desiredXAngle_{ (*instance)->rotation }
+FollowCamera::FollowCamera(Entity** entity)
+  : entity_{ entity }
+  , desiredXAngle_{ (*entity)->rotation }
   , desiredYAngle_{ CAMERA_HEIGHT_ANGLE }
   , desiredDistance_{ CAMERA_DISTANCE }
-  , desiredPosition_{ (*instance)->position + glm::rotateZ(glm::vec3(0, 6, 3), (*instance)->rotation) }
+  , desiredPosition_{ (*entity)->position + glm::rotateZ(glm::vec3(0, 6, 3), (*entity)->rotation) }
   , currentPosition_{ desiredPosition_ }
 { }
 
 void FollowCamera::update(GameState& state, float time)
 {
   { // adjustments based on previous position
-    auto dx = (*instance_)->position.x - desiredPosition_.x;
-    auto dy = (*instance_)->position.y - desiredPosition_.y;
+    auto dx = (*entity_)->position.x - desiredPosition_.x;
+    auto dy = (*entity_)->position.y - desiredPosition_.y;
     desiredXAngle_ = std::atan2(dy, dx) + glm::radians(90.0f);
   }
 
@@ -52,13 +52,13 @@ void FollowCamera::update(GameState& state, float time)
   }
 
   desiredYAngle_ = desiredYAngle_ * (1 - CAMERA_DRIFT_CORRECTION_RATE) + CAMERA_HEIGHT_ANGLE * CAMERA_DRIFT_CORRECTION_RATE;
-  desiredPosition_ = (*instance_)->position + calcPosition(desiredXAngle_, desiredYAngle_, desiredDistance_);
+  desiredPosition_ = (*entity_)->position + calcPosition(desiredXAngle_, desiredYAngle_, desiredDistance_);
   currentPosition_ = (currentPosition_) * (1 - CAMERA_DRIFT_CORRECTION_RATE) + (desiredPosition_) * CAMERA_DRIFT_CORRECTION_RATE;
 }
 
 glm::mat4 FollowCamera::getTransform() const
 {
-  return glm::lookAt(getPosition(), (*instance_)->position + CAMERA_LOOK_OFFSET, { 0, 0, 1 });
+  return glm::lookAt(getPosition(), (*entity_)->position + CAMERA_LOOK_OFFSET, { 0, 0, 1 });
 }
 
 glm::vec3 FollowCamera::getPosition() const

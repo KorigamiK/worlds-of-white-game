@@ -1,8 +1,8 @@
-#include "DecorationInstance.h"
+#include "DecorationEntity.h"
 
 #include <iostream>
 
-void DecorationInstance::update(GameState& state, float time)
+void DecorationEntity::update(GameState& state, float time)
 {
   auto distance = glm::length(position - state.playerPosition);
   auto middle = (farDrawDistance + nearDrawDistance) / 2;
@@ -41,7 +41,7 @@ void DecorationInstance::update(GameState& state, float time)
   }
 }
 
-void DecorationInstance::draw_faces(GameState& state, Program& program, float time)
+void DecorationEntity::draw_faces(GameState& state, Program& program, float time)
 {
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
@@ -49,7 +49,7 @@ void DecorationInstance::draw_faces(GameState& state, Program& program, float ti
   model->draw_faces(program, time, position, rotation, scale);
 }
 
-void DecorationInstance::draw_lines(GameState& state, Program& program, float time)
+void DecorationEntity::draw_lines(GameState& state, Program& program, float time)
 {
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
@@ -57,7 +57,7 @@ void DecorationInstance::draw_lines(GameState& state, Program& program, float ti
   model->draw_lines(program, time, position, rotation, scale);
 }
 
-void DecorationInstance::draw_debug(GameState& state, Program& program, float time)
+void DecorationEntity::draw_debug(GameState& state, Program& program, float time)
 {
 
 }

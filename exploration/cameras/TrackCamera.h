@@ -2,15 +2,15 @@
 #define WILT_TRACKCAMERA_H
 
 #include "ICamera.h"
-#include "../instances/Instance.h"
+#include "../entities/Entity.h"
 
 class TrackCamera : public ICamera
 {
 public:
-  Instance** _instance;
+  Entity** entity_;
 
 public:
-  TrackCamera(Instance** instance);
+  TrackCamera(Entity** entity);
 
 public:
   // ICamera overrides

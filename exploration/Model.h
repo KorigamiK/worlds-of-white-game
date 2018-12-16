@@ -6,8 +6,8 @@
 
 #include <glm/glm.hpp>
 
-#include "instances/Instance.h"
-#include "InstanceSpawnInfo.h"
+#include "entities/Entity.h"
+#include "EntitySpawnInfo.h"
 #include "graphics/joint.h"
 #include "graphics/texture.h"
 #include "graphics/program.h"
@@ -34,7 +34,7 @@ public:
   void draw_faces(Program& program, float time, glm::vec3 position, float rotation, float scale);
   void draw_lines(Program& program, float time, glm::vec3 position, float rotation, float scale);
 
-  virtual Instance* spawn(const InstanceSpawnInfo& info);
+  virtual Entity* spawn(const EntitySpawnInfo& info);
 
 public:
   static Model* read(std::ifstream& file);
