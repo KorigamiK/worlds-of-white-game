@@ -39,6 +39,7 @@
 #include "entities/Entity.h"
 #include "entities/PlayerEntity.h"
 #include "entities/DecorationEntity.h"
+#include "entities/SmashEffectEntity.h"
 
 namespace { auto logger = wilt::logging.createLogger("main"); }
 
@@ -289,6 +290,7 @@ int main()
   entityTypes["tallgrass"]      = new EntityType<DecorationEntity, DecorationModel>{ "models/tallgrass_model.txt" };
   entityTypes["tree"]           = new EntityType<DecorationEntity, DecorationModel>{ "models/tree_model.txt" };
   entityTypes["flower"]         = new EntityType<DecorationEntity, DecorationModel>{ "models/flower_model.txt" };
+  entityTypes["ring"]           = new EntityType<SmashEffectEntity, Model>{ "models/ring_model.txt" };
   entityTypes["testland"]       = new EntityType<Entity, Model>{ "models/testland_model.txt" };
   entityTypes["floatingisland"] = new EntityType<Entity, Model>{ "models/floatingisland_model.txt" };
   for (auto& [name, type] : entityTypes)
@@ -300,6 +302,7 @@ int main()
   auto& level = floatingLevel;
   auto terrainModel = entityTypes["floatingisland"]->getModel();
   auto entities = std::vector<Entity*>();
+  entities.reserve(100);
   for (auto& info : level.entities)
     entities.push_back(entityTypes[info.name]->spawn(info));
 
@@ -474,7 +477,7 @@ int main()
   if (selectedJoystickId == -1)
     return -1;
 
-  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, player->position };
+  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, player->position, entityTypes, entities };
 
   while (!glfwWindowShouldClose(window))
   {
@@ -511,6 +514,14 @@ int main()
         entity->update(gameState, time);
 
       cam->update(gameState, time);
+
+      for (auto& entity : gameState.removeList)
+        entities.erase(std::find(entities.begin(), entities.end(), entity));
+      gameState.removeList.clear();
+
+      for (auto& entity : gameState.addList)
+        entities.push_back(entity);
+      gameState.addList.clear();
     }
 
     glm::mat4 view = cam->getTransform();

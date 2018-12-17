@@ -1,5 +1,7 @@
 #include "PlayerEntity.h"
 
+#include <random>
+
 #include <glm/gtx/intersect.hpp>
 
 using namespace std::chrono_literals;
@@ -38,6 +40,17 @@ void PlayerEntity::update(GameState& state, float time)
     body->setLinearVelocity(btVector3(dashDirection.x, dashDirection.y, dashDirection.z));
     if (dashTime <= std::chrono::high_resolution_clock::now())
       dashing = false;
+
+    if (*state.canJump)
+    {
+      static std::random_device rd;
+      static std::mt19937 gen(rd());
+      static std::uniform_real_distribution<> dis(0.0, 3.1415926535);
+
+      auto ring = state.types["ring"]->spawn({ "", position + glm::vec3(0, 0, -0.25), { 0, 0, dis(gen) }, { 0.5, 0.5, 0.5 } });
+      state.addList.push_back(ring);
+      dashing = false;
+    }
   }
   else
   {
@@ -110,14 +123,14 @@ void PlayerEntity::update(GameState& state, float time)
         body->setLinearVelocity(velocity);
         body->activate();
       }
-      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= PLAYER_DEADZONE)
+      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= PLAYER_DEADZONE && !*state.canJump)
       {
         dashing = true;
         dashUsed = true;
         dashDirection = glm::vec3(0, 0, -1) * PLAYER_DASH_SPEED;
         dashTime = std::chrono::high_resolution_clock::now() + PLAYER_DASH_DURATION;
       }
-      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > PLAYER_DEADZONE)
+      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > PLAYER_DEADZONE && !*state.canJump)
       {
         auto direction = btVector3(0, 1, 0).rotate({ 0, 0, 1 }, rotation);
 

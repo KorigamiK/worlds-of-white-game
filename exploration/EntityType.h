@@ -1,9 +1,9 @@
 #ifndef WILT_ENTITYTYPE_H
 #define WILT_ENTITYTYPE_H
 
-#include "Model.h"
-#include "EntitySpawnInfo.h"
-#include "entities/Entity.h"
+class Model;
+class Entity;
+class EntitySpawnInfo;
 
 class IEntityType
 {
@@ -44,15 +44,19 @@ public:
     model->load();
   }
 
-  virtual Model* getModel() const
+  Model* getModel() const override
   {
     return model;
   }
 
-  virtual Entity* spawn(const EntitySpawnInfo& info)
+  Entity* spawn(const EntitySpawnInfo& info) override
   {
     return new TEntity(model, info);
   }
 };
+
+#include "Model.h"
+#include "EntitySpawnInfo.h"
+#include "entities/Entity.h"
 
 #endif // !WILT_ENTITYTYPE_H
