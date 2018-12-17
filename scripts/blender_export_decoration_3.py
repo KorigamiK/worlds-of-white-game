@@ -43,13 +43,13 @@ for edge in bm.edges:
   vId2 = edge.verts[1].index
   vId3 = -1
   faces = edge.link_faces
-  if len(faces) == 0:
-    continue
-  if len(faces) == 1:
-    faces = [faces[0], faces[0]]
-  if alwaysDrawGroupId in [g.group for g in mesh.vertices[vId1].groups] and alwaysDrawGroupId in [g.group for g in mesh.vertices[vId2].groups]:
+  if len(faces) == 0 or (alwaysDrawGroupId in [g.group for g in mesh.vertices[vId1].groups] and alwaysDrawGroupId in [g.group for g in mesh.vertices[vId2].groups]):
     vId0 = vId2
     vId3 = vId1
+  elif len(faces) == 1:
+    faces = [faces[0], faces[0]]
+    vId0 = [v for v in faces[0].verts if v.index != vId1 and v.index != vId2][0].index
+    vId3 = [v for v in faces[1].verts if v.index != vId1 and v.index != vId2][0].index
   else:
     vId0 = [v for v in faces[0].verts if v.index != vId1 and v.index != vId2][0].index
     vId3 = [v for v in faces[1].verts if v.index != vId1 and v.index != vId2][0].index
