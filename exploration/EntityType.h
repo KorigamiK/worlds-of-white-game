@@ -32,6 +32,8 @@ public:
   void read() override
   {
     std::ifstream file(filename);
+    if (!file)
+      return;
 
     std::string type;
     file >> type;

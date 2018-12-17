@@ -19,6 +19,7 @@
 #include <map>
 #include <numeric>
 #include <cmath>
+#include <iomanip>
 
 #include "Model.h"
 #include "DecorationModel.h"
@@ -153,6 +154,8 @@ public:
     Level level;
 
     std::ifstream file(filename);
+    if (!file)
+      return level;
 
     // read type
     std::string type;
@@ -280,9 +283,10 @@ int main()
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
-  // read in level
+  // read in levels
   auto testLevel = Level::read("levels/testing_level.txt");
   auto floatingLevel = Level::read("levels/floating_level.txt");
+  auto tempLevel = Level::read("levels/temp_level.txt");
 
   // read in entityTypes
   std::map<std::string, IEntityType*> entityTypes;
@@ -294,14 +298,18 @@ int main()
   entityTypes["ring"]           = new EntityType<SmashEffectEntity, Model>{ "models/ring_model.txt" };
   entityTypes["testland"]       = new EntityType<Entity, Model>{ "models/testland_model.txt" };
   entityTypes["floatingisland"] = new EntityType<Entity, Model>{ "models/floatingisland_model.txt" };
+  entityTypes["temp"]           = new EntityType<Entity, Model>{ "models/temp_model.txt" };
   for (auto& [name, type] : entityTypes)
     type->read();
 
   // load level
   //auto& level = testLevel;
-  //auto& terrainModel = entityTypes["testland"]->getModel();
-  auto& level = floatingLevel;
-  auto terrainModel = entityTypes["floatingisland"]->getModel();
+  //auto terrainModel = entityTypes["testland"]->getModel();
+  //auto& level = floatingLevel;
+  //auto terrainModel = entityTypes["floatingisland"]->getModel();
+  auto& level = tempLevel;
+  auto terrainModel = (Model*)nullptr;
+
   auto entities = std::vector<Entity*>();
   entities.reserve(100);
   for (auto& info : level.entities)
@@ -392,16 +400,30 @@ int main()
   }, &canJump);
 
   // create terrain
-  auto terrainIndices = terrainModel->faceIndexes;
-  auto terrainVertices = terrainModel->vertexData;
-  auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, (int*)terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / Model::DATA_COUNT_PER_VERTEX, terrainVertices.data(), Model::DATA_COUNT_PER_VERTEX * sizeof(float));
-  auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
-  auto terrainMotionState = new btDefaultMotionState();
-  auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShape);
-  terrainBody->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
-  terrainBody->setFriction(0.95f);
-  terrainShape->setMargin(0.0f);
-  dynamicsWorld->addRigidBody(terrainBody);
+  btBvhTriangleMeshShape* terrainShape;
+  std::vector<unsigned int> terrainIndices;
+  std::vector<float> terrainVertices;
+  if (terrainModel)
+  {
+    terrainIndices = terrainModel->faceIndexes;
+    terrainVertices = terrainModel->vertexData;
+    auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, (int*)terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / Model::DATA_COUNT_PER_VERTEX, terrainVertices.data(), Model::DATA_COUNT_PER_VERTEX * sizeof(float));
+    terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
+
+    auto terrainMotionState = new btDefaultMotionState();
+    auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShape);
+    terrainBody->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+    terrainBody->setFriction(0.95f);
+    terrainShape->setMargin(0.0f);
+    dynamicsWorld->addRigidBody(terrainBody);
+  }
+  else
+  {
+    terrainIndices = std::vector<unsigned int>{ 0, 1, 2 };
+    terrainVertices = { 0, 0, 0, 2, 0, 0, 1, 1, 0 };
+    auto terrainMesh = new btTriangleIndexVertexArray(1, (int*)terrainIndices.data(), 3 * sizeof(int), 3, terrainVertices.data(), 3 * sizeof(float));
+    terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
+  }
 
   // load player
   Entity* player = nullptr;
@@ -411,6 +433,8 @@ int main()
     if (playerEntity)
       player = playerEntity;
   }
+  if (player == nullptr && entities.size() > 0)
+    player = entities[0];
   if (player == nullptr)
     return -1;
 
@@ -480,15 +504,41 @@ int main()
 
   auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, player->position, entityTypes, entities };
 
+  auto maxFPS = 0.0f;
+  auto minFPS = 1000.0f;
+  auto totFPS = 0.0f;
+
+  auto lastFrameTime = std::chrono::high_resolution_clock::now();
+  auto currFrameTime = std::chrono::high_resolution_clock::now();
+
   while (!glfwWindowShouldClose(window))
   {
     float time = i / 144.0f;
+    lastFrameTime = currFrameTime;
+    currFrameTime = std::chrono::high_resolution_clock::now();
 
     // input
     processInput(window);
 
-    if (i % 15 == 0)
-      printJoystickInfo(selectedJoystickId);
+    //if (i % 15 == 0)
+    //  printJoystickInfo(selectedJoystickId);
+
+    auto fps = 1000000000.0f / (currFrameTime - lastFrameTime).count();
+    totFPS += fps;
+    if (fps > maxFPS)
+      maxFPS = fps;
+    if (fps < minFPS)
+      minFPS = fps;
+
+    if (i % 144 == 143)
+    {
+      std::cout << " avg: " << std::setw(7) << std::left << totFPS / 144;
+      std::cout << " min: " << std::setw(7) << std::left << minFPS << std::endl;
+
+      maxFPS = 0.0f;
+      minFPS = 1000.0f;
+      totFPS = 0.0f;
+    }
 
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
       cam = followCam;
