@@ -206,3 +206,71 @@ void Model::readVersion2(Model& model, std::ifstream& file)
     model.joints[i] = Joint(parentIndex, location, rotation);
   }
 }
+
+void Model::readVersion3(Model& model, std::ifstream& file)
+{
+  // read bounding box
+  file >> model.boundingA.x;
+  file >> model.boundingA.y;
+  file >> model.boundingA.z;
+  file >> model.boundingB.x;
+  file >> model.boundingB.y;
+  file >> model.boundingB.z;
+
+  // read vertices
+  int vertexCount;
+  file >> vertexCount;
+  model.vertexData.resize(vertexCount * 10); // 10 floats per vertex (x, y, z, g1, g2, g3, w1, w2, w3, o)
+  for (std::size_t i = 0; i < model.vertexData.size(); i += 10)
+  {
+    file >> model.vertexData[i + 0];
+    file >> model.vertexData[i + 1];
+    file >> model.vertexData[i + 2];
+    file >> model.vertexData[i + 3];
+    file >> model.vertexData[i + 4];
+    file >> model.vertexData[i + 5];
+    file >> model.vertexData[i + 6];
+    file >> model.vertexData[i + 7];
+    file >> model.vertexData[i + 8];
+    file >> model.vertexData[i + 9];
+  }
+
+  // read faces
+  int faceCount;
+  file >> faceCount;
+  model.faceIndexes.resize(faceCount * 3); // 3 ints per line (vId1, vId2, vId3)
+  for (std::size_t i = 0; i < model.faceIndexes.size(); ++i)
+    file >> model.faceIndexes[i];
+
+  // read lines
+  int lineCount;
+  file >> lineCount;
+  model.lineIndexes.resize(lineCount * 4); // 4 ints per line (vId1, vId2, vId3, vId4)
+  for (std::size_t i = 0; i < model.lineIndexes.size(); ++i)
+    file >> model.lineIndexes[i];
+
+  // read bones
+  int jointCount;
+  file >> jointCount;
+  model.joints.resize(jointCount);
+  for (int i = 0; i < jointCount; ++i)
+  {
+    int parentIndex;
+    glm::vec3 location;
+    glm::quat rotation;
+
+    file >> parentIndex;
+
+    file >> location[0];
+    file >> location[1];
+    file >> location[2];
+
+    file >> rotation[3]; // w
+    file >> rotation[0]; // x
+    file >> rotation[1]; // y
+    file >> rotation[2]; // z
+
+    model.joints[i] = Joint(parentIndex, location, rotation);
+  }
+}
+

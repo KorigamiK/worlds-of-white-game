@@ -48,6 +48,12 @@ public:
       file >> model->nearHideDistance >> model->nearDrawDistance >> model->nearDrawRate;
       Model::readVersion2(*model, file);
       break;
+
+    case 4:
+      file >> model->farHideDistance >> model->farDrawDistance >> model->farDrawRate;
+      file >> model->nearHideDistance >> model->nearDrawDistance >> model->nearDrawRate;
+      Model::readVersion3(*model, file);
+      break;
     }
 
     return model;
