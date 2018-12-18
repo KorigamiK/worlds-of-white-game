@@ -54,6 +54,7 @@ bool paused = false;
 
 Framebuffer faceFramebuffer;
 Framebuffer lineFramebuffer;
+Framebuffer debgFramebuffer;
 
 struct AnimationFrame
 {
@@ -278,6 +279,10 @@ int main()
     VertexShader::fromFile("shaders/depth.vert.glsl"),
     FragmentShader::fromFile("shaders/depth.frag.glsl")
   };
+  Program debugProgram{
+    VertexShader::fromFile("shaders/debug.vert.glsl"),
+    FragmentShader::fromFile("shaders/debug.frag.glsl")
+  };
   Program screenProgram{
     VertexShader::fromFile("shaders/screen.vert.glsl"),
     FragmentShader::fromFile("shaders/screen.frag.glsl")
@@ -341,6 +346,36 @@ int main()
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
+  // load box
+  float boxVertices[]{
+    // x-axis lines
+     1.0f,  1.0f,  1.0f,  -1.0f,  1.0f,  1.0f,
+     1.0f,  1.0f, -1.0f,  -1.0f,  1.0f, -1.0f,
+     1.0f, -1.0f,  1.0f,  -1.0f, -1.0f,  1.0f,
+     1.0f, -1.0f, -1.0f,  -1.0f, -1.0f, -1.0f,
+
+    // y-axis lines
+     1.0f,  1.0f,  1.0f,   1.0f, -1.0f,  1.0f,
+    -1.0f,  1.0f,  1.0f,  -1.0f, -1.0f,  1.0f,
+     1.0f,  1.0f, -1.0f,   1.0f, -1.0f, -1.0f,
+    -1.0f,  1.0f, -1.0f,  -1.0f, -1.0f, -1.0f,
+
+    // z-axis lines
+     1.0f,  1.0f,  1.0f,   1.0f,  1.0f, -1.0f,
+     1.0f, -1.0f,  1.0f,   1.0f, -1.0f, -1.0f,
+    -1.0f,  1.0f,  1.0f,  -1.0f,  1.0f, -1.0f,
+    -1.0f, -1.0f,  1.0f,  -1.0f, -1.0f, -1.0f
+  };
+
+  unsigned int boxVAO, boxVBO;
+  glGenVertexArrays(1, &boxVAO);
+  glGenBuffers(1, &boxVBO);
+  glBindVertexArray(boxVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, boxVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(boxVertices), &boxVertices, GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
   faceFramebuffer = Framebuffer(
     Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT),
     Texture::fromMemory(NULL, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT)
@@ -348,6 +383,10 @@ int main()
 
   lineFramebuffer = Framebuffer(
     Texture::fromMemory(NULL, GL_RGBA8, SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D_MULTISAMPLE, 8)
+  );
+
+  debgFramebuffer = Framebuffer(
+    Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT)
   );
 
   Texture paperTexture = Texture::fromFile("models/paper_texture.jpg");
@@ -578,7 +617,7 @@ int main()
     glm::mat4 view = cam->getTransform();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-    // render faces and depth
+    // render depth
     depthProgram.use();
     depthProgram.setMat4("projection", projection);
     depthProgram.setMat4("view", view);
@@ -618,12 +657,27 @@ int main()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    // render depth
+    // render debug
+    debugProgram.use();
+    debugProgram.setMat4("projection", projection);
+    debugProgram.setMat4("view", view);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, debgFramebuffer.id());
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    for (auto& entity : entities)
+      entity->draw_debug(gameState, debugProgram, time);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // render to screen
     screenProgram.use();
     screenProgram.setInt("face_texture", 0);
     screenProgram.setInt("line_texture", 1);
     screenProgram.setInt("line_texture_samples", lineFramebuffer.colorTexture().samples());
     screenProgram.setInt("bkgd_texture", 2);
+    screenProgram.setInt("debg_texture", 3);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(faceFramebuffer.colorTexture().target(), faceFramebuffer.colorTexture().id());
@@ -634,14 +688,15 @@ int main()
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, paperTexture.id());
 
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(debgFramebuffer.colorTexture().target(), debgFramebuffer.colorTexture().id());
+
     glDisable(GL_DEPTH_TEST);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-    // -------------------------------------------------------------------------------
     glfwSwapBuffers(window);
     glfwPollEvents();
     logError("any");
@@ -657,19 +712,13 @@ int main()
     }
   }
 
-  // optional: de-allocate all resources once they've outlived their purpose:
-  // ------------------------------------------------------------------------
   glDeleteVertexArrays(1, &quadVAO);
   glDeleteBuffers(1, &quadVBO);
 
-  // glfw: terminate, clearing all previously allocated GLFW resources.
-  // ------------------------------------------------------------------
   glfwTerminate();
   return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -678,8 +727,6 @@ void processInput(GLFWwindow *window)
     paused = !paused;
 }
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
   // make sure the viewport matches the new window dimensions; note that width and 
@@ -692,4 +739,5 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
   // resize framebuffer textures
   faceFramebuffer.resize(width, height);
   lineFramebuffer.resize(width, height);
+  debgFramebuffer.resize(width, height);
 }
