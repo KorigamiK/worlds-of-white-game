@@ -25,6 +25,7 @@ public:
   glm::vec3 playerPosition;
   std::map<std::string, IEntityType*>& types;
   std::vector<Entity*>& entities;
+  unsigned int boxVAO;
 
   std::vector<Entity*> addList;
   std::vector<Entity*> removeList;

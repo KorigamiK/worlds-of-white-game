@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "../DecorationModel.h"
 
 void DecorationEntity::update(GameState& state, float time)
@@ -69,5 +71,22 @@ void DecorationEntity::draw_lines(GameState& state, Program& program, float time
 
 void DecorationEntity::draw_debug(GameState& state, Program& program, float time)
 {
+  if (drawPercentage <= 0.0f)
+    return;
 
+  auto percentage = drawPercentage > 1.0f ? 1.0f : drawPercentage;
+  auto offsetBox = (model->boundingA + model->boundingB) / 2.0f;
+  auto offsetLvl = offsetBox;
+  auto scales = offsetBox - model->boundingA;
+  offsetLvl.z = model->boundingA.z * (1 - percentage) + model->boundingB.z * percentage;
+
+  auto mbox = glm::scale(glm::translate(glm::translate(glm::mat4(), position) * glm::rotate(model->transform, rotation, { 0,0,1 }), offsetBox * scale), glm::vec3(scale * scales.x, scale * scales.y, scale * scales.z));
+  auto mlvl = glm::scale(glm::translate(glm::translate(glm::mat4(), position) * glm::rotate(model->transform, rotation, { 0,0,1 }), offsetLvl * scale), glm::vec3(scale * scales.x, scale * scales.y, scale * scales.z * 0.0f));
+
+  program.setMat4("model", mbox);
+  glBindVertexArray(state.boxVAO);
+  glDrawArrays(GL_LINES, 0, 24);
+  program.setMat4("model", mlvl);
+  glBindVertexArray(state.boxVAO);
+  glDrawArrays(GL_LINES, 0, 24);
 }

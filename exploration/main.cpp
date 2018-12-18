@@ -541,7 +541,7 @@ int main()
   if (selectedJoystickId == -1)
     return -1;
 
-  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, player->position, entityTypes, entities };
+  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, player->position, entityTypes, entities, boxVAO };
 
   auto maxFPS = 0.0f;
   auto minFPS = 1000.0f;
@@ -594,6 +594,10 @@ int main()
     {
       entityIndex = (entityIndex != 0) ? entityIndex - 1 : entities.size() - 1;
       currentEntity = entities[entityIndex];
+    }
+    if (glfwGetKey(window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS)
+    {
+      debugViewEnabled = !debugViewEnabled;
     }
 
     if (!paused)
