@@ -550,6 +550,8 @@ int main()
   auto lastFrameTime = std::chrono::high_resolution_clock::now();
   auto currFrameTime = std::chrono::high_resolution_clock::now();
 
+  auto debugViewEnabled = false;
+
   while (!glfwWindowShouldClose(window))
   {
     float time = i / 144.0f;
@@ -670,8 +672,11 @@ int main()
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    for (auto& entity : entities)
-      entity->draw_debug(gameState, debugProgram, time);
+    if (debugViewEnabled)
+    {
+      for (auto& entity : entities)
+        entity->draw_debug(gameState, debugProgram, time);
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
