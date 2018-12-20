@@ -40,7 +40,13 @@ void Model::load()
 
 void Model::draw_faces(Program& program, float time, glm::vec3 position, float rotation, float scale)
 {
-  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), position) * glm::rotate(transform, rotation, { 0,0,1 }), glm::vec3(scale, scale, scale)));
+  glm::mat4 modelTransform = glm::mat4()
+    * glm::translate(glm::mat4(), position)
+    * glm::rotate(glm::mat4(), rotation, { 0,0,1 })
+    * glm::scale(glm::mat4(), glm::vec3(scale, scale, scale))
+    * transform;
+
+  program.setMat4("model", modelTransform);
   program.setInt("model_texture", 0);
 
   glBindVertexArray(vertexDataVAO);
@@ -53,7 +59,13 @@ void Model::draw_faces(Program& program, float time, glm::vec3 position, float r
 
 void Model::draw_lines(Program& program, float time, glm::vec3 position, float rotation, float scale)
 {
-  program.setMat4("model", glm::scale(glm::translate(glm::mat4(), position) * glm::rotate(transform, rotation, { 0,0,1 }), glm::vec3(scale, scale, scale)));
+  glm::mat4 modelTransform = glm::mat4()
+    * glm::translate(glm::mat4(), position)
+    * glm::rotate(glm::mat4(), rotation, { 0,0,1 })
+    * glm::scale(glm::mat4(), glm::vec3(scale, scale, scale))
+    * transform;
+
+  program.setMat4("model", modelTransform);
 
   glBindVertexArray(vertexDataVAO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineIndexesID);
