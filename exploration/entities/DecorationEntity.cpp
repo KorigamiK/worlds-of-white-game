@@ -74,23 +74,25 @@ void DecorationEntity::draw_debug(GameState& state, Program& program, float time
   if (drawPercentage <= 0.0f)
     return;
 
+  auto entityTransform = glm::mat4()
+    * glm::translate(glm::mat4(), position)
+    * glm::rotate(glm::mat4(), rotation, { 0,0,1 })
+    * glm::scale(glm::mat4(), glm::vec3(scale, scale, scale))
+    * model->transform;
+
   auto percentage = drawPercentage > 1.0f ? 1.0f : drawPercentage;
   auto offsetBox = (model->boundingA + model->boundingB) / 2.0f;
   auto offsetLvl = offsetBox;
   auto scales = offsetBox - model->boundingA;
   offsetLvl.z = model->boundingA.z * (1 - percentage) + model->boundingB.z * percentage;
 
-  auto boxTransform = glm::mat4()
-    * glm::translate(glm::mat4(), position)
-    * glm::rotate(model->transform, rotation, { 0,0,1 })
-    * glm::translate(glm::mat4(), offsetBox * scale)
-    * glm::scale(glm::mat4(), glm::vec3(scale * scales.x, scale * scales.y, scale * scales.z));
+  auto boxTransform = entityTransform
+    * glm::translate(glm::mat4(), offsetBox)
+    * glm::scale(glm::mat4(), glm::vec3(scales.x, scales.y, scales.z));
 
-  auto levelTransform = glm::mat4() 
-    * glm::translate(glm::mat4(), position)
-    * glm::rotate(model->transform, rotation, { 0,0,1 })
-    * glm::translate(glm::mat4(), offsetLvl * scale)
-    * glm::scale(glm::mat4(), glm::vec3(scale * scales.x, scale * scales.y, scale * scales.z * 0.0f));
+  auto levelTransform = entityTransform
+    * glm::translate(glm::mat4(), offsetLvl)
+    * glm::scale(glm::mat4(), glm::vec3(scales.x, scales.y, scales.z * 0.0f));
 
   program.setMat4("model", boxTransform);
   glBindVertexArray(state.boxVAO);
