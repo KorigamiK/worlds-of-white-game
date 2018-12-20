@@ -1,8 +1,13 @@
 #include "SpiritEntity.h"
 
+const auto SPIRIT_CORRECTION_RATE = 0.04f;
+
 void SpiritEntity::update(GameState& state, float time)
 {
-  position += (glm::mat3)glm::rotate(glm::mat4(), rotation, { 0, 0, 1 }) * glm::vec3(0.005f, 0, 0);
-  rotation += 0.005f;
-  position.z = 1.0f + 0.5f * std::sin(time + rotation);
+  auto dx = desiredPosition.x - position.x;
+  auto dy = desiredPosition.y - position.y;
+  auto dz = desiredPosition.z - position.z;
+  rotation = std::atan2(dy, dx);
+
+  position = position * (1 - SPIRIT_CORRECTION_RATE) + desiredPosition * SPIRIT_CORRECTION_RATE;
 }

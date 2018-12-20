@@ -3,6 +3,7 @@
 #include <random>
 
 #include <glm/gtx/intersect.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 using namespace std::chrono_literals;
 
@@ -30,6 +31,9 @@ PlayerEntity::PlayerEntity(Model* model, const EntitySpawnInfo& info)
 
 void PlayerEntity::update(GameState& state, float time)
 {
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+
   if (dashUsed && *state.canJump)
   {
     dashUsed = false;
@@ -43,8 +47,6 @@ void PlayerEntity::update(GameState& state, float time)
 
     if (*state.canJump)
     {
-      static std::random_device rd;
-      static std::mt19937 gen(rd());
       static std::uniform_real_distribution<> dis(0.0, 3.1415926535);
 
       auto ring = state.types["ring"]->spawn({ "", position + glm::vec3(0, 0, -0.25), { 0, 0, dis(gen) }, { 0.5, 0.5, 0.5 } });
@@ -145,6 +147,55 @@ void PlayerEntity::update(GameState& state, float time)
   PhysicsEntity::update(state, time);
 
   state.playerPosition = position;
+
+  if (spirits.size() < 3)
+  {
+    static std::uniform_real_distribution<> dis1(0, 2 * 3.1415926535);
+    static std::uniform_real_distribution<> dis2(0.3, 0.7);
+
+    auto spirit1 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.05, 0.05, 0.05 } });
+    auto spirit2 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.05, 0.05, 0.05 } });
+    auto spirit3 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.05, 0.05, 0.05 } });
+    state.addList.push_back(spirit1);
+    state.addList.push_back(spirit2);
+    state.addList.push_back(spirit3);
+    spirits.push_back(
+      { 
+        (SpiritEntity*)spirit1,
+        (float)dis2(gen) / 2.0f,
+        (float)dis2(gen),
+        (float)dis1(gen),
+        (float)dis1(gen),
+        (float)dis2(gen) * 2.5f
+      });
+    spirits.push_back(
+      {
+        (SpiritEntity*)spirit2,
+        (float)dis2(gen) / 2.0f,
+        (float)dis2(gen),
+        (float)dis1(gen),
+        (float)dis1(gen),
+        (float)dis2(gen) * 2.5f
+      });
+    spirits.push_back(
+      {
+        (SpiritEntity*)spirit3,
+        (float)dis2(gen) / 2.0f,
+        (float)dis2(gen),
+        (float)dis1(gen),
+        (float)dis1(gen),
+        (float)dis2(gen) * 2.5f
+      });
+  }
+
+  for (auto& spirit : spirits)
+  {
+    auto offset = glm::rotateZ(glm::vec3{ 0, spirit.distance, std::sin(spirit.heightPoint * spirit.heightPeriod) * spirit.heightMax }, spirit.anglePoint);
+
+    spirit.spirit->desiredPosition = position + offset;
+    spirit.heightPoint += 0.01f;
+    spirit.anglePoint += 0.01f;
+  }
 }
 
 void PlayerEntity::draw_faces(GameState& state, Program& program, float time)

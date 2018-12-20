@@ -23,7 +23,7 @@ for vertex in mesh.vertices:
   group1, weight1 = (groups[0].group, groups[0].weight) if len(groups) > 0 else (0, 1.0)
   group2, weight2 = (groups[1].group, groups[1].weight) if len(groups) > 1 else (0, 0.0)
   group3, weight3 = (groups[2].group, groups[2].weight) if len(groups) > 2 else (0, 0.0)
-  print(vertex.co[0], vertex.co[1], vertex.co[2], group1, group2, group3, weight1, weight2, weight3, file=file)
+  print(vertex.co[0], vertex.co[1], vertex.co[2], group1, group2, group3, weight1, weight2, weight3, 1.0, file=file)
 
 # write faces
 print(len(mesh.polygons), file=file)

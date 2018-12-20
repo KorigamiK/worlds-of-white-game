@@ -39,6 +39,7 @@
 #include "cameras/FreeCamera.h"
 #include "entities/Entity.h"
 #include "entities/PlayerEntity.h"
+#include "entities/SpiritEntity.h"
 #include "entities/DecorationEntity.h"
 #include "entities/SmashEffectEntity.h"
 
@@ -291,11 +292,12 @@ int main()
   // read in levels
   auto testLevel = Level::read("levels/testing_level.txt");
   auto floatingLevel = Level::read("levels/floating_level.txt");
-  auto tempLevel = Level::read("levels/temp_level.txt");
+  //auto tempLevel = Level::read("levels/temp_level.txt");
 
   // read in entityTypes
   std::map<std::string, IEntityType*> entityTypes;
   entityTypes["_spawn"]         = new EntityType<PlayerEntity, Model>{ "models/player_model.txt" };
+  entityTypes["spirit"]         = new EntityType<SpiritEntity, Model>{ "models/spirit_model.txt" };
   entityTypes["tallgrass"]      = new EntityType<DecorationEntity, DecorationModel>{ "models/tallgrass_model.txt" };
   entityTypes["shortgrass"]     = new EntityType<DecorationEntity, DecorationModel>{ "models/shortgrass_model.txt" };
   entityTypes["tree"]           = new EntityType<DecorationEntity, DecorationModel>{ "models/tree_model.txt" };
@@ -303,7 +305,7 @@ int main()
   entityTypes["ring"]           = new EntityType<SmashEffectEntity, Model>{ "models/ring_model.txt" };
   entityTypes["testland"]       = new EntityType<Entity, Model>{ "models/testland_model.txt" };
   entityTypes["floatingisland"] = new EntityType<Entity, Model>{ "models/floatingisland_model.txt" };
-  entityTypes["temp"]           = new EntityType<Entity, Model>{ "models/temp_model.txt" };
+  //entityTypes["temp"]           = new EntityType<Entity, Model>{ "models/temp_model.txt" };
   for (auto& [name, type] : entityTypes)
     type->read();
 

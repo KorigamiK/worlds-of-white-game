@@ -84,6 +84,7 @@ Model* Model::read(std::ifstream& file)
   {
   case 1: readVersion1(*model, file); break;
   case 2: readVersion2(*model, file); break;
+  case 3: readVersion3(*model, file); break;
   }
 
   return model;

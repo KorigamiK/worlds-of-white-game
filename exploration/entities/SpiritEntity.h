@@ -8,7 +8,7 @@ class SpiritEntity : public Entity
 public:
   using Entity::Entity;
 
-  float height = 1.0f;
+  glm::vec3 desiredPosition;
 
 public:
   // Entity overrides
