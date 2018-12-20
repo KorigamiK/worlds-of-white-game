@@ -19,7 +19,7 @@ class Entity
 public:
   Model* model;
   glm::vec3 position;
-  float rotation;
+  glm::vec3 rotation;
   float scale;
 
   Entity(Model* model, const EntitySpawnInfo& info);

@@ -6,6 +6,7 @@
 #include <cimg/cimg.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 void Model::load()
 {
@@ -38,11 +39,11 @@ void Model::load()
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Model::draw_faces(Program& program, float time, glm::vec3 position, float rotation, float scale)
+void Model::draw_faces(Program& program, float time, glm::vec3 position, glm::vec3 rotation, float scale)
 {
   glm::mat4 modelTransform = glm::mat4()
     * glm::translate(glm::mat4(), position)
-    * glm::rotate(glm::mat4(), rotation, { 0,0,1 })
+    * glm::yawPitchRoll(rotation.x, rotation.y, rotation.z)
     * glm::scale(glm::mat4(), glm::vec3(scale, scale, scale))
     * transform;
 
@@ -57,11 +58,11 @@ void Model::draw_faces(Program& program, float time, glm::vec3 position, float r
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Model::draw_lines(Program& program, float time, glm::vec3 position, float rotation, float scale)
+void Model::draw_lines(Program& program, float time, glm::vec3 position, glm::vec3 rotation, float scale)
 {
   glm::mat4 entityTransform = glm::mat4()
     * glm::translate(glm::mat4(), position)
-    * glm::rotate(glm::mat4(), rotation, { 0,0,1 })
+    * glm::yawPitchRoll(rotation.x, rotation.y, rotation.z)
     * glm::scale(glm::mat4(), glm::vec3(scale, scale, scale))
     * transform;
 

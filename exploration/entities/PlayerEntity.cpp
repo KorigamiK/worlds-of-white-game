@@ -67,14 +67,14 @@ void PlayerEntity::update(GameState& state, float time)
       }
       if (glfwGetKey(state.window, GLFW_KEY_W) == GLFW_PRESS) {
         auto velocity = body->getLinearVelocity();
-        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, -3.0f, 0);
+        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation.z)) * btVector3(0, -3.0f, 0);
         new_velocity.setZ(velocity.z());
         body->setLinearVelocity(new_velocity);
         body->activate();
       }
       if (glfwGetKey(state.window, GLFW_KEY_S) == GLFW_PRESS) {
         auto velocity = body->getLinearVelocity();
-        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation)) * btVector3(0, 3.0f, 0);
+        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation.z)) * btVector3(0, 3.0f, 0);
         new_velocity.setZ(velocity.z());
         body->setLinearVelocity(new_velocity);
         body->activate();
@@ -103,7 +103,7 @@ void PlayerEntity::update(GameState& state, float time)
       if (magnitude > PLAYER_DEADZONE)
       {
         angle += state.camera->getAngle() + glm::radians(90.0f);
-        rotation = angle;
+        rotation.z = angle;
 
         auto old_velocity = body->getLinearVelocity();
         auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * PLAYER_SPEED, 0);
@@ -134,7 +134,7 @@ void PlayerEntity::update(GameState& state, float time)
       }
       if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > PLAYER_DEADZONE && !*state.canJump)
       {
-        auto direction = btVector3(0, 1, 0).rotate({ 0, 0, 1 }, rotation);
+        auto direction = btVector3(0, 1, 0).rotate({ 0, 0, 1 }, rotation.z);
 
         dashing = true;
         dashUsed = true;
@@ -350,7 +350,7 @@ void doPlayerDeformation(Entity* player, btCollisionWorld* world, btBvhTriangleM
 
     // these are in world space
     auto rayStart = playerPosition;
-    auto rayEnd = playerPosition + point.rotate({ 0, 0, 1 }, playerRotation) * playerScale * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
+    auto rayEnd = playerPosition + point.rotate({ 0, 0, 1 }, playerRotation.z) * playerScale * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
     auto closestFraction = getRayIntersectionMesh(rayStart, rayEnd);
     auto closestAmount = closestFraction * (POINT_DISTANCE_MAX + POINT_WORLD_MARGIN);
 

@@ -7,7 +7,7 @@ void SpiritEntity::update(GameState& state, float time)
   auto dx = desiredPosition.x - position.x;
   auto dy = desiredPosition.y - position.y;
   auto dz = desiredPosition.z - position.z;
-  rotation = std::atan2(dy, dx);
+  rotation.z = std::atan2(dy, dx);
 
   position = position * (1 - SPIRIT_CORRECTION_RATE) + desiredPosition * SPIRIT_CORRECTION_RATE;
 }

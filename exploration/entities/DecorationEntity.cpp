@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 #include "../DecorationModel.h"
 
@@ -76,7 +77,7 @@ void DecorationEntity::draw_debug(GameState& state, Program& program, float time
 
   auto entityTransform = glm::mat4()
     * glm::translate(glm::mat4(), position)
-    * glm::rotate(glm::mat4(), rotation, { 0,0,1 })
+    * glm::yawPitchRoll(rotation.x, rotation.y, rotation.z)
     * glm::scale(glm::mat4(), glm::vec3(scale, scale, scale))
     * model->transform;
 

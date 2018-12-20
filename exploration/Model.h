@@ -33,8 +33,8 @@ public:
 public:
   void load();
 
-  void draw_faces(Program& program, float time, glm::vec3 position, float rotation, float scale);
-  void draw_lines(Program& program, float time, glm::vec3 position, float rotation, float scale);
+  void draw_faces(Program& program, float time, glm::vec3 position, glm::vec3 rotation, float scale);
+  void draw_lines(Program& program, float time, glm::vec3 position, glm::vec3 rotation, float scale);
 
   virtual Entity* spawn(const EntitySpawnInfo& info);
 

@@ -16,10 +16,10 @@ glm::vec3 calcPosition(float xangle, float yangle, float distance);
 
 FollowCamera::FollowCamera(Entity** entity)
   : entity_{ entity }
-  , desiredXAngle_{ (*entity)->rotation }
+  , desiredXAngle_{ (*entity)->rotation.z }
   , desiredYAngle_{ CAMERA_HEIGHT_ANGLE }
   , desiredDistance_{ CAMERA_DISTANCE }
-  , desiredPosition_{ (*entity)->position + glm::rotateZ(glm::vec3(0, 6, 3), (*entity)->rotation) }
+  , desiredPosition_{ (*entity)->position + calcPosition(desiredXAngle_, desiredYAngle_, desiredDistance_) }
   , currentPosition_{ desiredPosition_ }
 { }
 

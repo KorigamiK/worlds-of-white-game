@@ -3,7 +3,7 @@
 Entity::Entity(Model* model, const EntitySpawnInfo& info)
   : model{ model }
   , position{ info.location}
-  , rotation{ info.rotation.z } // TODO: use full rotation info
+  , rotation{ info.rotation }
   , scale{ info.scale.x }       // TODO: use full scale info
 { }
 
