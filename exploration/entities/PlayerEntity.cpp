@@ -191,8 +191,12 @@ void PlayerEntity::update(GameState& state, float time)
   for (auto& spirit : spirits)
   {
     auto offset = glm::rotateZ(glm::vec3{ 0, spirit.distance, std::sin(spirit.heightPoint * spirit.heightPeriod) * spirit.heightMax }, spirit.anglePoint);
+    auto offsetRatio = glm::length(position - spirit.spirit->position) > 2.0f
+      ? 1.0f / glm::length(position - spirit.spirit->position) + 0.5f
+      : 1.0f;
 
-    spirit.spirit->desiredPosition = position + offset;
+    spirit.spirit->desiredPosition = position + offset * offsetRatio;
+    spirit.spirit->playerPosition = position;
     spirit.heightPoint += 0.01f;
     spirit.anglePoint += 0.01f;
   }

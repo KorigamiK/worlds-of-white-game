@@ -43,7 +43,10 @@ void Model::draw_faces(Program& program, float time, glm::vec3 position, glm::ve
 {
   glm::mat4 modelTransform = glm::mat4()
     * glm::translate(glm::mat4(), position)
-    * glm::yawPitchRoll(rotation.x, rotation.y, rotation.z)
+    // * glm::yawPitchRoll(rotation.x, rotation.y, rotation.z)
+    * glm::rotate(glm::mat4(), rotation.z, { 0, 0, 1 })
+    * glm::rotate(glm::mat4(), rotation.y, { 0, 1, 0 })
+    * glm::rotate(glm::mat4(), rotation.x, { 1, 0, 0 })
     * glm::scale(glm::mat4(), glm::vec3(scale, scale, scale))
     * transform;
 
@@ -62,7 +65,10 @@ void Model::draw_lines(Program& program, float time, glm::vec3 position, glm::ve
 {
   glm::mat4 entityTransform = glm::mat4()
     * glm::translate(glm::mat4(), position)
-    * glm::yawPitchRoll(rotation.x, rotation.y, rotation.z)
+    // * glm::yawPitchRoll(rotation.x, rotation.y, rotation.z)
+    * glm::rotate(glm::mat4(), rotation.z, { 0, 0, 1 })
+    * glm::rotate(glm::mat4(), rotation.y, { 0, 1, 0 })
+    * glm::rotate(glm::mat4(), rotation.x, { 1, 0, 0 })
     * glm::scale(glm::mat4(), glm::vec3(scale, scale, scale))
     * transform;
 

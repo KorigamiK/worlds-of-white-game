@@ -9,6 +9,7 @@ public:
   using Entity::Entity;
 
   glm::vec3 desiredPosition;
+  glm::vec3 playerPosition;
 
 public:
   // Entity overrides
