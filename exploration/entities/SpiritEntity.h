@@ -6,10 +6,14 @@
 class SpiritEntity : public Entity
 {
 public:
-  using Entity::Entity;
-
   glm::vec3 desiredPosition;
   glm::vec3 playerPosition;
+
+  glm::vec3 tailPosition1;
+  glm::vec3 tailPosition2;
+
+public:
+  SpiritEntity(Model* model, const EntitySpawnInfo& info);
 
 public:
   // Entity overrides
