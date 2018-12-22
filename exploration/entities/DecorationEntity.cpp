@@ -7,6 +7,15 @@
 
 #include "../DecorationModel.h"
 
+DecorationEntity::DecorationEntity(Model* model, const EntitySpawnInfo& info)
+  : Entity{ model, info }
+  , drawPercentage{ 0.0f }
+  , drawState{ HIDDEN }
+  , transform{ model->makeEntityTransform(position, rotation, scale)}
+{
+
+}
+
 void DecorationEntity::update(GameState& state, float time)
 {
   auto& model = *(DecorationModel*)this->model;
@@ -56,7 +65,7 @@ void DecorationEntity::draw_faces(GameState& state, Program& program, float time
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   program.setFloat("draw_percentage", drawPercentage);
-  model->draw_faces(program, time, model->makeEntityTransform(position, rotation, scale));
+  model->draw_faces(program, time, transform);
 }
 
 void DecorationEntity::draw_lines(GameState& state, Program& program, float time)
@@ -67,7 +76,7 @@ void DecorationEntity::draw_lines(GameState& state, Program& program, float time
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   program.setFloat("draw_percentage", drawPercentage);
-  model->draw_lines(program, time, model->makeEntityTransform(position, rotation, scale));
+  model->draw_lines(program, time, transform);
 }
 
 void DecorationEntity::draw_debug(GameState& state, Program& program, float time)
@@ -75,11 +84,7 @@ void DecorationEntity::draw_debug(GameState& state, Program& program, float time
   if (drawPercentage <= 0.0f)
     return;
 
-  auto entityTransform = glm::mat4()
-    * glm::translate(glm::mat4(), position)
-    * glm::yawPitchRoll(rotation.x, rotation.y, rotation.z)
-    * glm::scale(glm::mat4(), glm::vec3(scale, scale, scale))
-    * model->transform;
+  auto entityTransform = transform * model->transform;
 
   auto percentage = drawPercentage > 1.0f ? 1.0f : drawPercentage;
   auto offsetBox = (model->boundingA + model->boundingB) / 2.0f;

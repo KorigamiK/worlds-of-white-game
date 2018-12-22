@@ -41,6 +41,7 @@ void Model::load()
 
 glm::mat4 Model::makeEntityTransform(glm::vec3 position, glm::vec3 rotation, float scale)
 {
+  // apparently this way is very slow
   //return glm::mat4()
   //  * glm::translate(glm::mat4(), position)
   //  * glm::rotate(glm::mat4(), rotation.z, { 0, 0, 1 })

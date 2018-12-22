@@ -20,8 +20,10 @@ public:
   float drawPercentage = 0.0f;
   DecorationState drawState = HIDDEN;
 
+  glm::mat4 transform;
+
 public:
-  using Entity::Entity;
+  DecorationEntity(Model* model, const EntitySpawnInfo& info);
 
 public:
   // Entity overrides
