@@ -27,6 +27,7 @@
     <ClCompile Include="entities\PlayerEntity.cpp" />
     <ClCompile Include="entities\SpiritEntity.cpp" />
     <ClCompile Include="entities\SmashEffectEntity.cpp" />
+    <ClCompile Include="InputManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -74,5 +75,6 @@
     <ClInclude Include="EntitySpawnInfo.h" />
     <ClInclude Include="entities\SmashEffectEntity.h" />
     <ClInclude Include="EntityType.h" />
+    <ClInclude Include="InputManager.h" />
   </ItemGroup>
 </Project>

@@ -9,6 +9,8 @@
 #include <btBulletDynamicsCommon.h>
 #include <glm/glm.hpp>
 
+#include "InputManager.h"
+
 class ICamera;
 class Entity;
 class IEntityType;
@@ -16,6 +18,7 @@ class IEntityType;
 class GameState
 {
 public:
+  InputManager* input;
   GLFWwindow* window;
   int selectedJoystickId; 
   btCollisionWorld* world;

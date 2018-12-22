@@ -26,6 +26,7 @@
 #include "GameState.h"
 #include "EntitySpawnInfo.h"
 #include "EntityType.h"
+#include "InputManager.h"
 #include "logging/LoggingManager.h"
 #include "logging/loggers/StreamLogger.h"
 #include "graphics/program.h"
@@ -56,6 +57,8 @@ bool paused = false;
 Framebuffer faceFramebuffer;
 Framebuffer lineFramebuffer;
 Framebuffer debgFramebuffer;
+
+InputManager* globalInputManager = nullptr;
 
 struct AnimationFrame
 {
@@ -543,7 +546,15 @@ int main()
   if (selectedJoystickId == -1)
     return -1;
 
-  auto gameState = GameState{ window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, player->position, entityTypes, entities, boxVAO };
+  auto inputManager = InputManager(selectedJoystickId);
+  globalInputManager = &inputManager;
+  glfwSetKeyCallback(window, +[](GLFWwindow* window, int key, int scancode, int action, int modifiers)
+  {
+    if (globalInputManager)
+      globalInputManager->setKeyState(key, action);
+  });
+
+  auto gameState = GameState{ &inputManager, window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, player->position, entityTypes, entities, boxVAO };
 
   auto maxFPS = 0.0f;
   auto minFPS = 1000.0f;
@@ -561,6 +572,8 @@ int main()
     currFrameTime = std::chrono::high_resolution_clock::now();
 
     // input
+    inputManager.update();
+    glfwPollEvents();
     processInput(window);
 
     //if (i % 15 == 0)
@@ -709,7 +722,6 @@ int main()
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glfwSwapBuffers(window);
-    glfwPollEvents();
     logError("any");
 
     if (!paused)

@@ -146,6 +146,7 @@
     <ClCompile Include="graphics\framebuffer.cpp" />
     <ClCompile Include="graphics\joint.cpp" />
     <ClCompile Include="graphics\jointPose.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="entities\AnimatedEntity.cpp" />
     <ClCompile Include="entities\PlayerEntity.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="graphics\jointPose.h" />
     <ClInclude Include="EntitySpawnInfo.h" />
     <ClInclude Include="DecorationModel.h" />
+    <ClInclude Include="InputManager.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="entities\AnimatedEntity.h" />
     <ClInclude Include="entities\PlayerEntity.h" />
