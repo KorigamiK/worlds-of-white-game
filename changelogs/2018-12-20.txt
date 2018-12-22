@@ -1,0 +1,54 @@
+Changelog (2018-12-20)
+
+
+Camera
+
+  I made it tilt up and down. So thats something.
+
+
+Code Cleanup
+
+  I renamed some stuff to make more sense. Went from "character" to "player" when refering to the player character. Went from "instance" to "entity" when talking about particular rendition of a model in the world.
+
+  Updated the codebase to C++17. For some reason I thought it was already done but then I ran into some situations that didn't work and were definitely c++17 only. Yay for destructuring!
+
+  Totally changed how files/models/entities are mapped to one another. I had originally thought I'd have the files dictating everything, but after some tinkering I found that'd be a bit to annoying and would require a lot of indirection logic anc possibly checking to make sure things don't break. The way I did it keeps everything in the type system still. 
+
+
+Decoration Parameters
+
+  Decoration entities have certain properties that dictate when they should be drawn. They will be different for different decoration models, but the same for each entity. I had them hardcoded before, but I moved them into the decoration model that can be referenced from the entity and loaded from the file. 
+
+
+Smash Effect
+
+  I gave a try at making the smash move look a bit more impactful. I created a model that was a simple ring that would be spawned in when the smash hit the ground, grow outwards, and then disappear. It looks ok, will definitely need more effects later.
+
+
+Render Pipeline Profiling
+
+  I've been seeing some slowdowns, namely my framerate drops below 144 so, since I have vsync enabled, see it dip down to 72. Which is further exaggerated by the fact that I have all my actions done at a fixed rate per frame, meaning things slow down. I had added some FPS status output to verify what was going on.
+
+  So I checked out my rendering with NVidia's NSight Graphics debugger/profiler and saw no large problems there. I was slightly worried that my tesselation+geometry shaders would start having an impact. But I was pleased to find out that my stuff only takes half a millisecond of graphics processing time, even with a bit of unoptimal opengl traffic on my end.
+
+  So I loaded up a model for the Octane from Rocket League to see what it'd look like. It looks amazing and also runs flawlessly even with 70,000 edges. 
+
+  So I did find that all my slowdowns are due to glm calls, which is unfortunate because that means that VS isn't optimizing those calls nearly at all, and a lot of my rendering stuff requires many simple glm calls for each entity. I'll have to sort that out later, I'd like to avoid testing in release mode, especially this early in development. 
+
+
+Model Bounding Boxes
+
+  I've set up my export and import logic to pull out the bounding box for the model. This'll be used later for culling objects that are out of sight. 
+
+
+Debug Rendering
+
+  I've set up some debugging views with simple wireframe boxes. At this point, it is only shown for the decoration entities so I can see when they're rendered, and how much is rendered. It looks pretty neat. 
+
+  This required adding a whole other rendering stage, but since it was nearly identical to the other stages, it wasn't too bad. I'll need to add some helper functions for drawing wireframe primitives since I'm only doing it in the decoration debug logic and don't have a place to put the code for that yet. 
+
+
+Future Work
+
+- Sprits, combat, and effects
+- Rendering program cleanup
