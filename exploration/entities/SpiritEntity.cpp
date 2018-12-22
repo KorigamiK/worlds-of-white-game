@@ -9,8 +9,12 @@ const auto SPIRIT_CORRECTION_RATE = 0.04f;
 const auto SPIRIT_MIN_SPEED = 0.1f;
 const auto SPIRIT_MIN_ROTATION = 0.2f;
 const auto SPIRIT_MIN_PLAYER_DISTANCE = 1.0f;
-const auto SPIRIT_TAIL_DISTANCE_1 = 0.2f;
-const auto SPIRIT_TAIL_DISTANCE_2 = 0.2f;
+const auto SPIRIT_TAIL_DISTANCE_1 = 0.25f;
+const auto SPIRIT_TAIL_DISTANCE_2 = 0.35f;
+const auto SPIRIT_TAIL_DISTANCE_3 = 0.45f;
+const auto SPIRIT_TAIL_SIZE_1 = 0.50f;
+const auto SPIRIT_TAIL_SIZE_2 = 0.30f;
+const auto SPIRIT_TAIL_SIZE_3 = 0.20f;
 
 SpiritEntity::SpiritEntity(Model* model, const EntitySpawnInfo& info)
   : Entity{ model, info }
@@ -18,6 +22,7 @@ SpiritEntity::SpiritEntity(Model* model, const EntitySpawnInfo& info)
   , playerPosition{ }
   , tailPosition1{ position + glm::rotateZ(glm::vec3(-1, 0, 0), rotation.z) * SPIRIT_TAIL_DISTANCE_1 } // make this use rotation.y
   , tailPosition2{ tailPosition1 + glm::rotateZ(glm::vec3(-1, 0, 0), rotation.z) * SPIRIT_TAIL_DISTANCE_2 } // make this use rotation.y
+  , tailPosition3{ tailPosition2 + glm::rotateZ(glm::vec3(-1, 0, 0), rotation.z) * SPIRIT_TAIL_DISTANCE_3 } // make this use rotation.y
 { }
 
 void SpiritEntity::update(GameState& state, float time)
@@ -64,5 +69,34 @@ void SpiritEntity::update(GameState& state, float time)
 
     tailPosition1 = position + glm::normalize(tailPosition1 - position) * SPIRIT_TAIL_DISTANCE_1;
     tailPosition2 = tailPosition1 + glm::normalize(tailPosition2 - tailPosition1) * SPIRIT_TAIL_DISTANCE_2;
+    tailPosition3 = tailPosition2 + glm::normalize(tailPosition3 - tailPosition2) * SPIRIT_TAIL_DISTANCE_3;
   }
+}
+
+
+void SpiritEntity::draw_faces(GameState& state, Program& program, float time)
+{
+  glm::mat4 jointTransforms[MAX_JOINTS];
+  glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
+  program.setFloat("draw_percentage", 1.0f);
+  model->draw_faces(program, time, position, rotation, scale);
+  model->draw_faces(program, time, tailPosition1, {}, scale * SPIRIT_TAIL_SIZE_1);
+  model->draw_faces(program, time, tailPosition2, {}, scale * SPIRIT_TAIL_SIZE_2);
+  model->draw_faces(program, time, tailPosition3, {}, scale * SPIRIT_TAIL_SIZE_3);
+}
+
+void SpiritEntity::draw_lines(GameState& state, Program& program, float time)
+{
+  glm::mat4 jointTransforms[MAX_JOINTS];
+  glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
+  program.setFloat("draw_percentage", 1.0f);
+  model->draw_lines(program, time, position, rotation, scale);
+  model->draw_lines(program, time, tailPosition1, {}, scale * SPIRIT_TAIL_SIZE_1);
+  model->draw_lines(program, time, tailPosition2, {}, scale * SPIRIT_TAIL_SIZE_2);
+  model->draw_lines(program, time, tailPosition3, {}, scale * SPIRIT_TAIL_SIZE_3);
+}
+
+void SpiritEntity::draw_debug(GameState& state, Program& program, float time)
+{
+
 }
