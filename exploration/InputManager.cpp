@@ -5,6 +5,16 @@
 
 const auto INPUTMANAGER_MAX_KEY_ID = 512;
 
+int InputManager::KEY_W = GLFW_KEY_W;
+int InputManager::KEY_A = GLFW_KEY_A;
+int InputManager::KEY_S = GLFW_KEY_S;
+int InputManager::KEY_D = GLFW_KEY_D;
+int InputManager::KEY_SPACE = GLFW_KEY_SPACE;
+int InputManager::KEY_UP = GLFW_KEY_UP;
+int InputManager::KEY_DOWN = GLFW_KEY_DOWN;
+int InputManager::KEY_LEFT = GLFW_KEY_LEFT;
+int InputManager::KEY_RIGHT = GLFW_KEY_RIGHT;
+
 InputManager::InputManager(int joystickId)
   : joystickId{ joystickId }
 {

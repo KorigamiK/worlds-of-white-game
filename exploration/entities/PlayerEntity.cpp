@@ -15,7 +15,7 @@ const auto PLAYER_DASH_DURATION = std::chrono::duration_cast<std::chrono::high_r
 const auto PLAYER_DEADZONE = 0.12f;
 
 const auto BUTTON_JUMP = 0;
-const auto BUTTON_DASH = 2;
+const auto BUTTON_DASH = 5;
 
 btRigidBody* createPlayerBody(glm::vec3 position, glm::vec3 rotation);
 void doPlayerDeformation(Entity* player, btCollisionWorld* world, btBvhTriangleMeshShape* mesh);
@@ -57,29 +57,29 @@ void PlayerEntity::update(GameState& state, float time)
   else
   {
     { // keyboard
-      if (glfwGetKey(state.window, GLFW_KEY_A) == GLFW_PRESS) {
+      if (state.input->isKeyHeld(InputManager::KEY_A)) {
         velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
         rotation += glm::radians(1.0f);
       }
-      if (glfwGetKey(state.window, GLFW_KEY_D) == GLFW_PRESS) {
+      if (state.input->isKeyHeld(InputManager::KEY_D)) {
         velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
         rotation -= glm::radians(1.0f);
       }
-      if (glfwGetKey(state.window, GLFW_KEY_W) == GLFW_PRESS) {
+      if (state.input->isKeyHeld(InputManager::KEY_W)) {
         auto velocity = body->getLinearVelocity();
         auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation.z)) * btVector3(0, -3.0f, 0);
         new_velocity.setZ(velocity.z());
         body->setLinearVelocity(new_velocity);
         body->activate();
       }
-      if (glfwGetKey(state.window, GLFW_KEY_S) == GLFW_PRESS) {
+      if (state.input->isKeyHeld(InputManager::KEY_S)) {
         auto velocity = body->getLinearVelocity();
         auto new_velocity = btMatrix3x3(btQuaternion(0, 0, rotation.z)) * btVector3(0, 3.0f, 0);
         new_velocity.setZ(velocity.z());
         body->setLinearVelocity(new_velocity);
         body->activate();
       }
-      if (glfwGetKey(state.window, GLFW_KEY_SPACE) == GLFW_PRESS && *state.canJump)
+      if (state.input->isKeyTriggered(InputManager::KEY_SPACE) && *state.canJump)
       {
         auto velocity = body->getLinearVelocity();
         velocity.setZ(5.0f);
@@ -89,13 +89,8 @@ void PlayerEntity::update(GameState& state, float time)
     }
 
     { // controller
-      auto buttonsCount = 0;
-      auto buttons = glfwGetJoystickButtons(state.selectedJoystickId, &buttonsCount);
-      auto axesCount = 0;
-      auto axes = glfwGetJoystickAxes(state.selectedJoystickId, &axesCount);
-
-      auto xAxis = axes[0];
-      auto yAxis = -axes[1];
+      auto xAxis = state.input->getAxis(0);
+      auto yAxis = -state.input->getAxis(1);
 
       auto angle = std::atan2(yAxis, xAxis);
       auto magnitude = std::hypot(xAxis, yAxis);
@@ -111,28 +106,28 @@ void PlayerEntity::update(GameState& state, float time)
         body->setLinearVelocity(new_velocity);
         body->activate();
       }
-      if (buttons[BUTTON_JUMP] == GLFW_PRESS && *state.canJump)
+      if (state.input->isButtonTriggered(BUTTON_JUMP) && *state.canJump)
       {
         auto velocity = body->getLinearVelocity();
         velocity.setZ(PLAYER_JUMP_SPEED);
         body->setLinearVelocity(velocity);
         body->activate();
       }
-      if (buttons[BUTTON_JUMP] == GLFW_PRESS && !*state.canJump && body->getLinearVelocity().z() > 0.0f)
+      if (state.input->isButtonHeld(BUTTON_JUMP) && !*state.canJump && body->getLinearVelocity().z() > 0.0f)
       {
         auto velocity = body->getLinearVelocity();
         velocity.setZ(velocity.getZ() + PLAYER_JUMP_RISE_SPEED);
         body->setLinearVelocity(velocity);
         body->activate();
       }
-      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude <= PLAYER_DEADZONE && !*state.canJump)
+      if (!dashUsed && state.input->isButtonTriggered(BUTTON_DASH) && magnitude <= PLAYER_DEADZONE && !*state.canJump)
       {
         dashing = true;
         dashUsed = true;
         dashDirection = glm::vec3(0, 0, -1) * PLAYER_DASH_SPEED;
         dashTime = std::chrono::high_resolution_clock::now() + PLAYER_DASH_DURATION;
       }
-      if (!dashUsed && buttons[BUTTON_DASH] == GLFW_PRESS && magnitude > PLAYER_DEADZONE && !*state.canJump)
+      if (!dashUsed && state.input->isButtonTriggered(BUTTON_DASH) && magnitude > PLAYER_DEADZONE && !*state.canJump)
       {
         auto direction = btVector3(0, 1, 0).rotate({ 0, 0, 1 }, rotation.z);
 

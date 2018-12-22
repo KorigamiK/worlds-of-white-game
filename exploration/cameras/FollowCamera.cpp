@@ -32,21 +32,20 @@ void FollowCamera::update(GameState& state, float time)
   }
 
   { // keyboard
-    if (glfwGetKey(state.window, GLFW_KEY_UP) == GLFW_PRESS)
+    if (state.input->isKeyHeld(InputManager::KEY_UP))
       desiredDistance_ -= CAMERA_ROTATION_RATE;
-    if (glfwGetKey(state.window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    if (state.input->isKeyHeld(InputManager::KEY_DOWN))
       desiredDistance_ += CAMERA_ROTATION_RATE;
-    if (glfwGetKey(state.window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    if (state.input->isKeyHeld(InputManager::KEY_RIGHT))
       desiredXAngle_ += CAMERA_ROTATION_RATE;
-    if (glfwGetKey(state.window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    if (state.input->isKeyHeld(InputManager::KEY_LEFT))
       desiredXAngle_ -= CAMERA_ROTATION_RATE;
   }
 
   { // controller
-    auto axesCount = 0;
-    auto axes = glfwGetJoystickAxes(state.selectedJoystickId, &axesCount);
-    auto cameraXAxis = axes[4];
-    auto cameraYAxis = axes[3]; // not used yet
+    auto cameraXAxis = state.input->getAxis(4);
+    auto cameraYAxis = state.input->getAxis(3);
+
     desiredXAngle_ += std::abs(cameraXAxis) < CAMERA_DEADZONE ? 0.0f : cameraXAxis * CAMERA_ROTATION_RATE;
     desiredYAngle_ -= std::abs(cameraYAxis) < CAMERA_DEADZONE ? 0.0f : cameraYAxis * CAMERA_ROTATION_RATE;
   }

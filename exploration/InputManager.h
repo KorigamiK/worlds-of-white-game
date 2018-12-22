@@ -33,6 +33,17 @@ public:
 
 public:
   void setKeyState(int key, int state);
+
+public:
+  static int KEY_W;
+  static int KEY_A;
+  static int KEY_S;
+  static int KEY_D;
+  static int KEY_SPACE;
+  static int KEY_UP;
+  static int KEY_DOWN;
+  static int KEY_LEFT;
+  static int KEY_RIGHT;
 };
 
 #endif // !WILT_INPUTMANAGER_H
