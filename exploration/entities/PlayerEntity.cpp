@@ -153,9 +153,9 @@ void PlayerEntity::update(GameState& state, float time)
     static std::uniform_real_distribution<> dis1(0, 2 * 3.1415926535);
     static std::uniform_real_distribution<> dis2(0.3, 0.7);
 
-    auto spirit1 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.05, 0.05, 0.05 } });
-    auto spirit2 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.05, 0.05, 0.05 } });
-    auto spirit3 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.05, 0.05, 0.05 } });
+    auto spirit1 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.1, 0.1, 0.1 } });
+    auto spirit2 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.1, 0.1, 0.1 } });
+    auto spirit3 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.1, 0.1, 0.1 } });
     state.addList.push_back(spirit1);
     state.addList.push_back(spirit2);
     state.addList.push_back(spirit3);
