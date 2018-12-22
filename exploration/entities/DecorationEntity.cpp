@@ -56,7 +56,7 @@ void DecorationEntity::draw_faces(GameState& state, Program& program, float time
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   program.setFloat("draw_percentage", drawPercentage);
-  model->draw_faces(program, time, position, rotation, scale);
+  model->draw_faces(program, time, model->makeEntityTransform(position, rotation, scale));
 }
 
 void DecorationEntity::draw_lines(GameState& state, Program& program, float time)
@@ -67,7 +67,7 @@ void DecorationEntity::draw_lines(GameState& state, Program& program, float time
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   program.setFloat("draw_percentage", drawPercentage);
-  model->draw_lines(program, time, position, rotation, scale);
+  model->draw_lines(program, time, model->makeEntityTransform(position, rotation, scale));
 }
 
 void DecorationEntity::draw_debug(GameState& state, Program& program, float time)

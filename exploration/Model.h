@@ -33,8 +33,10 @@ public:
 public:
   void load();
 
-  void draw_faces(Program& program, float time, glm::vec3 position, glm::vec3 rotation, float scale);
-  void draw_lines(Program& program, float time, glm::vec3 position, glm::vec3 rotation, float scale);
+  glm::mat4 makeEntityTransform(glm::vec3 position, glm::vec3 rotation, float scale);
+
+  void draw_faces(Program& program, float time, glm::mat4 entityTranform);
+  void draw_lines(Program& program, float time, glm::mat4 entityTranform);
 
   virtual Entity* spawn(const EntitySpawnInfo& info);
 

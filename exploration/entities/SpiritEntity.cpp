@@ -79,10 +79,10 @@ void SpiritEntity::draw_faces(GameState& state, Program& program, float time)
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   program.setFloat("draw_percentage", 1.0f);
-  model->draw_faces(program, time, position, rotation, scale);
-  model->draw_faces(program, time, tailPosition1, {}, scale * SPIRIT_TAIL_SIZE_1);
-  model->draw_faces(program, time, tailPosition2, {}, scale * SPIRIT_TAIL_SIZE_2);
-  model->draw_faces(program, time, tailPosition3, {}, scale * SPIRIT_TAIL_SIZE_3);
+  model->draw_faces(program, time, model->makeEntityTransform(position, rotation, scale));
+  model->draw_faces(program, time, model->makeEntityTransform(tailPosition1, {}, scale * SPIRIT_TAIL_SIZE_1));
+  model->draw_faces(program, time, model->makeEntityTransform(tailPosition2, {}, scale * SPIRIT_TAIL_SIZE_2));
+  model->draw_faces(program, time, model->makeEntityTransform(tailPosition3, {}, scale * SPIRIT_TAIL_SIZE_3));
 }
 
 void SpiritEntity::draw_lines(GameState& state, Program& program, float time)
@@ -90,10 +90,10 @@ void SpiritEntity::draw_lines(GameState& state, Program& program, float time)
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   program.setFloat("draw_percentage", 1.0f);
-  model->draw_lines(program, time, position, rotation, scale);
-  model->draw_lines(program, time, tailPosition1, {}, scale * SPIRIT_TAIL_SIZE_1);
-  model->draw_lines(program, time, tailPosition2, {}, scale * SPIRIT_TAIL_SIZE_2);
-  model->draw_lines(program, time, tailPosition3, {}, scale * SPIRIT_TAIL_SIZE_3);
+  model->draw_lines(program, time, model->makeEntityTransform(position, rotation, scale));
+  model->draw_lines(program, time, model->makeEntityTransform(tailPosition1, {}, scale * SPIRIT_TAIL_SIZE_1));
+  model->draw_lines(program, time, model->makeEntityTransform(tailPosition2, {}, scale * SPIRIT_TAIL_SIZE_2));
+  model->draw_lines(program, time, model->makeEntityTransform(tailPosition3, {}, scale * SPIRIT_TAIL_SIZE_3));
 }
 
 void SpiritEntity::draw_debug(GameState& state, Program& program, float time)

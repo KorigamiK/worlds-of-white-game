@@ -17,7 +17,7 @@ void Entity::draw_faces(GameState& state, Program& program, float time)
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   program.setFloat("draw_percentage", 1.0f);
-  model->draw_faces(program, time, position, rotation, scale);
+  model->draw_faces(program, time, model->makeEntityTransform(position, rotation, scale));
 }
 
 void Entity::draw_lines(GameState& state, Program& program, float time)
@@ -25,7 +25,7 @@ void Entity::draw_lines(GameState& state, Program& program, float time)
   glm::mat4 jointTransforms[MAX_JOINTS];
   glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
   program.setFloat("draw_percentage", 1.0f);
-  model->draw_lines(program, time, position, rotation, scale);
+  model->draw_lines(program, time, model->makeEntityTransform(position, rotation, scale));
 }
 
 void Entity::draw_debug(GameState& state, Program& program, float time)
