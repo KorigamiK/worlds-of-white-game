@@ -4,8 +4,6 @@
 #include <map>
 #include <vector>
 
-#include <glad/glad.h>
-#include <glfw/glfw3.h>
 #include <btBulletDynamicsCommon.h>
 #include <glm/glm.hpp>
 
@@ -19,8 +17,6 @@ class GameState
 {
 public:
   InputManager* input;
-  GLFWwindow* window;
-  int selectedJoystickId; 
   btCollisionWorld* world;
   btBvhTriangleMeshShape* terrain;
   bool* canJump;

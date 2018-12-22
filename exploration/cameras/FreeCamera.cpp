@@ -10,13 +10,13 @@ FreeCamera::FreeCamera()
 
 void FreeCamera::update(GameState& state, float time)
 {
-  if (glfwGetKey(state.window, GLFW_KEY_UP) == GLFW_PRESS)
+  if (state.input->isKeyHeld(InputManager::KEY_UP))
     _location += _direction * CAMERA_SPEED;
-  if (glfwGetKey(state.window, GLFW_KEY_DOWN) == GLFW_PRESS)
+  if (state.input->isKeyHeld(InputManager::KEY_DOWN))
     _location -= _direction * CAMERA_SPEED;
-  if (glfwGetKey(state.window, GLFW_KEY_LEFT) == GLFW_PRESS)
+  if (state.input->isKeyHeld(InputManager::KEY_LEFT))
     _direction = glm::vec3(glm::rotate(glm::mat4(), glm::radians(30.0f) / 144.0f, { 0, 0, 1 }) * glm::vec4(_direction, 1.0f));
-  if (glfwGetKey(state.window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+  if (state.input->isKeyHeld(InputManager::KEY_RIGHT))
     _direction = glm::vec3(glm::rotate(glm::mat4(), -glm::radians(30.0f) / 144.0f, { 0, 0, 1 }) * glm::vec4(_direction, 1.0f));
 }
 

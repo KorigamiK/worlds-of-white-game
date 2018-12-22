@@ -554,7 +554,7 @@ int main()
       globalInputManager->setKeyState(key, action);
   });
 
-  auto gameState = GameState{ &inputManager, window, selectedJoystickId, dynamicsWorld, terrainShape, &canJump, followCam, player->position, entityTypes, entities, boxVAO };
+  auto gameState = GameState{ &inputManager, dynamicsWorld, terrainShape, &canJump, followCam, player->position, entityTypes, entities, boxVAO };
 
   auto maxFPS = 0.0f;
   auto minFPS = 1000.0f;

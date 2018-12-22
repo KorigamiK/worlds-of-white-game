@@ -4,8 +4,6 @@
 #include <chrono>
 #include <vector>
 
-#include <glad/glad.h>
-#include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 
 #include "PhysicsEntity.h"
