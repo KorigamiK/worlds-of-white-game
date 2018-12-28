@@ -145,56 +145,19 @@ void PlayerEntity::update(GameState& state, float time)
 
   if (spirits.size() < 3)
   {
-    static std::uniform_real_distribution<> dis1(0, 2 * 3.1415926535);
-    static std::uniform_real_distribution<> dis2(0.3, 0.7);
-
     auto spirit1 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.1, 0.1, 0.1 } });
     auto spirit2 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.1, 0.1, 0.1 } });
     auto spirit3 = state.types["spirit"]->spawn({ "", position, { 0, 0, 0 }, { 0.1, 0.1, 0.1 } });
     state.addList.push_back(spirit1);
     state.addList.push_back(spirit2);
     state.addList.push_back(spirit3);
-    spirits.push_back(
-      { 
-        (SpiritEntity*)spirit1,
-        (float)dis2(gen) / 2.0f,
-        (float)dis2(gen),
-        (float)dis1(gen),
-        (float)dis1(gen),
-        (float)dis2(gen) * 2.5f
-      });
-    spirits.push_back(
-      {
-        (SpiritEntity*)spirit2,
-        (float)dis2(gen) / 2.0f,
-        (float)dis2(gen),
-        (float)dis1(gen),
-        (float)dis1(gen),
-        (float)dis2(gen) * 2.5f
-      });
-    spirits.push_back(
-      {
-        (SpiritEntity*)spirit3,
-        (float)dis2(gen) / 2.0f,
-        (float)dis2(gen),
-        (float)dis1(gen),
-        (float)dis1(gen),
-        (float)dis2(gen) * 2.5f
-      });
+    spirits.push_back((SpiritEntity*)spirit1);
+    spirits.push_back((SpiritEntity*)spirit2);
+    spirits.push_back((SpiritEntity*)spirit3);
   }
 
   for (auto& spirit : spirits)
-  {
-    auto offset = glm::rotateZ(glm::vec3{ 0, spirit.distance, std::sin(spirit.heightPoint * spirit.heightPeriod) * spirit.heightMax + 0.25 }, spirit.anglePoint);
-    auto offsetRatio = glm::length(position - spirit.spirit->position) > 2.0f
-      ? 1.5f / glm::length(position - spirit.spirit->position) + 0.25f
-      : 1.0f;
-
-    spirit.spirit->desiredPosition = position + offset * offsetRatio;
-    spirit.spirit->playerPosition = position;
-    spirit.heightPoint += 0.01f;
-    spirit.anglePoint += 0.01f;
-  }
+    spirit->playerPosition = position;
 }
 
 void PlayerEntity::draw_faces(GameState& state, Program& program, float time)

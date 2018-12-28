@@ -9,19 +9,6 @@
 #include "PhysicsEntity.h"
 #include "SpiritEntity.h"
 
-struct SpiritInfo
-{
-  SpiritEntity* spirit;
-
-  float heightMax;
-  float heightPeriod;
-  float heightPoint;
-
-  float anglePoint;
-
-  float distance;
-};
-
 class PlayerEntity : public PhysicsEntity
 {
 public:
@@ -34,7 +21,7 @@ public:
   std::chrono::time_point<std::chrono::high_resolution_clock> dashTime;
   glm::vec3 dashDirection;
 
-  std::vector<SpiritInfo> spirits;
+  std::vector<SpiritEntity*> spirits;
 
 public:
   // Entity overrides

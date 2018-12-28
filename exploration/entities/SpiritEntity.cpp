@@ -1,6 +1,7 @@
 #include "SpiritEntity.h"
 
 #include <iostream>
+#include <random>
 
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
@@ -18,15 +19,40 @@ const auto SPIRIT_TAIL_SIZE_3 = 0.20f;
 
 SpiritEntity::SpiritEntity(Model* model, const EntitySpawnInfo& info)
   : Entity{ model, info }
+  , state{ IDLING }
   , desiredPosition{ position }
   , playerPosition{ }
   , tailPosition1{ position + glm::rotateZ(glm::vec3(-1, 0, 0), rotation.z) * SPIRIT_TAIL_DISTANCE_1 } // make this use rotation.y
   , tailPosition2{ tailPosition1 + glm::rotateZ(glm::vec3(-1, 0, 0), rotation.z) * SPIRIT_TAIL_DISTANCE_2 } // make this use rotation.y
   , tailPosition3{ tailPosition2 + glm::rotateZ(glm::vec3(-1, 0, 0), rotation.z) * SPIRIT_TAIL_DISTANCE_3 } // make this use rotation.y
-{ }
+{
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
+
+  std::uniform_real_distribution<> dis1(0, 2 * 3.1415926535);
+  std::uniform_real_distribution<> dis2(0.3, 0.7);
+
+  // TODO: make these pull from a fixed set instead of random
+  heightMax    = (float)dis2(gen) / 2.0f;
+  heightPeriod = (float)dis2(gen);
+  heightPoint  = (float)dis1(gen);
+  anglePoint   = (float)dis1(gen);
+  distance     = (float)dis2(gen) * 2.5f;
+}
 
 void SpiritEntity::update(GameState& state, float time)
 {
+  { // calculate new idle position
+    auto offset = glm::rotateZ(glm::vec3{ 0, distance, std::sin(heightPoint * heightPeriod) * heightMax + 0.25 }, anglePoint);
+    auto offsetRatio = glm::length(playerPosition - position) > 2.0f
+      ? 1.5f / glm::length(playerPosition - position) + 0.25f
+      : 1.0f;
+
+    desiredPosition = playerPosition + offset * offsetRatio;
+    heightPoint += 0.01f;
+    anglePoint += 0.01f;
+  }
+
   auto oldPosition = position;
 
   auto dx = desiredPosition.x - position.x;
