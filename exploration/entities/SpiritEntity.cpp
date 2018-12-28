@@ -20,10 +20,11 @@ const auto SPIRIT_TAIL_SIZE_3 = 0.20f;
 const auto SPIRIT_IDLE_CORRECTION_RATE = 0.04f;
 const auto SPIRIT_ATTACK_CORRECTION_RATE = 0.8f;
 const auto SPIRIT_ATTACK_TIME = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(0.15s);
+const auto SPIRIT_ATTACK_DISTANCE_THRESHOLD = 0.5f;
 const auto SPIRIT_ATTACK_SPEED = 0.4f;
 const auto SPIRIT_RETREAT_CORRECTION_RATE = 0.8f;
 const auto SPIRIT_RETREAT_SPEED = 0.3f;
-const auto SPIRIT_RETREAT_DISTANCE = 2.0f;
+const auto SPIRIT_RETREAT_DISTANCE_THRESHOLD = 2.0f;
 
 SpiritEntity::SpiritEntity(Model* model, const EntitySpawnInfo& info)
   : Entity{ model, info }
@@ -72,10 +73,10 @@ void SpiritEntity::update(GameState& state, float time)
 
   case ATTACKING:
     {
-      desiredPosition = position + attackDirection * SPIRIT_ATTACK_SPEED;
+      desiredPosition = position + glm::normalize(attackTarget - position) * SPIRIT_ATTACK_SPEED;
       correctionRate = SPIRIT_ATTACK_CORRECTION_RATE;
 
-      if (attackEnd < std::chrono::high_resolution_clock::now())
+      if (glm::length(desiredPosition - attackTarget) < SPIRIT_ATTACK_DISTANCE_THRESHOLD)
         this->state = RETREATING;
 
       break;
@@ -86,7 +87,7 @@ void SpiritEntity::update(GameState& state, float time)
       desiredPosition = position + glm::normalize(playerPosition - position) * SPIRIT_RETREAT_SPEED;
       correctionRate = SPIRIT_RETREAT_CORRECTION_RATE;
 
-      if (glm::length(desiredPosition - playerPosition) < SPIRIT_RETREAT_DISTANCE)
+      if (glm::length(desiredPosition - playerPosition) < SPIRIT_RETREAT_DISTANCE_THRESHOLD)
         this->state = IDLING;
 
       break;
@@ -167,12 +168,11 @@ void SpiritEntity::draw_debug(GameState& state, Program& program, float time)
 
 }
 
-void SpiritEntity::attack(glm::vec3 direction)
+void SpiritEntity::attack(glm::vec3 target)
 {
   if (state != IDLING)
     return;
 
   state = ATTACKING;
-  attackDirection = glm::normalize(direction);
-  attackEnd = std::chrono::high_resolution_clock::now() + SPIRIT_ATTACK_TIME;
+  attackTarget = target;
 }

@@ -13,6 +13,7 @@ const auto PLAYER_JUMP_RISE_SPEED = 0.04f;
 const auto PLAYER_DASH_SPEED = 20.0f;
 const auto PLAYER_DASH_DURATION = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(0.125s);
 const auto PLAYER_DEADZONE = 0.12f;
+const auto PLAYER_ATTACK_DISTANCE = 8.0f;
 
 const auto BUTTON_JUMP = 0;
 const auto BUTTON_ATTACK = 2;
@@ -140,7 +141,7 @@ void PlayerEntity::update(GameState& state, float time)
       }
       if (state.input->isButtonTriggered(BUTTON_ATTACK))
       {
-        spirits[spiritNext]->attack(glm::rotateZ(glm::vec3(0, 1, 0), rotation.z));
+        spirits[spiritNext]->attack(position + glm::rotateZ(glm::vec3(0, 1, 0), rotation.z) * PLAYER_ATTACK_DISTANCE);
         spiritNext = (spiritNext + 1) % spirits.size();
       }
     }

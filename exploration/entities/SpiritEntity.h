@@ -42,8 +42,7 @@ public:
   float distance;
 
   // ATTACKING
-  glm::vec3 attackDirection;
-  std::chrono::high_resolution_clock::time_point attackEnd;
+  glm::vec3 attackTarget;
 
 public:
   SpiritEntity(Model* model, const EntitySpawnInfo& info);
