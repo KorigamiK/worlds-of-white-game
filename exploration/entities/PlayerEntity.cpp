@@ -15,6 +15,7 @@ const auto PLAYER_DASH_DURATION = std::chrono::duration_cast<std::chrono::high_r
 const auto PLAYER_DEADZONE = 0.12f;
 
 const auto BUTTON_JUMP = 0;
+const auto BUTTON_ATTACK = 2;
 const auto BUTTON_DASH = 5;
 
 btRigidBody* createPlayerBody(glm::vec3 position, glm::vec3 rotation);
@@ -27,6 +28,7 @@ PlayerEntity::PlayerEntity(Model* model, const EntitySpawnInfo& info)
   , dashUsed{ false }
   , dashTime{ }
   , dashDirection{ }
+  , spiritNext{ 0 }
 { }
 
 void PlayerEntity::update(GameState& state, float time)
@@ -135,6 +137,11 @@ void PlayerEntity::update(GameState& state, float time)
         dashUsed = true;
         dashDirection = glm::vec3(direction.x(), direction.y(), direction.z()) * PLAYER_DASH_SPEED;
         dashTime = std::chrono::high_resolution_clock::now() + PLAYER_DASH_DURATION;
+      }
+      if (state.input->isButtonTriggered(BUTTON_ATTACK))
+      {
+        spirits[spiritNext]->attack(glm::rotateZ(glm::vec3(0, 1, 0), rotation.z));
+        spiritNext = (spiritNext + 1) % spirits.size();
       }
     }
   }

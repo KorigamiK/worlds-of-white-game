@@ -1,6 +1,8 @@
 #ifndef WILT_SPIRITENTITY_H
 #define WILT_SPIRITENTITY_H
 
+#include <chrono>
+
 #include "Entity.h"
 
 class SpiritEntity : public Entity
@@ -27,7 +29,6 @@ public:
 public:
   SpiritState state;
 
-  glm::vec3 desiredPosition;
   glm::vec3 playerPosition;
   glm::vec3 tailPosition1;
   glm::vec3 tailPosition2;
@@ -40,6 +41,10 @@ public:
   float anglePoint;
   float distance;
 
+  // ATTACKING
+  glm::vec3 attackDirection;
+  std::chrono::high_resolution_clock::time_point attackEnd;
+
 public:
   SpiritEntity(Model* model, const EntitySpawnInfo& info);
 
@@ -50,6 +55,9 @@ public:
   void draw_faces(GameState& state, Program& program, float time) override;
   void draw_lines(GameState& state, Program& program, float time) override;
   void draw_debug(GameState& state, Program& program, float time) override;
+
+public:
+  void attack(glm::vec3 direction);
 };
 
 #endif // !WILT_SPIRITENTITY_H

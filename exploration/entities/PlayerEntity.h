@@ -21,6 +21,7 @@ public:
   std::chrono::time_point<std::chrono::high_resolution_clock> dashTime;
   glm::vec3 dashDirection;
 
+  int spiritNext;
   std::vector<SpiritEntity*> spirits;
 
 public:

@@ -6,7 +6,8 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
-const auto SPIRIT_CORRECTION_RATE = 0.04f;
+using namespace std::chrono_literals;
+
 const auto SPIRIT_MIN_SPEED = 0.1f;
 const auto SPIRIT_MIN_ROTATION = 0.2f;
 const auto SPIRIT_MIN_PLAYER_DISTANCE = 1.0f;
@@ -16,11 +17,17 @@ const auto SPIRIT_TAIL_DISTANCE_3 = 0.45f;
 const auto SPIRIT_TAIL_SIZE_1 = 0.50f;
 const auto SPIRIT_TAIL_SIZE_2 = 0.30f;
 const auto SPIRIT_TAIL_SIZE_3 = 0.20f;
+const auto SPIRIT_IDLE_CORRECTION_RATE = 0.04f;
+const auto SPIRIT_ATTACK_CORRECTION_RATE = 0.8f;
+const auto SPIRIT_ATTACK_TIME = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(0.15s);
+const auto SPIRIT_ATTACK_SPEED = 0.4f;
+const auto SPIRIT_RETREAT_CORRECTION_RATE = 0.8f;
+const auto SPIRIT_RETREAT_SPEED = 0.3f;
+const auto SPIRIT_RETREAT_DISTANCE = 2.0f;
 
 SpiritEntity::SpiritEntity(Model* model, const EntitySpawnInfo& info)
   : Entity{ model, info }
   , state{ IDLING }
-  , desiredPosition{ position }
   , playerPosition{ }
   , tailPosition1{ position + glm::rotateZ(glm::vec3(-1, 0, 0), rotation.z) * SPIRIT_TAIL_DISTANCE_1 } // make this use rotation.y
   , tailPosition2{ tailPosition1 + glm::rotateZ(glm::vec3(-1, 0, 0), rotation.z) * SPIRIT_TAIL_DISTANCE_2 } // make this use rotation.y
@@ -42,15 +49,48 @@ SpiritEntity::SpiritEntity(Model* model, const EntitySpawnInfo& info)
 
 void SpiritEntity::update(GameState& state, float time)
 {
-  { // calculate new idle position
-    auto offset = glm::rotateZ(glm::vec3{ 0, distance, std::sin(heightPoint * heightPeriod) * heightMax + 0.25 }, anglePoint);
-    auto offsetRatio = glm::length(playerPosition - position) > 2.0f
-      ? 1.5f / glm::length(playerPosition - position) + 0.25f
-      : 1.0f;
+  glm::vec3 desiredPosition;
+  float correctionRate;
 
-    desiredPosition = playerPosition + offset * offsetRatio;
-    heightPoint += 0.01f;
-    anglePoint += 0.01f;
+  // TODO: make idle positioning time-based instead of increments
+  heightPoint += 0.01f;
+  anglePoint += 0.01f;
+
+  switch (this->state)
+  {
+  case IDLING:
+    {
+      auto offset = glm::rotateZ(glm::vec3{ 0, distance, std::sin(heightPoint * heightPeriod) * heightMax + 0.25 }, anglePoint);
+      auto offsetRatio = glm::length(playerPosition - position) > 2.0f
+        ? 1.5f / glm::length(playerPosition - position) + 0.25f
+        : 1.0f;
+
+      desiredPosition = playerPosition + offset * offsetRatio;
+      correctionRate = SPIRIT_IDLE_CORRECTION_RATE;
+      break;
+    }
+
+  case ATTACKING:
+    {
+      desiredPosition = position + attackDirection * SPIRIT_ATTACK_SPEED;
+      correctionRate = SPIRIT_ATTACK_CORRECTION_RATE;
+
+      if (attackEnd < std::chrono::high_resolution_clock::now())
+        this->state = RETREATING;
+
+      break;
+    }
+
+  case RETREATING:
+    {
+      desiredPosition = position + glm::normalize(playerPosition - position) * SPIRIT_RETREAT_SPEED;
+      correctionRate = SPIRIT_RETREAT_CORRECTION_RATE;
+
+      if (glm::length(desiredPosition - playerPosition) < SPIRIT_RETREAT_DISTANCE)
+        this->state = IDLING;
+
+      break;
+    }
   }
 
   auto oldPosition = position;
@@ -75,7 +115,7 @@ void SpiritEntity::update(GameState& state, float time)
   //  // just do it
   //}
 
-  auto newPosition = oldPosition * (1 - SPIRIT_CORRECTION_RATE) + desiredPosition * SPIRIT_CORRECTION_RATE;
+  auto newPosition = oldPosition * (1 - correctionRate) + desiredPosition * correctionRate;
 
   if (glm::length(playerPosition - newPosition) < SPIRIT_MIN_PLAYER_DISTANCE)
     newPosition = playerPosition + glm::normalize(newPosition - playerPosition) * SPIRIT_MIN_PLAYER_DISTANCE;
@@ -125,4 +165,14 @@ void SpiritEntity::draw_lines(GameState& state, Program& program, float time)
 void SpiritEntity::draw_debug(GameState& state, Program& program, float time)
 {
 
+}
+
+void SpiritEntity::attack(glm::vec3 direction)
+{
+  if (state != IDLING)
+    return;
+
+  state = ATTACKING;
+  attackDirection = glm::normalize(direction);
+  attackEnd = std::chrono::high_resolution_clock::now() + SPIRIT_ATTACK_TIME;
 }
