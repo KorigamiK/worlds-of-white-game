@@ -19,7 +19,6 @@ public:
   InputManager* input;
   btCollisionWorld* world;
   btBvhTriangleMeshShape* terrain;
-  bool* canJump;
   ICamera* camera;
   glm::vec3 playerPosition;
   std::map<std::string, IEntityType*>& types;

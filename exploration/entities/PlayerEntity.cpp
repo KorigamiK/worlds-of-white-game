@@ -37,7 +37,9 @@ void PlayerEntity::update(GameState& state, float time)
   static std::random_device rd;
   static std::mt19937 gen(rd());
 
-  if (dashUsed && *state.canJump)
+  bool canJump = contactPoints.size() > 0;
+
+  if (dashUsed && canJump)
   {
     dashUsed = false;
   }
@@ -48,7 +50,7 @@ void PlayerEntity::update(GameState& state, float time)
     if (dashTime <= std::chrono::high_resolution_clock::now())
       dashing = false;
 
-    if (*state.canJump)
+    if (canJump)
     {
       static std::uniform_real_distribution<> dis(0.0, 3.1415926535);
 
@@ -82,7 +84,7 @@ void PlayerEntity::update(GameState& state, float time)
         body->setLinearVelocity(new_velocity);
         body->activate();
       }
-      if (state.input->isKeyTriggered(InputManager::KEY_SPACE) && *state.canJump)
+      if (state.input->isKeyTriggered(InputManager::KEY_SPACE) && canJump)
       {
         auto velocity = body->getLinearVelocity();
         velocity.setZ(5.0f);
@@ -109,28 +111,28 @@ void PlayerEntity::update(GameState& state, float time)
         body->setLinearVelocity(new_velocity);
         body->activate();
       }
-      if (state.input->isButtonTriggered(BUTTON_JUMP) && *state.canJump)
+      if (state.input->isButtonTriggered(BUTTON_JUMP) && canJump)
       {
         auto velocity = body->getLinearVelocity();
         velocity.setZ(PLAYER_JUMP_SPEED);
         body->setLinearVelocity(velocity);
         body->activate();
       }
-      if (state.input->isButtonHeld(BUTTON_JUMP) && !*state.canJump && body->getLinearVelocity().z() > 0.0f)
+      if (state.input->isButtonHeld(BUTTON_JUMP) && !canJump && body->getLinearVelocity().z() > 0.0f)
       {
         auto velocity = body->getLinearVelocity();
         velocity.setZ(velocity.getZ() + PLAYER_JUMP_RISE_SPEED);
         body->setLinearVelocity(velocity);
         body->activate();
       }
-      if (!dashUsed && state.input->isButtonTriggered(BUTTON_DASH) && magnitude <= PLAYER_DEADZONE && !*state.canJump)
+      if (!dashUsed && state.input->isButtonTriggered(BUTTON_DASH) && magnitude <= PLAYER_DEADZONE && !canJump)
       {
         dashing = true;
         dashUsed = true;
         dashDirection = glm::vec3(0, 0, -1) * PLAYER_DASH_SPEED;
         dashTime = std::chrono::high_resolution_clock::now() + PLAYER_DASH_DURATION;
       }
-      if (!dashUsed && state.input->isButtonTriggered(BUTTON_DASH) && magnitude > PLAYER_DEADZONE && !*state.canJump)
+      if (!dashUsed && state.input->isButtonTriggered(BUTTON_DASH) && magnitude > PLAYER_DEADZONE && !canJump)
       {
         auto direction = btVector3(0, 1, 0).rotate({ 0, 0, 1 }, rotation.z);
 

@@ -468,32 +468,23 @@ int main()
   dynamicsWorld->setInternalTickCallback(+[](btDynamicsWorld* world, float timeStep) -> void
   {
     int numManifolds = world->getDispatcher()->getNumManifolds();
-    auto& canJump = *(bool*)world->getWorldUserInfo();
-    canJump = false;
-
     for (int i = 0; i < numManifolds; ++i)
     {
       btPersistentManifold* contactManifold = world->getDispatcher()->getManifoldByIndexInternal(i);
       const btCollisionObject* obA = contactManifold->getBody0();
       const btCollisionObject* obB = contactManifold->getBody1();
+      PhysicsEntity* entityA = (PhysicsEntity*)obA->getUserPointer();
+      PhysicsEntity* entityB = (PhysicsEntity*)obB->getUserPointer();
 
       int numContacts = contactManifold->getNumContacts();
-      if (numContacts > 0)
-        canJump = true;
-
       for (int j = 0; j < numContacts; j++)
       {
         btManifoldPoint& pt = contactManifold->getContactPoint(j);
-        if (pt.getDistance() < 0.f)
-        {
-          const btVector3& ptA = pt.getPositionWorldOnA();
-          const btVector3& ptB = pt.getPositionWorldOnB();
-          const btVector3& normalOnB = pt.m_normalWorldOnB;
-        }
+        entityA->addContactPoint(entityB, pt.getPositionWorldOnA());
+        entityB->addContactPoint(entityA, pt.getPositionWorldOnB());
       }
     }
-
-  }, &canJump);
+  });
 
   // load player
   Entity* player = nullptr;
@@ -588,7 +579,7 @@ int main()
       globalInputManager->setKeyState(key, action);
   });
 
-  auto gameState = GameState{ &inputManager, dynamicsWorld, terrainShape, &canJump, followCam, player->position, entityTypes, entities, boxVAO };
+  auto gameState = GameState{ &inputManager, dynamicsWorld, terrainShape, followCam, player->position, entityTypes, entities, boxVAO };
 
   auto maxFPS = 0.0f;
   auto minFPS = 1000.0f;
@@ -653,13 +644,23 @@ int main()
 
     if (!paused)
     {
+      // physics
+      for (auto entity : entities)
+      {
+        auto physicsEntity = dynamic_cast<PhysicsEntity*>(entity);
+        if (physicsEntity)
+          physicsEntity->resetContactPoints();
+      }
       dynamicsWorld->stepSimulation(1.0f / 144.0f, 2, 1.0f / 120.0f);
 
+      // entities
       for (auto& entity : entities)
         entity->update(gameState, time);
 
+      // camera
       cam->update(gameState, time);
 
+      // entity management
       for (auto& entity : gameState.removeList)
         entities.erase(std::find(entities.begin(), entities.end(), entity));
       gameState.removeList.clear();

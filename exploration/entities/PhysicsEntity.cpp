@@ -3,11 +3,24 @@
 PhysicsEntity::PhysicsEntity(Model* model, const EntitySpawnInfo& info, btRigidBody* body)
   : Entity{ model, info }
   , body{ body }
-{ }
+{
+  body->setUserPointer(this);
+}
 
 btRigidBody* PhysicsEntity::getBody()
 {
   return body;
+}
+
+void PhysicsEntity::addContactPoint(PhysicsEntity* entity, const btVector3& point)
+{
+  contactPoints.push_back({ entity, point });
+}
+
+void PhysicsEntity::resetContactPoints()
+{
+  // TODO: try to keep capacity
+  contactPoints.clear();
 }
 
 void PhysicsEntity::update(GameState& state, float time)
