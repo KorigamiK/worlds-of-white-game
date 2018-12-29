@@ -247,10 +247,10 @@ btRigidBody* createTestBoxBody(glm::vec3 position, glm::vec3 rotation)
 
   auto boxInertia = btVector3();
   auto boxShape = new btBoxShape(btVector3{ 0.51f, 0.51f, 0.51f });
-  boxShape->calculateLocalInertia(1.0f, boxInertia);
+  boxShape->calculateLocalInertia(10.0f, boxInertia);
 
   auto boxMotionState = new btDefaultMotionState(boxTransform);
-  auto boxBody = new btRigidBody(1.0f, boxMotionState, boxShape, boxInertia);
+  auto boxBody = new btRigidBody(10.0f, boxMotionState, boxShape, boxInertia);
   boxBody->setFriction(0.95f);
   boxBody->setRestitution(0.1f);
   boxBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
@@ -263,6 +263,29 @@ class TestBoxEntity : public PhysicsEntity
 public:
   TestBoxEntity(Model* model, const EntitySpawnInfo& info)
     : PhysicsEntity{ model, info, createTestBoxBody(info.location, info.rotation) }
+  { }
+};
+
+btRigidBody* createTerrainBody(Model* model)
+{
+  // TODO: move shape creation to model, though... this will almost always be created once anyways...
+  auto terrainMesh = new btTriangleIndexVertexArray(model->faceIndexes.size() / 3, (int*)model->faceIndexes.data(), 3 * sizeof(int), model->vertexData.size() / Model::DATA_COUNT_PER_VERTEX, model->vertexData.data(), Model::DATA_COUNT_PER_VERTEX * sizeof(float));
+  auto terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
+  terrainShape->setMargin(0.0f);
+
+  auto terrainMotionState = new btDefaultMotionState();
+  auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShape);
+  terrainBody->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+  terrainBody->setFriction(0.95f);
+
+  return terrainBody;
+}
+
+class TerrainEntity : public PhysicsEntity
+{
+public:
+  TerrainEntity(Model* model, const EntitySpawnInfo& info)
+    : PhysicsEntity{ model, info, createTerrainBody(model) }
   { }
 };
 
@@ -333,20 +356,17 @@ int main()
   entityTypes["tree"]           = new EntityType<DecorationEntity, DecorationModel>{ "models/tree_model.txt" };
   entityTypes["flower"]         = new EntityType<DecorationEntity, DecorationModel>{ "models/flower_model.txt" };
   entityTypes["ring"]           = new EntityType<SmashEffectEntity, Model>{ "models/ring_model.txt" };
-  entityTypes["testland"]       = new EntityType<Entity, Model>{ "models/testland_model.txt" };
+  entityTypes["testland"]       = new EntityType<TerrainEntity, Model>{ "models/testland_model.txt" };
   entityTypes["testbox"]        = new EntityType<TestBoxEntity, Model>{ "models/testbox_model.txt" };
-  entityTypes["floatingisland"] = new EntityType<Entity, Model>{ "models/floatingisland_model.txt" };
+  entityTypes["floatingisland"] = new EntityType<TerrainEntity, Model>{ "models/floatingisland_model.txt" };
   //entityTypes["temp"]           = new EntityType<Entity, Model>{ "models/temp_model.txt" };
   for (auto& [name, type] : entityTypes)
     type->read();
 
   // load level
   //auto& level = testLevel;
-  //auto terrainModel = entityTypes["testland"]->getModel();
   auto& level = floatingLevel;
-  auto terrainModel = entityTypes["floatingisland"]->getModel();
   //auto& level = tempLevel;
-  //auto terrainModel = (Model*)nullptr;
 
   level.entities.push_back({ "testbox", { 0, 0, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
   level.entities.push_back({ "testbox", { 4, 1, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
@@ -475,32 +495,6 @@ int main()
 
   }, &canJump);
 
-  // create terrain
-  btBvhTriangleMeshShape* terrainShape;
-  std::vector<unsigned int> terrainIndices;
-  std::vector<float> terrainVertices;
-  if (terrainModel)
-  {
-    terrainIndices = terrainModel->faceIndexes;
-    terrainVertices = terrainModel->vertexData;
-    auto terrainMesh = new btTriangleIndexVertexArray(terrainIndices.size() / 3, (int*)terrainIndices.data(), 3 * sizeof(int), terrainVertices.size() / Model::DATA_COUNT_PER_VERTEX, terrainVertices.data(), Model::DATA_COUNT_PER_VERTEX * sizeof(float));
-    terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
-
-    auto terrainMotionState = new btDefaultMotionState();
-    auto terrainBody = new btRigidBody(0.0, terrainMotionState, terrainShape);
-    terrainBody->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
-    terrainBody->setFriction(0.95f);
-    terrainShape->setMargin(0.0f);
-    dynamicsWorld->addRigidBody(terrainBody);
-  }
-  else
-  {
-    terrainIndices = std::vector<unsigned int>{ 0, 1, 2 };
-    terrainVertices = { 0, 0, 0, 2, 0, 0, 1, 1, 0 };
-    auto terrainMesh = new btTriangleIndexVertexArray(1, (int*)terrainIndices.data(), 3 * sizeof(int), 3, terrainVertices.data(), 3 * sizeof(float));
-    terrainShape = new btBvhTriangleMeshShape(terrainMesh, true);
-  }
-
   // load player
   Entity* player = nullptr;
   for (auto entity : entities)
@@ -515,12 +509,20 @@ int main()
     return -1;
 
   // load physics objects
+  TerrainEntity* terrain = nullptr;
   for (auto entity : entities)
   {
     auto physicsEntity = dynamic_cast<PhysicsEntity*>(entity);
     if (physicsEntity)
       dynamicsWorld->addRigidBody(physicsEntity->getBody());
+
+    auto terrainEntity = dynamic_cast<TerrainEntity*>(entity);
+    if (terrainEntity)
+      terrain = terrainEntity;
   }
+  if (terrain == nullptr)
+    return -1;
+  auto terrainShape = (btBvhTriangleMeshShape*)terrain->getBody()->getCollisionShape();
 
   // load camera
   int entityIndex = 0;
