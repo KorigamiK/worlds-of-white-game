@@ -73,6 +73,45 @@ void SpiritEntity::update(GameState& state, float time)
 
   case ATTACKING:
     {
+      { // check for enemy collisions
+        struct MyResultCallback : btCollisionWorld::ContactResultCallback
+        {
+          const btCollisionObject* self;
+          const btCollisionObject* target = nullptr;
+
+          MyResultCallback(const btCollisionObject* self) : self{ self } {}
+
+          btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1) override
+          {
+            if (target == nullptr)
+            {
+              auto targetA = colObj0Wrap->getCollisionObject();
+              auto targetB = colObj1Wrap->getCollisionObject();
+              if (targetA == self)
+                target = targetB;
+              else
+                target = targetA;
+            }
+
+            return 1.0f;
+          }
+        };
+
+        btSphereShape sphereShape(0.5f * scale); // TODO: use radius constant
+        btCollisionObject sphere;
+        sphere.setCollisionShape(&sphereShape);
+        sphere.setWorldTransform(btTransform(btQuaternion::getIdentity(), btVector3(position.x, position.y, position.z)));
+
+        MyResultCallback callback(&sphere);
+        state.world->contactTest(&sphere, callback);
+
+        if (callback.target != nullptr)
+        {
+          std::cout << "hit!" << std::endl;
+          this->state = RETREATING;
+        }
+      }
+
       desiredPosition = position + glm::normalize(attackTarget - position) * SPIRIT_ATTACK_SPEED;
       correctionRate = SPIRIT_ATTACK_CORRECTION_RATE;
 

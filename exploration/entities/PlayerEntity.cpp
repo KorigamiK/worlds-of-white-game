@@ -149,7 +149,9 @@ void PlayerEntity::update(GameState& state, float time)
     }
   }
 
+  auto preserveRotation = rotation; // TODO: do this better
   PhysicsEntity::update(state, time);
+  rotation = preserveRotation;
 
   state.playerPosition = position;
 
