@@ -1,3 +1,6 @@
+import os
+os.chdir('C:\\Users\\kmdre\\Downloads')
+
 scene = bpy.context.scene
 obj = bpy.data.objects['Armature']
 

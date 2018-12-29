@@ -239,6 +239,33 @@ void logError(const std::string &name)
   }
 }
 
+btRigidBody* createTestBoxBody(glm::vec3 position, glm::vec3 rotation)
+{
+  auto boxTransform = btTransform();
+  boxTransform.setRotation({ rotation.x, rotation.y, rotation.z }); // might need to by YXZ, i dunno
+  boxTransform.setOrigin({ position.x, position.y, position.z });
+
+  auto boxInertia = btVector3();
+  auto boxShape = new btBoxShape(btVector3{ 0.51f, 0.51f, 0.51f });
+  boxShape->calculateLocalInertia(1.0f, boxInertia);
+
+  auto boxMotionState = new btDefaultMotionState(boxTransform);
+  auto boxBody = new btRigidBody(1.0f, boxMotionState, boxShape, boxInertia);
+  boxBody->setFriction(0.95f);
+  boxBody->setRestitution(0.1f);
+  boxBody->setCollisionFlags(btCollisionObject::CF_CHARACTER_OBJECT);
+
+  return boxBody;
+}
+
+class TestBoxEntity : public PhysicsEntity
+{
+public:
+  TestBoxEntity(Model* model, const EntitySpawnInfo& info)
+    : PhysicsEntity{ model, info, createTestBoxBody(info.location, info.rotation) }
+  { }
+};
+
 int main()
 {
   wilt::logging.setLogger<wilt::StreamLogger>(std::cout);
@@ -307,6 +334,7 @@ int main()
   entityTypes["flower"]         = new EntityType<DecorationEntity, DecorationModel>{ "models/flower_model.txt" };
   entityTypes["ring"]           = new EntityType<SmashEffectEntity, Model>{ "models/ring_model.txt" };
   entityTypes["testland"]       = new EntityType<Entity, Model>{ "models/testland_model.txt" };
+  entityTypes["testbox"]        = new EntityType<TestBoxEntity, Model>{ "models/testbox_model.txt" };
   entityTypes["floatingisland"] = new EntityType<Entity, Model>{ "models/floatingisland_model.txt" };
   //entityTypes["temp"]           = new EntityType<Entity, Model>{ "models/temp_model.txt" };
   for (auto& [name, type] : entityTypes)
@@ -319,6 +347,10 @@ int main()
   auto terrainModel = entityTypes["floatingisland"]->getModel();
   //auto& level = tempLevel;
   //auto terrainModel = (Model*)nullptr;
+
+  level.entities.push_back({ "testbox", { 0, 0, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
+  level.entities.push_back({ "testbox", { 4, 1, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
+  level.entities.push_back({ "testbox", {-2, 3, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
 
   auto entities = std::vector<Entity*>();
   entities.reserve(100);

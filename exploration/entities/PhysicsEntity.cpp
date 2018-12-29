@@ -14,6 +14,13 @@ void PhysicsEntity::update(GameState& state, float time)
 {
   btTransform bodyTransform;
   body->getMotionState()->getWorldTransform(bodyTransform);
+
   btVector3 bodyPosition = bodyTransform.getOrigin();
   position = glm::vec3(bodyPosition.x(), bodyPosition.y(), bodyPosition.z());
+
+  float bodyRotationX;
+  float bodyRotationY;
+  float bodyRotationZ;
+  bodyTransform.getRotation().getEulerZYX(bodyRotationZ, bodyRotationY, bodyRotationX);
+  rotation = glm::vec3(bodyRotationX, bodyRotationY, bodyRotationZ);
 }
