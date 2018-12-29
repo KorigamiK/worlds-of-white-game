@@ -262,7 +262,7 @@ class TestBoxEntity : public PhysicsEntity
 {
 public:
   TestBoxEntity(Model* model, const EntitySpawnInfo& info)
-    : PhysicsEntity{ model, info, createTestBoxBody(info.location, info.rotation) }
+    : PhysicsEntity{ model, info, createTestBoxBody(info.location, info.rotation), Type::ENEMY }
   { }
 };
 
@@ -285,7 +285,7 @@ class TerrainEntity : public PhysicsEntity
 {
 public:
   TerrainEntity(Model* model, const EntitySpawnInfo& info)
-    : PhysicsEntity{ model, info, createTerrainBody(model) }
+    : PhysicsEntity{ model, info, createTerrainBody(model), Type::SCENERY }
   { }
 };
 

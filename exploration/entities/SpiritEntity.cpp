@@ -6,6 +6,8 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
+#include "PhysicsEntity.h"
+
 using namespace std::chrono_literals;
 
 const auto SPIRIT_MIN_SPEED = 0.1f;
@@ -74,6 +76,9 @@ void SpiritEntity::update(GameState& state, float time)
   case ATTACKING:
     {
       { // check for enemy collisions
+
+        // TODO: consider just making it a physics entity
+
         struct MyResultCallback : btCollisionWorld::ContactResultCallback
         {
           const btCollisionObject* self;
@@ -107,7 +112,16 @@ void SpiritEntity::update(GameState& state, float time)
 
         if (callback.target != nullptr)
         {
-          std::cout << "hit!" << std::endl;
+          if (((PhysicsEntity*)callback.target->getUserPointer())->getType() == PhysicsEntity::Type::ENEMY)
+          {
+            auto direction = btVector3(1, 0, 0)
+              .rotate({ 0, 1, 0 }, 0.75f) // TODO: move to constant height angle
+              .rotate({ 0, 0, 1 }, rotation.z)
+              * 500.0f; // TODO: move to contant power
+
+            ((btRigidBody*)callback.target)->activate();
+            ((btRigidBody*)callback.target)->applyCentralImpulse(direction);
+          }
           this->state = RETREATING;
         }
       }

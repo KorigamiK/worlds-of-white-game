@@ -1,8 +1,9 @@
 #include "PhysicsEntity.h"
 
-PhysicsEntity::PhysicsEntity(Model* model, const EntitySpawnInfo& info, btRigidBody* body)
+PhysicsEntity::PhysicsEntity(Model* model, const EntitySpawnInfo& info, btRigidBody* body, Type type)
   : Entity{ model, info }
   , body{ body }
+  , type{ type }
 {
   body->setUserPointer(this);
 }

@@ -23,7 +23,7 @@ btRigidBody* createPlayerBody(glm::vec3 position, glm::vec3 rotation);
 void doPlayerDeformation(Entity* player, btCollisionWorld* world, btBvhTriangleMeshShape* mesh);
 
 PlayerEntity::PlayerEntity(Model* model, const EntitySpawnInfo& info)
-  : PhysicsEntity{ model, info, createPlayerBody(info.location, info.rotation) }
+  : PhysicsEntity{ model, info, createPlayerBody(info.location, info.rotation), Type::PLAYER }
   , velocity{ 0, 1, 0 }
   , dashing{ false }
   , dashUsed{ false }
