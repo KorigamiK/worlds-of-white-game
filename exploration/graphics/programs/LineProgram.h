@@ -1,11 +1,12 @@
-#ifndef WILT_DEPTHPROGRAM_H
-#define WILT_DEPTHPROGRAM_H
+#ifndef WILT_LINEPROGRAM_H
+#define WILT_LINEPROGRAM_H
 
 #include <array>
 
-#include "program.h"
+#include "../program.h"
+#include "../texture.h"
 
-class DepthProgram : public Program
+class LineProgram : public Program
 {
 private:
   GLint locationProjection;
@@ -15,9 +16,11 @@ private:
   GLint locationPositions;
   GLint locationDrawPercentage;
   GLint locationModel;
+  GLint locationRatio;
+  GLint locationDepthTexture;
 
 public:
-  DepthProgram(Shader vertexShader, Shader fragmentShader);
+  LineProgram(Shader vertexShader, Shader tessellationControlShader, Shader tessellationEvaluationShader, Shader geometryShader, Shader fragmentShader);
 
 public:
   void setProjection(const glm::mat4 &mat) const;
@@ -27,6 +30,8 @@ public:
   void setPositions(const std::array<glm::mat4, 24>& positions) const;
   void setDrawPercentage(float val) const;
   void setModel(const glm::mat4 &mat) const;
+  void setRatio(float val) const;
+  void setDepthTexture(const Texture& texture) const;
 };
 
-#endif // !WILT_DEPTHPROGRAM_H
+#endif // !WILT_LINEPROGRAM_H

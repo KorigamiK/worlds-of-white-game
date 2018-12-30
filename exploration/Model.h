@@ -2,18 +2,15 @@
 #define WILT_MODEL_H
 
 #include <vector>
-#include <string>
+#include <fstream>
 
 #include <glm/glm.hpp>
 
-#include "entities/Entity.h"
 #include "EntitySpawnInfo.h"
+#include "entities/Entity.h"
 #include "graphics/joint.h"
-#include "graphics/texture.h"
-#include "graphics/program.h"
-#include "graphics/DepthProgram.h"
-#include "graphics/LineProgram.h"
-#include "graphics/IAnimator.h"
+#include "graphics/programs/DepthProgram.h"
+#include "graphics/programs/LineProgram.h"
 
 constexpr int MAX_JOINTS = 24;
 

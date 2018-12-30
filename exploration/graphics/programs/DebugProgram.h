@@ -3,7 +3,7 @@
 
 #include <array>
 
-#include "program.h"
+#include "../program.h"
 
 class DebugProgram : public Program
 {

@@ -10,7 +10,6 @@
 
 class IAnimator;
 class Model;
-class Program;
 class DepthProgram;
 class LineProgram;
 class DebugProgram;
@@ -34,9 +33,8 @@ public:
 }; // class Entity
 
 #include "../model.h"
-#include "../graphics/program.h"
-#include "../graphics/DepthProgram.h"
-#include "../graphics/LineProgram.h"
-#include "../graphics/DebugProgram.h"
+#include "../graphics/programs/DepthProgram.h"
+#include "../graphics/programs/LineProgram.h"
+#include "../graphics/programs/DebugProgram.h"
 
 #endif // !WILT_ENTITY_H

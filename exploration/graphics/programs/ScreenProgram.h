@@ -3,8 +3,8 @@
 
 #include <array>
 
-#include "program.h"
-#include "texture.h"
+#include "../program.h"
+#include "../texture.h"
 
 class ScreenProgram : public Program
 {

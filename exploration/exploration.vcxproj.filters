@@ -28,10 +28,10 @@
     <ClCompile Include="entities\SpiritEntity.cpp" />
     <ClCompile Include="entities\SmashEffectEntity.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="graphics\DepthProgram.cpp" />
-    <ClCompile Include="graphics\LineProgram.cpp" />
-    <ClCompile Include="graphics\DebugProgram.cpp" />
-    <ClCompile Include="graphics\ScreenProgram.cpp" />
+    <ClCompile Include="graphics\programs\ScreenProgram.cpp" />
+    <ClCompile Include="graphics\programs\DepthProgram.cpp" />
+    <ClCompile Include="graphics\programs\DebugProgram.cpp" />
+    <ClCompile Include="graphics\programs\LineProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -80,9 +80,9 @@
     <ClInclude Include="entities\SmashEffectEntity.h" />
     <ClInclude Include="EntityType.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="graphics\DepthProgram.h" />
-    <ClInclude Include="graphics\LineProgram.h" />
-    <ClInclude Include="graphics\DebugProgram.h" />
-    <ClInclude Include="graphics\ScreenProgram.h" />
+    <ClInclude Include="graphics\programs\ScreenProgram.h" />
+    <ClInclude Include="graphics\programs\DepthProgram.h" />
+    <ClInclude Include="graphics\programs\DebugProgram.h" />
+    <ClInclude Include="graphics\programs\LineProgram.h" />
   </ItemGroup>
 </Project>
