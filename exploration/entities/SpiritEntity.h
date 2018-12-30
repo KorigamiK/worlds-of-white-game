@@ -44,6 +44,10 @@ public:
   // ATTACKING
   glm::vec3 attackTarget;
 
+  // HIT LOGIC
+  glm::vec3 hitLocation;
+  std::chrono::high_resolution_clock::time_point hitTime;
+
 public:
   SpiritEntity(Model* model, const EntitySpawnInfo& info);
 

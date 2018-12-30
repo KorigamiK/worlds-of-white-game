@@ -24,24 +24,9 @@ void LineProgram::use()
 {
   Program::use();
 
-  auto getBurstAmount = [](float f)
-  {
-    static float weights[12] = { 0.0f, 1.0f, 0.60f, 0.35f, 0.20f, 0.15f, 0.10f, 0.05f, 0.0f, 0.0f, 0.0f, 0.0f };
-
-    auto index = int(f * 10);
-    auto frac = f * 10 - index;
-    return (weights[index] * (1 - frac) + weights[index + 1] * (frac));
-  };
-
-  static int i = 0;
-  i = (i + 1) % 72;
-
-  std::array<glm::vec3, 8> burstLocations = { glm::vec3{ 0, 0, 1 } };
-  std::array<float, 8> burstRanges = { 5.0f * getBurstAmount(i / 72.0f) };
-  
-  glUniform3fv(locationBurstLocations, 8, &burstLocations[0][0]);
-  glUniform1fv(locationBurstRanges, 8, &burstRanges[0]);
-  glUniform1f(locationBurstCount, 1);
+  glUniform3fv(locationBurstLocations, burstLocations.size(), &burstLocations[0][0]);
+  glUniform1fv(locationBurstRanges, burstRanges.size(), &burstRanges[0]);
+  glUniform1ui(locationBurstCount, burstLocations.size());
 }
 
 void LineProgram::setProjection(const glm::mat4& mat) const
@@ -89,4 +74,16 @@ void LineProgram::setDepthTexture(const Texture& texture) const
   glUniform1i(locationDepthTexture, 0);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture.id());
+}
+
+void LineProgram::addBurst(glm::vec3 location, float range)
+{
+  burstLocations.push_back(location);
+  burstRanges.push_back(range);
+}
+
+void LineProgram::reset()
+{
+  burstLocations.clear();
+  burstRanges.clear();
 }

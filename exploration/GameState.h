@@ -12,6 +12,7 @@
 class ICamera;
 class Entity;
 class IEntityType;
+class LineProgram;
 
 class GameState
 {
@@ -23,6 +24,7 @@ public:
   glm::vec3 playerPosition;
   std::map<std::string, IEntityType*>& types;
   std::vector<Entity*>& entities;
+  LineProgram& lineProgram;
 
   std::vector<Entity*> addList;
   std::vector<Entity*> removeList;
@@ -31,5 +33,6 @@ public:
 #include "EntityType.h"
 #include "cameras/ICamera.h"
 #include "entities/Entity.h"
+#include "graphics/programs/LineProgram.h"
 
 #endif // !WILT_GAMESTATE_H

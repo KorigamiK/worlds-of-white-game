@@ -529,7 +529,7 @@ int main()
       globalInputManager->setKeyState(key, action);
   });
 
-  auto gameState = GameState{ &inputManager, dynamicsWorld, terrainShape, followCam, player->position, entityTypes, entities };
+  auto gameState = GameState{ &inputManager, dynamicsWorld, terrainShape, followCam, player->position, entityTypes, entities, lineProgram };
 
   auto maxFPS = 0.0f;
   auto minFPS = 1000.0f;
@@ -660,6 +660,8 @@ int main()
         entity->draw_lines(gameState, lineProgram, time);
 
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+      lineProgram.reset();
     }
 
     { // render debug

@@ -2,6 +2,7 @@
 #define WILT_LINEPROGRAM_H
 
 #include <array>
+#include <vector>
 
 #include "../program.h"
 #include "../texture.h"
@@ -22,6 +23,9 @@ private:
   GLint locationBurstRanges;
   GLint locationBurstCount;
 
+  std::vector<glm::vec3> burstLocations;
+  std::vector<float> burstRanges;
+
 public:
   LineProgram(Shader vertexShader, Shader tessellationControlShader, Shader tessellationEvaluationShader, Shader geometryShader, Shader fragmentShader);
 
@@ -38,6 +42,9 @@ public:
   void setModel(const glm::mat4 &mat) const;
   void setRatio(float val) const;
   void setDepthTexture(const Texture& texture) const;
+
+  void addBurst(glm::vec3 location, float range);
+  void reset();
 };
 
 #endif // !WILT_LINEPROGRAM_H

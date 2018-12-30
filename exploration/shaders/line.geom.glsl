@@ -17,7 +17,7 @@ uniform float draw_percentage;
 
 uniform vec3  burst_locations[8];
 uniform float burst_ranges[8];
-uniform float burst_count;
+uniform uint  burst_count;
 
 // Keeping the ratio correct is a pain, so I just convert to screen space, do
 // any manipulations, then put it back into the projection space. This might be 
@@ -210,15 +210,20 @@ void draw_segment(vec4 p1, vec4 p2)
 
 	// BURST
 	vec4 center = mix(p1, p2, 0.5);
-	vec4 burstPosition = to_screen_space * projection * view * vec4(burst_locations[0], 1.0f);
-	vec2 burstDirection = center.xy / center.w - burstPosition.xy / burstPosition.w;
-	float burstDistance = length(burstDirection) * burstPosition.w;
-	if (burstDistance < burst_ranges[0])
+	vec4 totalBurst = vec4(0, 0, 0, 0);
+	for (int i = 0; i < burst_count; ++i)
 	{
-		float burstAmount = (burst_ranges[0] - burstDistance) / 1.5f + clamp(burst_ranges[0] / burstDistance, 1, burst_ranges[0] * 4) - 1;
-		p1 += vec4(normalize(burstDirection) * burstAmount, 0, 0) / center.w * (tess_vertex_offset[0].y / 2.0f + 0.5f);
-		p2 += vec4(normalize(burstDirection) * burstAmount, 0, 0) / center.w * (tess_vertex_offset[1].y / 2.0f + 0.5f);
+		vec4 burstPosition = to_screen_space * projection * view * vec4(burst_locations[i], 1.0f);
+		vec2 burstDirection = center.xy / center.w - burstPosition.xy / burstPosition.w;
+		float burstDistance = length(burstDirection) * burstPosition.w;
+		if (burstDistance < burst_ranges[i])
+		{
+			float burstAmount = (burst_ranges[i] - burstDistance) / 1.5f + clamp(burst_ranges[i] / burstDistance, 1, burst_ranges[i] * 4) - 1;
+			totalBurst += vec4(normalize(burstDirection) * burstAmount, 0, 0);
+		}
 	}
+	p1 += totalBurst / center.w * (tess_vertex_offset[0].y / 2.0f + 0.5f);
+	p2 += totalBurst / center.w * (tess_vertex_offset[1].y / 2.0f + 0.5f);
 
 	perp = normalize(vec4(p1.y / p1.w - p2.y / p2.w, p2.x / p2.w - p1.x / p1.w, 0.0f, 0.0f));
 	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);

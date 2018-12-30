@@ -27,6 +27,8 @@ const auto SPIRIT_ATTACK_SPEED = 0.4f;
 const auto SPIRIT_RETREAT_CORRECTION_RATE = 0.8f;
 const auto SPIRIT_RETREAT_SPEED = 0.3f;
 const auto SPIRIT_RETREAT_DISTANCE_THRESHOLD = 2.0f;
+const auto SPIRIT_HIT_DURATION = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(0.5s);
+const auto SPIRIT_HIT_BURST_SIZE = 5.0f;
 
 SpiritEntity::SpiritEntity(Model* model, const EntitySpawnInfo& info)
   : Entity{ model, info }
@@ -121,7 +123,11 @@ void SpiritEntity::update(GameState& state, float time)
 
             ((btRigidBody*)callback.target)->activate();
             ((btRigidBody*)callback.target)->applyCentralImpulse(direction);
+
+            this->hitLocation = position;
+            this->hitTime = std::chrono::high_resolution_clock::now();
           }
+
           this->state = RETREATING;
         }
       }
@@ -174,7 +180,7 @@ void SpiritEntity::update(GameState& state, float time)
   if (glm::length(playerPosition - newPosition) < SPIRIT_MIN_PLAYER_DISTANCE)
     newPosition = playerPosition + glm::normalize(newPosition - playerPosition) * SPIRIT_MIN_PLAYER_DISTANCE;
 
-  {
+  { // tail logic
     auto dx = newPosition.x - oldPosition.x;
     auto dy = newPosition.y - oldPosition.y;
     auto dz = newPosition.z - oldPosition.z;
@@ -190,6 +196,24 @@ void SpiritEntity::update(GameState& state, float time)
     tailPosition1 = position + glm::normalize(tailPosition1 - position) * SPIRIT_TAIL_DISTANCE_1;
     tailPosition2 = tailPosition1 + glm::normalize(tailPosition2 - tailPosition1) * SPIRIT_TAIL_DISTANCE_2;
     tailPosition3 = tailPosition2 + glm::normalize(tailPosition3 - tailPosition2) * SPIRIT_TAIL_DISTANCE_3;
+  }
+
+  { // hit logic
+    if (hitTime + SPIRIT_HIT_DURATION > std::chrono::high_resolution_clock::now())
+    {
+      auto getBurstAmount = [](float f)
+      {
+        static float weights[12] = { 0.0f, 1.0f, 0.60f, 0.35f, 0.20f, 0.15f, 0.10f, 0.05f, 0.0f, 0.0f, 0.0f, 0.0f };
+
+        auto index = int(f * 10);
+        auto frac = f * 10 - index;
+        return (weights[index] * (1 - frac) + weights[index + 1] * (frac));
+      };
+
+      float seconds = std::chrono::duration_cast<std::chrono::duration<double, std::ratio<1>>>(std::chrono::high_resolution_clock::now() - hitTime).count();
+
+      state.lineProgram.addBurst(hitLocation, getBurstAmount(seconds * 2.0f) * SPIRIT_HIT_BURST_SIZE); // TODO: use constant
+    }
   }
 }
 
