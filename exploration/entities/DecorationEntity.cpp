@@ -92,18 +92,9 @@ void DecorationEntity::draw_debug(GameState& state, DebugProgram& program, float
   auto scales = offsetBox - model->boundingA;
   offsetLvl.z = model->boundingA.z * (1 - percentage) + model->boundingB.z * percentage;
 
-  auto boxTransform = entityTransform
-    * glm::translate(glm::mat4(), offsetBox)
-    * glm::scale(glm::mat4(), glm::vec3(scales.x, scales.y, scales.z));
+  auto boxTransform = glm::scale(glm::translate(entityTransform, offsetBox), glm::vec3(scales.x, scales.y, scales.z));
+  auto levelTransform = glm::scale(glm::translate(entityTransform, offsetLvl), glm::vec3(scales.x, scales.y, scales.z * 0.0f));
 
-  auto levelTransform = entityTransform
-    * glm::translate(glm::mat4(), offsetLvl)
-    * glm::scale(glm::mat4(), glm::vec3(scales.x, scales.y, scales.z * 0.0f));
-
-  program.setModel(boxTransform);
-  glBindVertexArray(state.boxVAO);
-  glDrawArrays(GL_LINES, 0, 24);
-  program.setModel(levelTransform);
-  glBindVertexArray(state.boxVAO);
-  glDrawArrays(GL_LINES, 0, 24);
+  program.drawBox(boxTransform);
+  program.drawBox(levelTransform);
 }

@@ -406,36 +406,6 @@ int main()
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-  // load box
-  float boxVertices[]{
-    // x-axis lines
-     1.0f,  1.0f,  1.0f,  -1.0f,  1.0f,  1.0f,
-     1.0f,  1.0f, -1.0f,  -1.0f,  1.0f, -1.0f,
-     1.0f, -1.0f,  1.0f,  -1.0f, -1.0f,  1.0f,
-     1.0f, -1.0f, -1.0f,  -1.0f, -1.0f, -1.0f,
-
-    // y-axis lines
-     1.0f,  1.0f,  1.0f,   1.0f, -1.0f,  1.0f,
-    -1.0f,  1.0f,  1.0f,  -1.0f, -1.0f,  1.0f,
-     1.0f,  1.0f, -1.0f,   1.0f, -1.0f, -1.0f,
-    -1.0f,  1.0f, -1.0f,  -1.0f, -1.0f, -1.0f,
-
-    // z-axis lines
-     1.0f,  1.0f,  1.0f,   1.0f,  1.0f, -1.0f,
-     1.0f, -1.0f,  1.0f,   1.0f, -1.0f, -1.0f,
-    -1.0f,  1.0f,  1.0f,  -1.0f,  1.0f, -1.0f,
-    -1.0f, -1.0f,  1.0f,  -1.0f, -1.0f, -1.0f
-  };
-
-  unsigned int boxVAO, boxVBO;
-  glGenVertexArrays(1, &boxVAO);
-  glGenBuffers(1, &boxVBO);
-  glBindVertexArray(boxVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, boxVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(boxVertices), &boxVertices, GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
   faceFramebuffer = Framebuffer(
     Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT),
     Texture::fromMemory(NULL, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT)
@@ -581,7 +551,7 @@ int main()
       globalInputManager->setKeyState(key, action);
   });
 
-  auto gameState = GameState{ &inputManager, dynamicsWorld, terrainShape, followCam, player->position, entityTypes, entities, boxVAO };
+  auto gameState = GameState{ &inputManager, dynamicsWorld, terrainShape, followCam, player->position, entityTypes, entities };
 
   auto maxFPS = 0.0f;
   auto minFPS = 1000.0f;
