@@ -32,6 +32,7 @@
 #include "graphics/program.h"
 #include "graphics/DepthProgram.h"
 #include "graphics/LineProgram.h"
+#include "graphics/DebugProgram.h"
 #include "graphics/texture.h"
 #include "graphics/framebuffer.h"
 #include "graphics/joint.h"
@@ -335,7 +336,7 @@ int main()
     VertexShader::fromFile("shaders/depth.vert.glsl"),
     FragmentShader::fromFile("shaders/depth.frag.glsl")
   };
-  Program debugProgram{
+  DebugProgram debugProgram{
     VertexShader::fromFile("shaders/debug.vert.glsl"),
     FragmentShader::fromFile("shaders/debug.frag.glsl")
   };
@@ -713,8 +714,8 @@ int main()
 
     // render debug
     debugProgram.use();
-    debugProgram.setMat4("projection", projection);
-    debugProgram.setMat4("view", view);
+    debugProgram.setProjection(projection);
+    debugProgram.setView(view);
 
     glBindFramebuffer(GL_FRAMEBUFFER, debgFramebuffer.id());
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);

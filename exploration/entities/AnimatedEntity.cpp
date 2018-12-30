@@ -19,7 +19,7 @@ void AnimatedEntity::draw_lines(GameState& state, LineProgram& program, float ti
   model->draw_lines(program, time, model->makeEntityTransform(position, rotation, scale));
 }
 
-void AnimatedEntity::draw_debug(GameState& state, Program& program, float time)
+void AnimatedEntity::draw_debug(GameState& state, DebugProgram& program, float time)
 {
 
 }

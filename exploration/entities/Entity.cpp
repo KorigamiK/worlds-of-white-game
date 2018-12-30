@@ -28,7 +28,7 @@ void Entity::draw_lines(GameState& state, LineProgram& program, float time)
   model->draw_lines(program, time, model->makeEntityTransform(position, rotation, scale));
 }
 
-void Entity::draw_debug(GameState& state, Program& program, float time)
+void Entity::draw_debug(GameState& state, DebugProgram& program, float time)
 {
 
 }

@@ -216,7 +216,7 @@ void SpiritEntity::draw_lines(GameState& state, LineProgram& program, float time
   model->draw_lines(program, time, model->makeEntityTransform(tailPosition3, {}, scale * SPIRIT_TAIL_SIZE_3));
 }
 
-void SpiritEntity::draw_debug(GameState& state, Program& program, float time)
+void SpiritEntity::draw_debug(GameState& state, DebugProgram& program, float time)
 {
 
 }

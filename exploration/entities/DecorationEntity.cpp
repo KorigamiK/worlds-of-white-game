@@ -79,7 +79,7 @@ void DecorationEntity::draw_lines(GameState& state, LineProgram& program, float 
   model->draw_lines(program, time, transform);
 }
 
-void DecorationEntity::draw_debug(GameState& state, Program& program, float time)
+void DecorationEntity::draw_debug(GameState& state, DebugProgram& program, float time)
 {
   if (drawPercentage <= 0.0f)
     return;
@@ -100,10 +100,10 @@ void DecorationEntity::draw_debug(GameState& state, Program& program, float time
     * glm::translate(glm::mat4(), offsetLvl)
     * glm::scale(glm::mat4(), glm::vec3(scales.x, scales.y, scales.z * 0.0f));
 
-  program.setMat4("model", boxTransform);
+  program.setModel(boxTransform);
   glBindVertexArray(state.boxVAO);
   glDrawArrays(GL_LINES, 0, 24);
-  program.setMat4("model", levelTransform);
+  program.setModel(levelTransform);
   glBindVertexArray(state.boxVAO);
   glDrawArrays(GL_LINES, 0, 24);
 }

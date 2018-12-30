@@ -183,7 +183,7 @@ void PlayerEntity::draw_lines(GameState& state, LineProgram& program, float time
   Entity::draw_lines(state, program, time);
 }
 
-void PlayerEntity::draw_debug(GameState& state, Program& program, float time)
+void PlayerEntity::draw_debug(GameState& state, DebugProgram& program, float time)
 {
 
 }

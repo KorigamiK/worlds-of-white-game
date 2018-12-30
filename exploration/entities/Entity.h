@@ -13,6 +13,7 @@ class Model;
 class Program;
 class DepthProgram;
 class LineProgram;
+class DebugProgram;
 
 class Entity
 {
@@ -28,7 +29,7 @@ public:
 
   virtual void draw_faces(GameState& state, DepthProgram& program, float time);
   virtual void draw_lines(GameState& state, LineProgram& program, float time);
-  virtual void draw_debug(GameState& state, Program& program, float time);
+  virtual void draw_debug(GameState& state, DebugProgram& program, float time);
 
 }; // class Entity
 
@@ -36,5 +37,6 @@ public:
 #include "../graphics/program.h"
 #include "../graphics/DepthProgram.h"
 #include "../graphics/LineProgram.h"
+#include "../graphics/DebugProgram.h"
 
 #endif // !WILT_ENTITY_H
