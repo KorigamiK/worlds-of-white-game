@@ -18,9 +18,15 @@ private:
   GLint locationModel;
   GLint locationRatio;
   GLint locationDepthTexture;
+  GLint locationBurstLocations;
+  GLint locationBurstRanges;
+  GLint locationBurstCount;
 
 public:
   LineProgram(Shader vertexShader, Shader tessellationControlShader, Shader tessellationEvaluationShader, Shader geometryShader, Shader fragmentShader);
+
+public:
+  void use();
 
 public:
   void setProjection(const glm::mat4 &mat) const;
