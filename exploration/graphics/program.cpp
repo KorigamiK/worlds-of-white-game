@@ -48,6 +48,8 @@ Program::Program(Shader vertexShader, Shader tessellationControlShader, Shader t
     GLchar error[1024];
     glGetProgramInfoLog(_id, 1024, NULL, error);
     logger.error(std::string("linking program: ") + error);
+    glDeleteProgram(_id);
+    _id = 0;
   }
 }
 

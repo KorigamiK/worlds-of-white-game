@@ -30,6 +30,7 @@
 #include "logging/LoggingManager.h"
 #include "logging/loggers/StreamLogger.h"
 #include "graphics/program.h"
+#include "graphics/DepthProgram.h"
 #include "graphics/texture.h"
 #include "graphics/framebuffer.h"
 #include "graphics/joint.h"
@@ -329,7 +330,7 @@ int main()
     GeometryShader::fromFile("shaders/line.geom.glsl"),
     FragmentShader::fromFile("shaders/line.frag.glsl")
   };
-  Program depthProgram{
+  DepthProgram depthProgram{
     VertexShader::fromFile("shaders/depth.vert.glsl"),
     FragmentShader::fromFile("shaders/depth.frag.glsl")
   };
@@ -675,10 +676,10 @@ int main()
 
     // render depth
     depthProgram.use();
-    depthProgram.setMat4("projection", projection);
-    depthProgram.setMat4("view", view);
-    depthProgram.setFloat("frame", i / 24);
-    depthProgram.setVec3("view_reference", view_reference);
+    depthProgram.setProjection(projection);
+    depthProgram.setView(view);
+    depthProgram.setFrame(i / 24);
+    depthProgram.setViewReference(view_reference);
 
     glBindFramebuffer(GL_FRAMEBUFFER, faceFramebuffer.id());
     glEnable(GL_DEPTH_TEST);

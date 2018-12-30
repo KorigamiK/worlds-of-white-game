@@ -61,12 +61,11 @@ glm::mat4 Model::makeEntityTransform(glm::vec3 position, glm::vec3 rotation, flo
       glm::vec3(scale, scale, scale));
 }
 
-void Model::draw_faces(Program& program, float time, glm::mat4 entityTranform)
+void Model::draw_faces(DepthProgram& program, float time, glm::mat4 entityTranform)
 {
   glm::mat4 modelTransform = entityTranform * transform;
 
-  program.setMat4("model", modelTransform);
-  program.setInt("model_texture", 0);
+  program.setModel(modelTransform);
 
   glBindVertexArray(vertexDataVAO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, faceIndexesID);

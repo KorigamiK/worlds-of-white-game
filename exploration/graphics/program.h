@@ -10,7 +10,7 @@
 
 class Program
 {
-private:
+protected:
   GLuint _id;
 
 public:

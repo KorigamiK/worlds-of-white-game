@@ -11,6 +11,7 @@
 #include "graphics/joint.h"
 #include "graphics/texture.h"
 #include "graphics/program.h"
+#include "graphics/DepthProgram.h"
 #include "graphics/IAnimator.h"
 
 constexpr int MAX_JOINTS = 24;
@@ -35,7 +36,7 @@ public:
 
   glm::mat4 makeEntityTransform(glm::vec3 position, glm::vec3 rotation, float scale);
 
-  void draw_faces(Program& program, float time, glm::mat4 entityTranform);
+  void draw_faces(DepthProgram& program, float time, glm::mat4 entityTranform);
   void draw_lines(Program& program, float time, glm::mat4 entityTranform);
 
   virtual Entity* spawn(const EntitySpawnInfo& info);

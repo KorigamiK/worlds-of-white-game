@@ -172,7 +172,7 @@ void PlayerEntity::update(GameState& state, float time)
     spirit->playerPosition = position;
 }
 
-void PlayerEntity::draw_faces(GameState& state, Program& program, float time)
+void PlayerEntity::draw_faces(GameState& state, DepthProgram& program, float time)
 {
   doPlayerDeformation(this, state.world, state.terrain);
   Entity::draw_faces(state, program, time);

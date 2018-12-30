@@ -57,14 +57,14 @@ void DecorationEntity::update(GameState& state, float time)
   }
 }
 
-void DecorationEntity::draw_faces(GameState& state, Program& program, float time)
+void DecorationEntity::draw_faces(GameState& state, DepthProgram& program, float time)
 {
   if (drawPercentage <= 0.0f)
     return;
 
-  glm::mat4 jointTransforms[MAX_JOINTS];
-  glUniformMatrix4fv(glGetUniformLocation(program.id(), "positions"), MAX_JOINTS, false, glm::value_ptr(jointTransforms[0]));
-  program.setFloat("draw_percentage", drawPercentage);
+  std::array<glm::mat4, MAX_JOINTS> jointTransforms;
+  program.setPositions(jointTransforms);
+  program.setDrawPercentage(drawPercentage);
   model->draw_faces(program, time, transform);
 }
 

@@ -143,6 +143,7 @@
     <ClCompile Include="cameras\FreeCamera.cpp" />
     <ClCompile Include="cameras\TrackCamera.cpp" />
     <ClCompile Include="entities\SmashEffectEntity.cpp" />
+    <ClCompile Include="graphics\DepthProgram.cpp" />
     <ClCompile Include="graphics\framebuffer.cpp" />
     <ClCompile Include="graphics\joint.cpp" />
     <ClCompile Include="graphics\jointPose.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="cameras\TrackCamera.h" />
     <ClInclude Include="EntityType.h" />
     <ClInclude Include="entities\SmashEffectEntity.h" />
+    <ClInclude Include="graphics\DepthProgram.h" />
     <ClInclude Include="graphics\framebuffer.h" />
     <ClInclude Include="graphics\IAnimator.h" />
     <ClInclude Include="graphics\joint.h" />

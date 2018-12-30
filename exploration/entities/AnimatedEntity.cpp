@@ -5,10 +5,10 @@ AnimatedEntity::AnimatedEntity(Model* model, const EntitySpawnInfo& info, IAnima
   , animator{ animator }
 { }
 
-void AnimatedEntity::draw_faces(GameState& state, Program& program, float time)
+void AnimatedEntity::draw_faces(GameState& state, DepthProgram& program, float time)
 {
   animator->applyAnimation(program, time, model->joints);
-  program.setFloat("draw_percentage", 1.0f);
+  program.setDrawPercentage(1.0f);
   model->draw_faces(program, time, model->makeEntityTransform(position, rotation, scale));
 }
 
