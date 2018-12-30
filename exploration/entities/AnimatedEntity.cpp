@@ -12,10 +12,10 @@ void AnimatedEntity::draw_faces(GameState& state, DepthProgram& program, float t
   model->draw_faces(program, time, model->makeEntityTransform(position, rotation, scale));
 }
 
-void AnimatedEntity::draw_lines(GameState& state, Program& program, float time)
+void AnimatedEntity::draw_lines(GameState& state, LineProgram& program, float time)
 {
   animator->applyAnimation(program, time, model->joints);
-  program.setFloat("draw_percentage", 1.0f);
+  program.setDrawPercentage(1.0f);
   model->draw_lines(program, time, model->makeEntityTransform(position, rotation, scale));
 }
 

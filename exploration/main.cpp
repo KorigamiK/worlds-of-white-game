@@ -31,6 +31,7 @@
 #include "logging/loggers/StreamLogger.h"
 #include "graphics/program.h"
 #include "graphics/DepthProgram.h"
+#include "graphics/LineProgram.h"
 #include "graphics/texture.h"
 #include "graphics/framebuffer.h"
 #include "graphics/joint.h"
@@ -323,7 +324,7 @@ int main()
 
   glEnable(GL_DEPTH_TEST);
 
-  Program lineProgram{ 
+  LineProgram lineProgram{
     VertexShader::fromFile("shaders/line.vert.glsl"),
     TessellationControlShader::fromFile("shaders/line.tesc.glsl"),
     TessellationEvaluationShader::fromFile("shaders/line.tess.glsl"),
@@ -465,7 +466,6 @@ int main()
   auto dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
   dynamicsWorld->setGravity(btVector3(0, 0, -10));
 
-  bool canJump = false;
   dynamicsWorld->setInternalTickCallback(+[](btDynamicsWorld* world, float timeStep) -> void
   {
     int numManifolds = world->getDispatcher()->getNumManifolds();
@@ -694,15 +694,12 @@ int main()
 
     // render lines
     lineProgram.use();
-    lineProgram.setMat4("projection", projection);
-    lineProgram.setMat4("view", view);
-    lineProgram.setFloat("frame", i / 24);
-    lineProgram.setFloat("ratio", (float)SCR_WIDTH / (float)SCR_HEIGHT);
-    lineProgram.setInt("depth_texture", 0);
-    lineProgram.setVec3("view_reference", view_reference);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, faceFramebuffer.depthTexture().id());
+    lineProgram.setProjection(projection);
+    lineProgram.setView(view);
+    lineProgram.setFrame(i / 24);
+    lineProgram.setRatio((float)SCR_WIDTH / (float)SCR_HEIGHT);
+    lineProgram.setViewReference(view_reference);
+    lineProgram.setDepthTexture(faceFramebuffer.depthTexture());
 
     glBindFramebuffer(GL_FRAMEBUFFER, lineFramebuffer.id());
     glEnable(GL_DEPTH_TEST);

@@ -75,11 +75,11 @@ void Model::draw_faces(DepthProgram& program, float time, glm::mat4 entityTranfo
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Model::draw_lines(Program& program, float time, glm::mat4 entityTranform)
+void Model::draw_lines(LineProgram& program, float time, glm::mat4 entityTranform)
 {
   glm::mat4 modelTransform = entityTranform * transform;
 
-  program.setMat4("model", modelTransform);
+  program.setModel(modelTransform);
 
   glBindVertexArray(vertexDataVAO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, lineIndexesID);

@@ -178,7 +178,7 @@ void PlayerEntity::draw_faces(GameState& state, DepthProgram& program, float tim
   Entity::draw_faces(state, program, time);
 }
 
-void PlayerEntity::draw_lines(GameState& state, Program& program, float time)
+void PlayerEntity::draw_lines(GameState& state, LineProgram& program, float time)
 {
   Entity::draw_lines(state, program, time);
 }

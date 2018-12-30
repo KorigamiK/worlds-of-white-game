@@ -1,6 +1,5 @@
 #include "DepthProgram.h"
 
-
 DepthProgram::DepthProgram(Shader vertexShader, Shader fragmentShader)
   : Program{ std::move(vertexShader), std::move(fragmentShader) }
 {

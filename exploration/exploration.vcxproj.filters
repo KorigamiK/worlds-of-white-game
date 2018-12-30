@@ -29,6 +29,7 @@
     <ClCompile Include="entities\SmashEffectEntity.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="graphics\DepthProgram.cpp" />
+    <ClCompile Include="graphics\LineProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -78,5 +79,6 @@
     <ClInclude Include="EntityType.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="graphics\DepthProgram.h" />
+    <ClInclude Include="graphics\LineProgram.h" />
   </ItemGroup>
 </Project>

@@ -29,7 +29,7 @@ public:
   // Entity overrides
   void update(GameState& state, float time) override;
   void draw_faces(GameState& state, DepthProgram& program, float time) override;
-  void draw_lines(GameState& state, Program& program, float time) override;
+  void draw_lines(GameState& state, LineProgram& program, float time) override;
   void draw_debug(GameState& state, Program& program, float time) override;
 
 }; // class DecorationEntity
