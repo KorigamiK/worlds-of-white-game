@@ -346,6 +346,21 @@ int main()
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
+  faceFramebuffer = Framebuffer(
+    Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT),
+    Texture::fromMemory(NULL, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT)
+  );
+  lineFramebuffer = Framebuffer(
+    Texture::fromMemory(NULL, GL_RGBA8, SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D_MULTISAMPLE, 8)
+  );
+  debgFramebuffer = Framebuffer(
+    Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT)
+  );
+
+  Texture paperTexture = Texture::fromFile("models/paper_texture.jpg");
+  paperTexture.setMinFilter(GL_LINEAR);
+  paperTexture.setMagFilter(GL_LINEAR);
+
   // read in levels
   auto testLevel = Level::read("levels/testing_level.txt");
   auto floatingLevel = Level::read("levels/floating_level.txt");
@@ -384,23 +399,6 @@ int main()
   // load entityTypes
   for (auto& [name, type] : entityTypes)
     type->load();
-
-  faceFramebuffer = Framebuffer(
-    Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT),
-    Texture::fromMemory(NULL, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT)
-  );
-
-  lineFramebuffer = Framebuffer(
-    Texture::fromMemory(NULL, GL_RGBA8, SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D_MULTISAMPLE, 8)
-  );
-
-  debgFramebuffer = Framebuffer(
-    Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT)
-  );
-
-  Texture paperTexture = Texture::fromFile("models/paper_texture.jpg");
-  paperTexture.setMinFilter(GL_LINEAR);
-  paperTexture.setMagFilter(GL_LINEAR);
 
   int i = 0;
   float iterationsPerSecond = 144.0f;
@@ -624,72 +622,76 @@ int main()
     glm::mat4 view = cam->getTransform();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
-    // render depth
-    depthProgram.use();
-    depthProgram.setProjection(projection);
-    depthProgram.setView(view);
-    depthProgram.setFrame(i / 24);
-    depthProgram.setViewReference(view_reference);
+    { // render depth
+      depthProgram.use();
+      depthProgram.setProjection(projection);
+      depthProgram.setView(view);
+      depthProgram.setFrame(i / 24);
+      depthProgram.setViewReference(view_reference);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, faceFramebuffer.id());
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      glBindFramebuffer(GL_FRAMEBUFFER, faceFramebuffer.id());
+      glEnable(GL_DEPTH_TEST);
+      glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    for (auto& entity : entities)
-      entity->draw_faces(gameState, depthProgram, time);
-
-    glBindVertexArray(0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // render lines
-    lineProgram.use();
-    lineProgram.setProjection(projection);
-    lineProgram.setView(view);
-    lineProgram.setFrame(i / 24);
-    lineProgram.setRatio((float)SCR_WIDTH / (float)SCR_HEIGHT);
-    lineProgram.setViewReference(view_reference);
-    lineProgram.setDepthTexture(faceFramebuffer.depthTexture());
-
-    glBindFramebuffer(GL_FRAMEBUFFER, lineFramebuffer.id());
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    for (auto& entity : entities)
-      entity->draw_lines(gameState, lineProgram, time);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // render debug
-    debugProgram.use();
-    debugProgram.setProjection(projection);
-    debugProgram.setView(view);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, debgFramebuffer.id());
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    if (debugViewEnabled)
-    {
       for (auto& entity : entities)
-        entity->draw_debug(gameState, debugProgram, time);
+        entity->draw_faces(gameState, depthProgram, time);
+
+      glBindVertexArray(0);
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    { // render lines
+      lineProgram.use();
+      lineProgram.setProjection(projection);
+      lineProgram.setView(view);
+      lineProgram.setFrame(i / 24);
+      lineProgram.setRatio((float)SCR_WIDTH / (float)SCR_HEIGHT);
+      lineProgram.setViewReference(view_reference);
+      lineProgram.setDepthTexture(faceFramebuffer.depthTexture());
 
-    // render to screen
-    screenProgram.use();
-    screenProgram.setFaceTexture(faceFramebuffer.colorTexture());
-    screenProgram.setLineTexture(lineFramebuffer.colorTexture());
-    screenProgram.setBackgroundTexture(paperTexture);
-    screenProgram.setDebugTexture(debgFramebuffer.colorTexture());
+      glBindFramebuffer(GL_FRAMEBUFFER, lineFramebuffer.id());
+      glEnable(GL_DEPTH_TEST);
+      glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glDisable(GL_DEPTH_TEST);
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+      for (auto& entity : entities)
+        entity->draw_lines(gameState, lineProgram, time);
 
-    screenProgram.drawScreen();
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    { // render debug
+      debugProgram.use();
+      debugProgram.setProjection(projection);
+      debugProgram.setView(view);
+
+      glBindFramebuffer(GL_FRAMEBUFFER, debgFramebuffer.id());
+      glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT);
+
+      if (debugViewEnabled)
+      {
+        for (auto& entity : entities)
+          entity->draw_debug(gameState, debugProgram, time);
+      }
+
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    { // render to screen
+      screenProgram.use();
+      screenProgram.setFaceTexture(faceFramebuffer.colorTexture());
+      screenProgram.setLineTexture(lineFramebuffer.colorTexture());
+      screenProgram.setBackgroundTexture(paperTexture);
+      screenProgram.setDebugTexture(debgFramebuffer.colorTexture());
+
+      glDisable(GL_DEPTH_TEST);
+      glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+      glClear(GL_COLOR_BUFFER_BIT);
+
+      screenProgram.drawScreen();
+    }
 
     glfwSwapBuffers(window);
     logError("any");
@@ -704,9 +706,6 @@ int main()
       }
     }
   }
-
-  glDeleteVertexArrays(1, &quadVAO);
-  glDeleteBuffers(1, &quadVBO);
 
   glfwTerminate();
   return 0;

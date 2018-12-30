@@ -36,6 +36,12 @@ ScreenProgram::ScreenProgram(Shader vertexShader, Shader fragmentShader)
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 }
 
+ScreenProgram::~ScreenProgram()
+{
+  glDeleteVertexArrays(1, &quadVAO);
+  glDeleteBuffers(1, &quadVBO);
+}
+
 void ScreenProgram::setFaceTexture(const Texture& texture) const
 {
   glUniform1i(locationFaceTexture, 0);

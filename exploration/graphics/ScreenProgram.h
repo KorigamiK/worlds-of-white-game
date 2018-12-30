@@ -21,6 +21,8 @@ private:
 public:
   ScreenProgram(Shader vertexShader, Shader fragmentShader);
 
+  ~ScreenProgram();
+
 public:
   void setFaceTexture(const Texture& texture) const;
   void setLineTexture(const Texture& texture) const;

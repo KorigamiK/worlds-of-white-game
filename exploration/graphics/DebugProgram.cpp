@@ -42,6 +42,12 @@ DebugProgram::DebugProgram(Shader vertexShader, Shader fragmentShader)
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 }
 
+DebugProgram::~DebugProgram()
+{
+  glDeleteVertexArrays(1, &boxVAO);
+  glDeleteBuffers(1, &boxVBO);
+}
+
 void DebugProgram::setProjection(const glm::mat4& mat) const
 {
   glUniformMatrix4fv(locationProjection, 1, GL_FALSE, &mat[0][0]);

@@ -18,6 +18,8 @@ private:
 public:
   DebugProgram(Shader vertexShader, Shader fragmentShader);
 
+  ~DebugProgram();
+
 public:
   void setProjection(const glm::mat4 &mat) const;
   void setView(const glm::mat4 &mat) const;
