@@ -33,6 +33,7 @@
 #include "graphics/DepthProgram.h"
 #include "graphics/LineProgram.h"
 #include "graphics/DebugProgram.h"
+#include "graphics/ScreenProgram.h"
 #include "graphics/texture.h"
 #include "graphics/framebuffer.h"
 #include "graphics/joint.h"
@@ -340,7 +341,7 @@ int main()
     VertexShader::fromFile("shaders/debug.vert.glsl"),
     FragmentShader::fromFile("shaders/debug.frag.glsl")
   };
-  Program screenProgram{
+  ScreenProgram screenProgram{
     VertexShader::fromFile("shaders/screen.vert.glsl"),
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
@@ -383,28 +384,6 @@ int main()
   // load entityTypes
   for (auto& [name, type] : entityTypes)
     type->load();
-
-  // load quad
-  float quadVertices[] = {
-    -1.0f,  1.0f,  0.0f, 1.0f,
-    -1.0f, -1.0f,  0.0f, 0.0f,
-     1.0f, -1.0f,  1.0f, 0.0f,
-
-    -1.0f,  1.0f,  0.0f, 1.0f,
-     1.0f, -1.0f,  1.0f, 0.0f,
-     1.0f,  1.0f,  1.0f, 1.0f
-  };
-
-  unsigned int quadVAO, quadVBO;
-  glGenVertexArrays(1, &quadVAO);
-  glGenBuffers(1, &quadVBO);
-  glBindVertexArray(quadVAO);
-  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
   faceFramebuffer = Framebuffer(
     Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT),
@@ -701,29 +680,16 @@ int main()
 
     // render to screen
     screenProgram.use();
-    screenProgram.setInt("face_texture", 0);
-    screenProgram.setInt("line_texture", 1);
-    screenProgram.setInt("line_texture_samples", lineFramebuffer.colorTexture().samples());
-    screenProgram.setInt("bkgd_texture", 2);
-    screenProgram.setInt("debg_texture", 3);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(faceFramebuffer.colorTexture().target(), faceFramebuffer.colorTexture().id());
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(lineFramebuffer.colorTexture().target(), lineFramebuffer.colorTexture().id());
-
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, paperTexture.id());
-
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(debgFramebuffer.colorTexture().target(), debgFramebuffer.colorTexture().id());
+    screenProgram.setFaceTexture(faceFramebuffer.colorTexture());
+    screenProgram.setLineTexture(lineFramebuffer.colorTexture());
+    screenProgram.setBackgroundTexture(paperTexture);
+    screenProgram.setDebugTexture(debgFramebuffer.colorTexture());
 
     glDisable(GL_DEPTH_TEST);
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    glBindVertexArray(quadVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    screenProgram.drawScreen();
 
     glfwSwapBuffers(window);
     logError("any");

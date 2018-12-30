@@ -149,6 +149,7 @@
     <ClCompile Include="graphics\joint.cpp" />
     <ClCompile Include="graphics\jointPose.cpp" />
     <ClCompile Include="graphics\LineProgram.cpp" />
+    <ClCompile Include="graphics\ScreenProgram.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="entities\AnimatedEntity.cpp" />
@@ -184,6 +185,7 @@
     <ClInclude Include="EntitySpawnInfo.h" />
     <ClInclude Include="DecorationModel.h" />
     <ClInclude Include="graphics\LineProgram.h" />
+    <ClInclude Include="graphics\ScreenProgram.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="entities\AnimatedEntity.h" />

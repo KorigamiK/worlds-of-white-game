@@ -31,6 +31,7 @@
     <ClCompile Include="graphics\DepthProgram.cpp" />
     <ClCompile Include="graphics\LineProgram.cpp" />
     <ClCompile Include="graphics\DebugProgram.cpp" />
+    <ClCompile Include="graphics\ScreenProgram.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -82,5 +83,6 @@
     <ClInclude Include="graphics\DepthProgram.h" />
     <ClInclude Include="graphics\LineProgram.h" />
     <ClInclude Include="graphics\DebugProgram.h" />
+    <ClInclude Include="graphics\ScreenProgram.h" />
   </ItemGroup>
 </Project>
