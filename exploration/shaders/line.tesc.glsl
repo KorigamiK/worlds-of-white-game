@@ -1,9 +1,11 @@
 #version 420 core
 
 in float order_vert_out[];
+in float randm_vert_out[];
  
 layout(vertices = 4) out;
 out float order_tesc_out[];
+out float randm_tesc_out[];
 
 uniform float frame;
 uniform float ratio;
@@ -57,6 +59,7 @@ void main()
 {
 	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 	order_tesc_out[gl_InvocationID] = order_vert_out[gl_InvocationID];
+	randm_tesc_out[gl_InvocationID] = randm_vert_out[gl_InvocationID];
 
 	if (gl_InvocationID == 0)
 	{

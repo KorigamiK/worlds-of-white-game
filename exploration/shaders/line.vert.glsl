@@ -6,6 +6,7 @@ layout (location = 2) in vec3 aWeights;
 layout (location = 3) in float order;
 
 out float order_vert_out;
+out float randm_vert_out;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -17,6 +18,16 @@ uniform float ratio;
 uniform float frame;
 uniform float draw_percentage;
 uniform mat4 positions[24];
+
+float seed1 = frame;
+float seed2 = gl_VertexID; // this is a bad seed value, its not unique between instances
+float rand()
+{
+  float value = fract(sin(dot(vec2(seed1, seed2) ,vec2(12.9898, 78.233))) * 43758.5453) * 2.0f - 1.0f;
+  seed2 = seed1;
+  seed1 = value;
+  return value;
+}
 
 float variation(float v)
 {
@@ -66,14 +77,13 @@ vec3 apply_variation(vec3 point)
 
 void main()
 {
-	vec4 model_space_position = model * vec4(aPos, 1.0f);
-	//model_space_position /= model_space_position.w;
-	model_space_position.xyz = apply_variation(model_space_position.xyz);
+	vec4 pos0 = model * positions[int(aGroups[0])] * vec4(aPos, 1.0f);
+	vec4 pos1 = model * positions[int(aGroups[1])] * vec4(aPos, 1.0f);
+	vec4 pos2 = model * positions[int(aGroups[2])] * vec4(aPos, 1.0f);
+	vec4 pos = (aWeights[0] * pos0) + (aWeights[1] * pos1) + (aWeights[2] * pos2);
 	
-	vec4 pos0 = projection * view * model * positions[int(aGroups[0])] * vec4(aPos, 1.0f);
-	vec4 pos1 = projection * view * model * positions[int(aGroups[1])] * vec4(aPos, 1.0f);
-	vec4 pos2 = projection * view * model * positions[int(aGroups[2])] * vec4(aPos, 1.0f);
-
-	gl_Position = (aWeights[0] * pos0) + (aWeights[1] * pos1) + (aWeights[2] * pos2);
+	// pos.xyz = apply_variation(pos.xyz); // TODO: this doesn't work
+	gl_Position = projection * view * pos;
 	order_vert_out = order;
+	randm_vert_out = rand();
 }

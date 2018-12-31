@@ -222,8 +222,8 @@ void draw_segment(vec4 p1, vec4 p2)
 			totalBurst += vec4(normalize(burstDirection) * burstAmount, 0, 0);
 		}
 	}
-	p1 += totalBurst / center.w * (tess_vertex_offset[0].y / 2.0f + 0.5f);
-	p2 += totalBurst / center.w * (tess_vertex_offset[1].y / 2.0f + 0.5f);
+	p1 += totalBurst / center.w * (1 + tess_vertex_offset[0].y / 2.0f) / 2.0f;
+	p2 += totalBurst / center.w * (1 + tess_vertex_offset[1].y / 2.0f) / 2.0f;
 
 	perp = normalize(vec4(p1.y / p1.w - p2.y / p2.w, p2.x / p2.w - p1.x / p1.w, 0.0f, 0.0f));
 	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
