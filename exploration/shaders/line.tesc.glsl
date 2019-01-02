@@ -2,6 +2,7 @@
 
 in float order_vert_out[];
 in float randm_vert_out[];
+in vec4  world_vert_out[];
  
 layout(vertices = 4) out;
 out float order_tesc_out[];
@@ -9,6 +10,7 @@ out float randm_tesc_out[];
 
 uniform float frame;
 uniform float ratio;
+uniform vec3 camera_position;
 
 const float POINT_SPACING = 2.0f / 64.0f;
 
@@ -23,14 +25,35 @@ float direction_from_line(vec2 p1, vec2 p2, vec2 point)
 	return (p2.y - p1.y) * point.x - (p2.x - p1.x) * point.y + p2.x * p1.y - p2.y * p1.x;
 }
 
+mat4 lookAt(vec3 pos, vec3 target)
+{
+	vec3 zaxis = normalize(target - pos);
+	vec3 xaxis = normalize(cross(vec3(0.0, 0.0, 1.0), zaxis));
+	vec3 yaxis = cross(zaxis, xaxis);
+
+	return mat4(
+		xaxis.x,          yaxis.x,          zaxis.x,          0.0,
+		xaxis.y,          yaxis.y,          zaxis.y,          0.0,
+		xaxis.z,          yaxis.z,          zaxis.z,          0.0,
+		dot(xaxis, -pos), dot(yaxis, -pos), dot(zaxis, -pos), 1.0
+	);
+}
+
 bool is_edge()
 {
 	// The line is an edge if both face-points lie on the same side of the line.
 
-    vec4 p0 = gl_in[0].gl_Position / gl_in[0].gl_Position.w;
-    vec4 p1 = gl_in[1].gl_Position / gl_in[1].gl_Position.w;
-	vec4 p2 = gl_in[2].gl_Position / gl_in[2].gl_Position.w;
-	vec4 p3 = gl_in[3].gl_Position / gl_in[3].gl_Position.w;
+	// Has to use the vertex world position and a separate matrix transform
+	// because a perspective transform makes it not work properly if a point is
+	// behind the camera, so this just uses an othographic transform from the
+	// camera to the line center.
+
+	mat4 view = lookAt(camera_position, mix(world_vert_out[1].xyz, world_vert_out[2].xyz, 0.5));
+
+    vec4 p0 = view * world_vert_out[0];
+    vec4 p1 = view * world_vert_out[1];
+	vec4 p2 = view * world_vert_out[2];
+	vec4 p3 = view * world_vert_out[3];
 
 	float d1 = direction_from_line(p1.xy, p2.xy, p0.xy);
 	float d2 = direction_from_line(p1.xy, p2.xy, p3.xy);

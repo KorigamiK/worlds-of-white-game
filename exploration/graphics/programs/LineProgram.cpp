@@ -18,6 +18,7 @@ LineProgram::LineProgram(Shader vertexShader, Shader tessellationControlShader, 
   locationBurstLocations = glGetUniformLocation(_id, "burst_locations");
   locationBurstRanges    = glGetUniformLocation(_id, "burst_ranges");
   locationBurstCount     = glGetUniformLocation(_id, "burst_count");
+  locationCameraPosition = glGetUniformLocation(_id, "camera_position");
 }
 
 void LineProgram::use()
@@ -74,6 +75,11 @@ void LineProgram::setDepthTexture(const Texture& texture) const
   glUniform1i(locationDepthTexture, 0);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture.id());
+}
+
+void LineProgram::setCameraPosition(const glm::vec3& vec) const
+{
+  glUniform3fv(locationCameraPosition, 1, &vec[0]);
 }
 
 void LineProgram::addBurst(glm::vec3 location, float range)

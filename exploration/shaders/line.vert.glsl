@@ -7,6 +7,7 @@ layout (location = 3) in float order;
 
 out float order_vert_out;
 out float randm_vert_out;
+out vec4  world_vert_out;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -86,4 +87,5 @@ void main()
 	gl_Position = projection * view * pos;
 	order_vert_out = order;
 	randm_vert_out = rand();
+	world_vert_out = pos;
 }

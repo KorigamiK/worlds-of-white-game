@@ -22,6 +22,7 @@ private:
   GLint locationBurstLocations;
   GLint locationBurstRanges;
   GLint locationBurstCount;
+  GLint locationCameraPosition;
 
   std::vector<glm::vec3> burstLocations;
   std::vector<float> burstRanges;
@@ -42,6 +43,7 @@ public:
   void setModel(const glm::mat4 &mat) const;
   void setRatio(float val) const;
   void setDepthTexture(const Texture& texture) const;
+  void setCameraPosition(const glm::vec3 &vec) const;
 
   void addBurst(glm::vec3 location, float range);
   void reset();

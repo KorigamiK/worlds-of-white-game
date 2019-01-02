@@ -325,6 +325,15 @@ int main()
     FragmentShader::fromFile("shaders/screen.frag.glsl")
   };
 
+  if (lineProgram.id()   == 0 ||
+      depthProgram.id()  == 0 ||
+      debugProgram.id()  == 0 ||
+      screenProgram.id() == 0)
+  {
+    std::cin.get();
+    return -1;
+  }
+
   faceFramebuffer = Framebuffer(
     Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT),
     Texture::fromMemory(NULL, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT)
@@ -627,6 +636,7 @@ int main()
       lineProgram.setFrame(i / 24);
       lineProgram.setRatio((float)SCR_WIDTH / (float)SCR_HEIGHT);
       lineProgram.setViewReference(view_reference);
+      lineProgram.setCameraPosition(cam->getPosition());
       lineProgram.setDepthTexture(faceFramebuffer.depthTexture());
 
       glBindFramebuffer(GL_FRAMEBUFFER, lineFramebuffer.id());
