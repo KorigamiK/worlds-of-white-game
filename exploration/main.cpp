@@ -350,9 +350,10 @@ int main()
   paperTexture.setMagFilter(GL_LINEAR);
 
   // read in levels
-  auto testLevel = Level::read("levels/testing_level.txt");
-  auto floatingLevel = Level::read("levels/floating_level.txt");
-  //auto tempLevel = Level::read("levels/temp_level.txt");
+  //auto level = Level::read("levels/testing_level.txt");
+  //auto level = Level::read("levels/floating_level.txt");
+  //auto level = Level::read("levels/temp_level.txt");
+  auto level = Level::read("levels/level_1_level.txt");
 
   // read in entityTypes
   std::map<std::string, IEntityType*> entityTypes;
@@ -366,14 +367,10 @@ int main()
   entityTypes["testland"]       = new EntityType<TerrainEntity, Model>{ "models/testland_model.txt" };
   entityTypes["testbox"]        = new EntityType<TestBoxEntity, Model>{ "models/testbox_model.txt" };
   entityTypes["floatingisland"] = new EntityType<TerrainEntity, Model>{ "models/floatingisland_model.txt" };
+  entityTypes["level_1"]        = new EntityType<TerrainEntity, Model>{ "models/level_1_model.txt" };
   //entityTypes["temp"]           = new EntityType<Entity, Model>{ "models/temp_model.txt" };
   for (auto& [name, type] : entityTypes)
     type->read();
-
-  // load level
-  //auto& level = testLevel;
-  auto& level = floatingLevel;
-  //auto& level = tempLevel;
 
   level.entities.push_back({ "testbox", { 0, 0, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
   level.entities.push_back({ "testbox", { 4, 1, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
