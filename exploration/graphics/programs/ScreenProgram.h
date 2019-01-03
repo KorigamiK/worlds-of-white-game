@@ -10,6 +10,7 @@ class ScreenProgram : public Program
 {
 private:
   GLint locationFaceTexture;
+  GLint locationDepthTexture;
   GLint locationLineTexture;
   GLint locationLineTextureSamples;
   GLint locationDebugTexture;
@@ -25,6 +26,7 @@ public:
 
 public:
   void setFaceTexture(const Texture& texture) const;
+  void setDepthTexture(const Texture& texture) const;
   void setLineTexture(const Texture& texture) const;
   void setDebugTexture(const Texture& texture) const;
   void setBackgroundTexture(const Texture& texture) const;

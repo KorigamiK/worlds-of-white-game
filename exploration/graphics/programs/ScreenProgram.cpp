@@ -20,6 +20,7 @@ ScreenProgram::ScreenProgram(Shader vertexShader, Shader fragmentShader)
     return;
 
   locationFaceTexture        = glGetUniformLocation(_id, "face_texture");
+  locationDepthTexture       = glGetUniformLocation(_id, "depth_texture");
   locationLineTexture        = glGetUniformLocation(_id, "line_texture");
   locationLineTextureSamples = glGetUniformLocation(_id, "line_texture_samples");
   locationDebugTexture       = glGetUniformLocation(_id, "bkgd_texture");
@@ -46,6 +47,13 @@ void ScreenProgram::setFaceTexture(const Texture& texture) const
 {
   glUniform1i(locationFaceTexture, 0);
   glActiveTexture(GL_TEXTURE0);
+  glBindTexture(texture.target(), texture.id());
+}
+
+void ScreenProgram::setDepthTexture(const Texture& texture) const
+{
+  glUniform1i(locationDepthTexture, 4);
+  glActiveTexture(GL_TEXTURE4);
   glBindTexture(texture.target(), texture.id());
 }
 

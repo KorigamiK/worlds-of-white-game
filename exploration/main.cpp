@@ -314,6 +314,7 @@ int main()
   };
   DepthProgram depthProgram{
     VertexShader::fromFile("shaders/depth.vert.glsl"),
+    GeometryShader::fromFile("shaders/depth.geom.glsl"),
     FragmentShader::fromFile("shaders/depth.frag.glsl")
   };
   DebugProgram debugProgram{
@@ -670,6 +671,7 @@ int main()
     { // render to screen
       screenProgram.use();
       screenProgram.setFaceTexture(faceFramebuffer.colorTexture());
+      screenProgram.setDepthTexture(faceFramebuffer.depthTexture());
       screenProgram.setLineTexture(lineFramebuffer.colorTexture());
       screenProgram.setBackgroundTexture(paperTexture);
       screenProgram.setDebugTexture(debgFramebuffer.colorTexture());

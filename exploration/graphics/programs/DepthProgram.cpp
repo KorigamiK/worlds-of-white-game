@@ -1,7 +1,7 @@
 #include "DepthProgram.h"
 
-DepthProgram::DepthProgram(Shader vertexShader, Shader fragmentShader)
-  : Program{ std::move(vertexShader), std::move(fragmentShader) }
+DepthProgram::DepthProgram(Shader vertexShader, Shader geometryShader, Shader fragmentShader)
+  : Program{ std::move(vertexShader), std::move(geometryShader), std::move(fragmentShader) }
 {
   if (_id == 0)
     return;

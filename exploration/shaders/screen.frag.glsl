@@ -4,6 +4,7 @@ out vec4 FragColor;
 in vec2 TexCoords;
 
 uniform sampler2D face_texture;
+uniform sampler2D depth_texture;
 uniform sampler2DMS line_texture;
 uniform sampler2D bkgd_texture;
 uniform sampler2D debg_texture;
@@ -22,17 +23,31 @@ vec4 textureMultisample(sampler2DMS sampler, vec2 uv)
     return color;
 }
 
+float LinearizeDepth(float depth)
+{
+    float zNear = 0.1;
+    float zFar  = 100.0;
+    return (2.0 * zNear) / (zFar + zNear - depth * (zFar - zNear));
+}
+
 void main()
 {
     vec3 face = texture(face_texture, TexCoords).rgb;
+    vec3 dpth = texture(depth_texture, TexCoords).rgb;
     vec3 line = textureMultisample(line_texture, TexCoords).rgb;
     vec3 bkgd = texture(bkgd_texture, TexCoords).rgb;
     vec3 debg = texture(debg_texture, TexCoords).rgb;
 
 	if (face.x + face.y + face.z != 3.0)
-		face = 1.0 - (1.0 - face) * 0.75f;
+	{
+		float d = LinearizeDepth(dpth.x);
+		face.x = face.x;
+		face.y = face.y;
+		face.z = d;
+	}
 
 	vec3 final = bkgd * line * debg;
+	// vec3 final = bkgd * line * debg * face;
 
     FragColor = vec4(final.x, final.y, final.z, 1.0);
 }

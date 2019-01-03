@@ -17,7 +17,7 @@ private:
   GLint locationModel;
 
 public:
-  DepthProgram(Shader vertexShader, Shader fragmentShader);
+  DepthProgram(Shader vertexShader, Shader geometryShader, Shader fragmentShader);
 
 public:
   void setProjection(const glm::mat4 &mat) const;
