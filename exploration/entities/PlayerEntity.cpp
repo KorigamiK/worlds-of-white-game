@@ -7,12 +7,12 @@
 
 using namespace std::chrono_literals;
 
-const auto PLAYER_SPEED = 4.0f;
+const auto PLAYER_SPEED = 5.0f;
 const auto PLAYER_JUMP_SPEED = 7.5f;
 const auto PLAYER_JUMP_RISE_SPEED = 0.075f;
 const auto PLAYER_JUMP_LAG_TIME = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(0.05s);
-const auto PLAYER_DASH_SPEED = 20.0f;
-const auto PLAYER_DASH_DURATION = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(0.125s);
+const auto PLAYER_DASH_SPEED = 25.0f;
+const auto PLAYER_DASH_DURATION = std::chrono::duration_cast<std::chrono::high_resolution_clock::duration>(0.15s);
 const auto PLAYER_DEADZONE = 0.12f;
 const auto PLAYER_ATTACK_DISTANCE = 8.0f;
 
