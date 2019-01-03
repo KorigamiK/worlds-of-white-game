@@ -398,7 +398,7 @@ int main()
   auto solver = new btSequentialImpulseConstraintSolver;               // fucking do
 
   auto dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-  dynamicsWorld->setGravity(btVector3(0, 0, -10));
+  dynamicsWorld->setGravity(btVector3(0, 0, -20));
 
   dynamicsWorld->setInternalTickCallback(+[](btDynamicsWorld* world, float timeStep) -> void
   {

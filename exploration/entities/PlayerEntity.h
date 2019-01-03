@@ -24,6 +24,10 @@ public:
   int spiritNext;
   std::vector<SpiritEntity*> spirits;
 
+  // jumping logic
+  std::chrono::high_resolution_clock::time_point lastTouchTime;
+  bool jumpUsed;
+
 public:
   // Entity overrides
   void update(GameState& state, float time) override;
