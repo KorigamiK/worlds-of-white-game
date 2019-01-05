@@ -9,6 +9,7 @@ DepthProgram::DepthProgram(Shader vertexShader, Shader geometryShader, Shader fr
   locationProjection     = glGetUniformLocation(_id, "projection");
   locationView           = glGetUniformLocation(_id, "view");
   locationViewReference  = glGetUniformLocation(_id, "viewReference");
+  locationRatio          = glGetUniformLocation(_id, "ratio");
   locationFrame          = glGetUniformLocation(_id, "frame");
   locationPositions      = glGetUniformLocation(_id, "positions");
   locationDrawPercentage = glGetUniformLocation(_id, "draw_percentage");
@@ -28,6 +29,11 @@ void DepthProgram::setView(const glm::mat4& mat) const
 void DepthProgram::setViewReference(const glm::vec3& vec) const
 {
   glUniform3fv(locationViewReference, 1, &vec[0]);
+}
+
+void DepthProgram::setRatio(float val) const
+{
+  glUniform1f(locationRatio, val);
 }
 
 void DepthProgram::setFrame(float val) const

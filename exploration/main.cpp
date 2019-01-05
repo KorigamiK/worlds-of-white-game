@@ -612,6 +612,7 @@ int main()
       depthProgram.use();
       depthProgram.setProjection(projection);
       depthProgram.setView(view);
+      depthProgram.setRatio((float)SCR_WIDTH / (float)SCR_HEIGHT);
       depthProgram.setFrame(i / 24);
       depthProgram.setViewReference(view_reference);
 

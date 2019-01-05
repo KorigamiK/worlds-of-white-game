@@ -38,13 +38,23 @@ void main()
     vec3 bkgd = texture(bkgd_texture, TexCoords).rgb;
     vec3 debg = texture(debg_texture, TexCoords).rgb;
 
-	if (face.x + face.y + face.z != 3.0)
-	{
-		float d = LinearizeDepth(dpth.x);
-		face.x = face.x;
-		face.y = face.y;
-		face.z = d;
-	}
+	// DEBUG DEPTH + NORMALS
+	//if (face.x + face.y + face.z != 3.0)
+	//{
+	//	float d = LinearizeDepth(dpth.x);
+	//	face.x = face.x;
+	//	face.y = face.y;
+	//	face.z = d;
+	//}
+
+	// SHADE STRENGTH
+	//if (face.x + face.y + face.z != 3.0)
+	//{
+	//	float d = face.z * 2 - 1;
+	//	face.x = d;
+	//	face.y = d;
+	//	face.z = d;
+	//}
 
 	vec3 final = bkgd * line * debg;
 	// vec3 final = bkgd * line * debg * face;
