@@ -1,0 +1,64 @@
+Changelog (2019-01-03)
+
+
+Added Spirit Entity
+
+  These "spirits" are controlled by the player. They slowly rotate the player when just idling along randomized paths. They shoot forward to attack.
+
+  They also have tails that trail behind them. These are currently just additional spheres but I hope to have them all linked together in a trail. I also hope to have a max turn radius implemented sometime.
+
+  I'd like to have more elaborate idle logic in the future so that its more reactive to the environment and more interesting. 
+
+
+Transform Optimizations
+
+  Made some early optimizations to how transforms are calculated and preserved. (i.e. decorations entities, which never move, now calculate the transform once). Also, apparently the *way* you do some calculations in glm can severely impact its performance. :/
+
+
+Input Manager
+
+  Finally added an input manager to keep track of input triggering. Now I can distingush between a button being held vs being triggered. Also means I can remove glfw from a lot of imports since I can keep it abstracted away.
+
+
+Test Boxes
+
+  Added some simple boxes to help test spirit attack logic. The spirits will launch the box, or "enemy", when attacked and hit. 
+
+
+Physics Collision Distribution
+
+  Made the terrain a physics entity so that I can compare against it later in the bullet collision tests. Made it so that each bullet body is attached to its PhysicsEntity so that I can easily see collisions within the entity's update logic. This also removes a horrendous global collision bool that I was using for player jump logic. 
+
+  This was all needed so that I can have the spirits collide with stuff, and if its an enemy, made it fly off.
+
+
+Graphics Cleanup
+
+  Put a bit of work into having the rendering programs keep track of their variable locations and have dedicated functions for setting those values. Type saftey for the win! This also allowed me to group some one off models like the screen quads and debug box into their respective program. Probably add more debugging stuff at some point.
+
+
+Explosion Effect
+
+  With the new enemies and attacking along with the graphics cleanup, I can add an effect to the shader and allow it to be partially managed by the LineProgram and the individual entities adding the effect. So I have it so that if the spirit hits an enemy, it adds an explosion-like "burst" effect that causes the rendered lines to be split apart and reform.
+
+
+New Testing Level and Fix Line-drawing Bug
+
+  I created a larger level that will largely be the design for the first area of the game, but its just boxes so that I can focus on level design and getting the movement right before putting a lot of work into the details. However, the larger lines exposes a long-standing bug much more, so I had to address that. 
+
+  When a line's end point or control point were behind the camera, the edge logic didn't work correctly. So I made each edge do a bit more work to get its orientation from the camera to do the calculation. 
+
+
+Player Movement Improvements
+
+  I adjusted the gavity, jump speeds, move and dash values to feel more snappy. I also added a jump-lag mechanic so that the player can jump even if they just left the edge, which also fixes a physics problem I'd been having where the player isn't always contacting the ground when moving across a flat surface. Last, but certainly not least, I made it so the dash is controllable so that you can change directions slightly while dashing as well as preserve the momentum after the dash had ended. 
+
+
+Prep for Shading
+
+  I did a lot of math work to get the face normals relative to the camera so that I can hopefully use that information for shading. 
+
+
+Future Work
+
+- shading
