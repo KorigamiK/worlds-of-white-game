@@ -13,8 +13,6 @@ class PlayerEntity : public PhysicsEntity
 {
 public:
   PlayerEntity(Model* model, const EntitySpawnInfo& info);
-
-  glm::vec3 velocity;
   
   bool dashing;
   bool dashUsed;

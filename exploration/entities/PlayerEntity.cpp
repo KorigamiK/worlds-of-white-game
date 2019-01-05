@@ -25,7 +25,6 @@ void doPlayerDeformation(Entity* player, btCollisionWorld* world, btBvhTriangleM
 
 PlayerEntity::PlayerEntity(Model* model, const EntitySpawnInfo& info)
   : PhysicsEntity{ model, info, createPlayerBody(info.location, info.rotation), Type::PLAYER }
-  , velocity{ 0, 1, 0 }
   , dashing{ false }
   , dashUsed{ false }
   , dashTime{ }
@@ -72,11 +71,9 @@ void PlayerEntity::update(GameState& state, float time)
   {
     { // keyboard
       if (state.input->isKeyHeld(InputManager::KEY_A)) {
-        velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
         rotation += glm::radians(1.0f);
       }
       if (state.input->isKeyHeld(InputManager::KEY_D)) {
-        velocity = glm::vec3(glm::rotate(glm::mat4(), glm::radians(-1.0f), { 0, 0, 1 }) * glm::vec4(velocity, 0.0));
         rotation -= glm::radians(1.0f);
       }
       if (state.input->isKeyHeld(InputManager::KEY_W)) {
@@ -111,11 +108,17 @@ void PlayerEntity::update(GameState& state, float time)
 
       if (magnitude > PLAYER_DEADZONE)
       {
+        magnitude = magnitude > 1.0f ? 1.0f : magnitude;
+
+        auto currentVelocity = body->getLinearVelocity();
+        currentVelocity.setZ(0.0f);
+        auto baseVelocity = (currentVelocity.length() > PLAYER_SPEED) ? currentVelocity.normalize() * (currentVelocity.length() - PLAYER_SPEED - 0.01f) : btVector3(0, 0, 0);
+
         angle += state.camera->getAngle() + glm::radians(90.0f);
         rotation.z = angle;
 
         auto old_velocity = body->getLinearVelocity();
-        auto new_velocity = btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * PLAYER_SPEED, 0);
+        auto new_velocity = baseVelocity + btMatrix3x3(btQuaternion(0, 0, angle)) * btVector3(0, magnitude * PLAYER_SPEED, 0);
         new_velocity.setZ(old_velocity.z());
         body->setLinearVelocity(new_velocity);
         body->activate();
