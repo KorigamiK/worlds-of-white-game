@@ -6,7 +6,7 @@ in float order_tess_out[2];
 
 layout(triangle_strip, max_vertices = 8) out;
 
-uniform sampler2D depth_texture;
+uniform sampler2DMS depth_texture;
 
 uniform mat4 view;
 uniform mat4 projection;
@@ -56,6 +56,20 @@ float rand()
   return value;
 }
 
+vec4 textureMultisample(sampler2DMS sampler, vec2 uv)
+{
+	ivec2 ssize = textureSize(sampler);
+	ivec2 coord = ivec2(uv * ssize);
+	float line_texture_samples = 8; // TODO: pull this in
+
+    vec4 color = vec4(0.0);
+    for (int i = 0; i < line_texture_samples; i++)
+        color += texelFetch(sampler, coord, i);
+    color /= float(line_texture_samples);
+
+    return color;
+}
+
 mat4 rotate(float theta)
 {
 	return mat4(
@@ -73,7 +87,7 @@ float get_depth_1(vec2 v)
 	float x = v.x / 2.0f + 0.5f;
 	float y = v.y / 2.0f + 0.5f;
 
-	float value = texture(depth_texture, vec2(x, y)).x;
+	float value = textureMultisample(depth_texture, vec2(x, y)).x;
 	
 	// For some reason, the depth texture has values between 0.5 and 1.0. This
 	// normalizes it to be between 0.0 and 1.0
@@ -85,7 +99,7 @@ float get_depth(vec2 v)
 {
 	// Because of reasons, I get the deepest point from nearby texture points
 
-	ivec2 size = textureSize(depth_texture, 0);
+	ivec2 size = textureSize(depth_texture);
 
 	vec2 dx = vec2(1.0f / size.x, 0.0f);
 	vec2 dy = vec2(0.0f, 1.0f / size.y);

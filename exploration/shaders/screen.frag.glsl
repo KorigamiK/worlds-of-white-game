@@ -3,8 +3,8 @@ out vec4 FragColor;
 
 in vec2 TexCoords;
 
-uniform sampler2D face_texture;
-uniform sampler2D depth_texture;
+uniform sampler2DMS face_texture;
+uniform sampler2DMS depth_texture;
 uniform sampler2DMS line_texture;
 uniform sampler2D bkgd_texture;
 uniform sampler2D debg_texture;
@@ -32,8 +32,8 @@ float LinearizeDepth(float depth)
 
 void main()
 {
-    vec3 face = texture(face_texture, TexCoords).rgb;
-    vec3 dpth = texture(depth_texture, TexCoords).rgb;
+    vec3 face = textureMultisample(face_texture, TexCoords).rgb;
+    vec3 dpth = textureMultisample(depth_texture, TexCoords).rgb;
     vec3 line = textureMultisample(line_texture, TexCoords).rgb;
     vec3 bkgd = texture(bkgd_texture, TexCoords).rgb;
     vec3 debg = texture(debg_texture, TexCoords).rgb;

@@ -336,8 +336,8 @@ int main()
   }
 
   faceFramebuffer = Framebuffer(
-    Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT),
-    Texture::fromMemory(NULL, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT)
+    Texture::fromMemory(NULL, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D_MULTISAMPLE, 8),
+    Texture::fromMemory(NULL, GL_DEPTH_COMPONENT, SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D_MULTISAMPLE, 8)
   );
   lineFramebuffer = Framebuffer(
     Texture::fromMemory(NULL, GL_RGBA8, SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D_MULTISAMPLE, 8)

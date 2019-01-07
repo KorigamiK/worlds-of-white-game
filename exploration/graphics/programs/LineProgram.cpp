@@ -74,7 +74,7 @@ void LineProgram::setDepthTexture(const Texture& texture) const
 {
   glUniform1i(locationDepthTexture, 0);
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, texture.id());
+  glBindTexture(texture.target(), texture.id());
 }
 
 void LineProgram::setCameraPosition(const glm::vec3& vec) const

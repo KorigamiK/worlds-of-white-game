@@ -5,6 +5,7 @@ in float order_vert_out;
 
 uniform float ratio;
 uniform float draw_percentage;
+
 const float PI = 3.14159265358979;
 const float PI2 = 2.0 * PI;
 
@@ -138,7 +139,7 @@ void main()
   if ((1.0f - order_vert_out) > draw_percentage)
 	discard;
 
-  vec2 point = gl_FragCoord.xy;
+  vec2 point = gl_FragCoord.xy + gl_SamplePosition; // TODO: manual aliasing, using gl_SamplePosition forces this fragment shader to be ran once per sample instead of once per pixel : https://forum.unity.com/threads/anti-aliasing-does-not-work-when-shapes-are-drawn-from-fragment-shader.264771/
   point.x = 2.0f * point.x / 1280.0f - 1;
   point.y = 2.0f * point.y / 720.0f - 1;
   point.y = point.y / ratio;
@@ -146,6 +147,7 @@ void main()
 
   vec2 position = point;
   vec3 normal = rotate3(vec3(point.y, -point.x, 0), -angle) * norml_geom_out;
+  //vec3 normal = norml_geom_out;
   bool shadow = false; // TODO: shadows
   float val = getShader(position, normal, shadow);
 
