@@ -12,7 +12,7 @@ const float PI2 = 2.0 * PI;
 const float BAND_WIDTH  = 0.003333;
 const float BAND_LENGTH = 0.148148 * 2.0;
 const float BAND_GAPX   = 0.004000;
-const float BAND_GAPY   = 0.600000;
+const float BAND_GAPY   = 0.400000;
 const float BAND_STEPX  = BAND_WIDTH + BAND_GAPX;
 const float BAND_STEPY  = BAND_LENGTH + BAND_GAPY;
 
@@ -31,11 +31,17 @@ float rand(vec3 pos)
 
 float smoothr(float p1, float p2, float d)
 {
+	// This is a smoothstep() implementation that works more like mix() in
+	// regards to the interpolation value.
+
     return mix(p1, p2, d * d * (3.0 - 2.0 * d));
 }
 
 float perlin(vec3 pos)
 {
+	// This is a 3D perlin noise function. The smoothr() function above is used
+	// to smooth the output between control point transitions.
+
     vec3 p1 = floor(pos);
     vec3 p2 = p1 + vec3(1.0);
     vec3 p3 = vec3(p1.x, p2.y, p1.z);
@@ -62,12 +68,18 @@ float perlin(vec3 pos)
 
 float perlinMixer(vec3 pos)
 {
+	// The noise function, perlin(), naturally has cyclic properties that we'd
+	// like to avoid. This mixes two perlin() noise values at a half-step off
+	// from eachother to level out the cyclic patterns. More noise values could
+	// be used to generate a smoother result but would also produce a result
+	// with less overall variation, so this is a balanced result.
+
     float val = mix(
         perlin(+pos),
         perlin(-pos + 0.5),
         0.5);
     
-    return smoothstep(0.30, 0.70, val);
+    return smoothstep(0.25, 0.75, val);
 }
 
 mat2 rotate2(float angle) {
@@ -91,7 +103,7 @@ mat3 rotate3(vec3 axis, float angle)
 	);
 }
 
-float getColumn(vec2 pt)
+float getLine(vec2 pt)
 {
    	const float BAND_STEPX_1 = BAND_GAPX / 2.0;
     const float BAND_STEPX_2 = BAND_STEPX - BAND_GAPX / 2.0;
@@ -101,7 +113,7 @@ float getColumn(vec2 pt)
     const float BAND_STEPY_4 = BAND_STEPY - BAND_GAPY / 2.0 + BAND_WIDTH / 2.0;
     const vec2 DOT1 = vec2(BAND_STEPX / 2.0, BAND_GAPY / 2.0);
     const vec2 DOT2 = vec2(BAND_STEPX / 2.0, BAND_STEPY - BAND_GAPY / 2.0);
-    
+
     vec2 f = mod(pt, vec2(BAND_STEPX, BAND_STEPY));
     
     if (f.x < BAND_STEPX_1 || f.x > BAND_STEPX_2)
@@ -119,56 +131,16 @@ float getColumn(vec2 pt)
         return 1.0 - distance(DOT2, f) / (BAND_WIDTH / 2.0);
 }
 
-float getRain(vec2 pt, float seed, float threshold)
+float getLines(vec2 pt, float seed, float threshold)
 {
-    float c = floor(pt.x / BAND_STEPX);
-    float t = rand(c, 0.5) / 2.0;
-    float v = getColumn(pt + vec2(0, rand(seed, c) * BAND_STEPY));
-    return v > (threshold + t) ? 1.0 : 0.0;
-}
+	float column = floor(pt.x / BAND_STEPX);
+	float x_variation = 0.0;
+    float y_variation = rand(seed, column) * BAND_STEPY;
+    float t_variation = rand(seed, column) / 2.0;
 
-float getRains(vec2 pt, float seed, float threshold)
-{
-    float rain0 = 1.0 - getRain(rotate2(-ANGLE_SUB_STEP) * pt, seed - 1.0, threshold);
-    float rain1 = 1.0 - getRain(pt, seed,       threshold);
-    float rain2 = 1.0 - getRain(rotate2(+ANGLE_SUB_STEP) * pt, seed + 1.0, threshold);
-    
-    return 1.0 - (rain0 * rain1 * rain2);
-}
+    float v = getLine(pt + vec2(x_variation, y_variation));
 
-float getThreshold(float angle, float rainAngle)
-{
-    if (angle < PI / 2.0 || angle > 3.0 * PI / 2.0)
-    {
-        angle = angle < PI ? angle : angle - 2.0 * PI;
-        rainAngle = rainAngle < PI ? rainAngle : rainAngle - 2.0 * PI;
-    }
-    
-    return 1.0 - (cos((angle - rainAngle) * PI * 1.8) / 2.0 + 0.5);
-}
-
-float getSketch(vec2 pt, float angle, bool shadow, float strength)
-{
-    angle = mod(angle, PI2);
-    float segment = floor(angle / PI2 * ANGLE_SEGMENTS) + 0.5;
-    float segment0 = mod(segment - 1.0, ANGLE_SEGMENTS);
-    float segment1 = mod(segment + 0.0, ANGLE_SEGMENTS);
-    float segment2 = mod(segment + 1.0, ANGLE_SEGMENTS);
-    
-    float angle0 = segment0 / ANGLE_SEGMENTS * PI2;
-    float angle1 = segment1 / ANGLE_SEGMENTS * PI2;
-    float angle2 = segment2 / ANGLE_SEGMENTS * PI2;
-    
-    if (shadow)
-        return 
-            (1.0 - getRains(rotate2(angle0) * pt, angle0, getThreshold(angle, angle0))) * 
-            (1.0 - getRains(rotate2(angle1) * pt, angle1, getThreshold(angle, angle1))) *
-            (1.0 - getRains(rotate2(angle2) * pt, angle2, getThreshold(angle, angle2)));
-    else
-        return 
-            (1.0 - getRain(rotate2(angle0) * pt, angle0, getThreshold(angle, angle0) + (1.0 - strength))) * 
-            (1.0 - getRain(rotate2(angle1) * pt, angle1, getThreshold(angle, angle1) + (1.0 - strength))) *
-            (1.0 - getRain(rotate2(angle2) * pt, angle2, getThreshold(angle, angle2) + (1.0 - strength)));
+    return v > (threshold + t_variation) ? 1.0 : 0.0;
 }
 
 float getAngle(vec3 normal)
@@ -218,10 +190,10 @@ float getAngle(vec3 normal)
 
 float getShader(vec3 position, vec3 normal, bool shadow)
 {
-    float strength = perlinMixer(position * 10.0);
+    float strength = perlinMixer(position * 3.0);
 	float angle = getAngle(normal);
     
-    return 1.0 - getRain(rotate2(angle) * position.xy, 0.0, strength);
+    return 1.0 - getLines(rotate2(angle) * position.xy, 0.0, strength);
 }
 
 float LinearizeDepth(float depth)
@@ -245,7 +217,6 @@ void main()
   float angle = length(point) * radians(40);
 
   vec3 position = point;
-  //vec3 normal = rotate3(vec3(point.y, -point.x, 0), -angle) * norml_geom_out;
   vec3 normal = norml_geom_out;
   bool shadow = false; // TODO: shadows
   float val = getShader(position, normal, shadow);
