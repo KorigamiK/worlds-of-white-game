@@ -12,15 +12,62 @@ const float PI2 = 2.0 * PI;
 const float BAND_WIDTH  = 0.003333;
 const float BAND_LENGTH = 0.148148 * 2.0;
 const float BAND_GAPX   = 0.004000;
-const float BAND_GAPY   = 0.600000 * 2.0;
+const float BAND_GAPY   = 0.600000;
 const float BAND_STEPX  = BAND_WIDTH + BAND_GAPX;
 const float BAND_STEPY  = BAND_LENGTH + BAND_GAPY;
 
 const float ANGLE_SEGMENTS = 16.0;
 const float ANGLE_SUB_STEP = 1.0 / ANGLE_SEGMENTS / 3.0 * PI2;
 
-float rand(float a, float b){
+float rand(float a, float b)
+{
     return fract(sin(dot(vec2(a, b), vec2(12.9898,78.233))) * 43758.5453);
+}
+
+float rand(vec3 pos)
+{
+    return fract(sin(dot(pos, vec3(12.9898,78.233,183.1415))) * 43758.5453);
+}
+
+float smoothr(float p1, float p2, float d)
+{
+    return mix(p1, p2, d * d * (3.0 - 2.0 * d));
+}
+
+float perlin(vec3 pos)
+{
+    vec3 p1 = floor(pos);
+    vec3 p2 = p1 + vec3(1.0);
+    vec3 p3 = vec3(p1.x, p2.y, p1.z);
+    vec3 p4 = vec3(p2.x, p1.y, p1.z);
+    vec3 p5 = vec3(p1.x, p1.y, p2.z);
+    vec3 p6 = vec3(p2.x, p1.y, p2.z);
+    vec3 p7 = vec3(p1.x, p2.y, p2.z);
+    vec3 p8 = vec3(p2.x, p2.y, p1.z);
+    vec3 dv = pos - p1;
+    
+    return
+        smoothr(
+            smoothr(
+                smoothr(rand(p1), rand(p5), dv.z), 
+                smoothr(rand(p3), rand(p7), dv.z), 
+                dv.y),
+            smoothr(
+                smoothr(rand(p4), rand(p6), dv.z), 
+                smoothr(rand(p8), rand(p2), dv.z), 
+                dv.y),
+            dv.x
+        );
+}
+
+float perlinMixer(vec3 pos)
+{
+    float val = mix(
+        perlin(+pos),
+        perlin(-pos + 0.5),
+        0.5);
+    
+    return smoothstep(0.30, 0.70, val);
 }
 
 mat2 rotate2(float angle) {
@@ -75,8 +122,9 @@ float getColumn(vec2 pt)
 float getRain(vec2 pt, float seed, float threshold)
 {
     float c = floor(pt.x / BAND_STEPX);
+    float t = rand(c, 0.5) / 2.0;
     float v = getColumn(pt + vec2(0, rand(seed, c) * BAND_STEPY));
-    return v > threshold ? 1.0 : 0.0;
+    return v > (threshold + t) ? 1.0 : 0.0;
 }
 
 float getRains(vec2 pt, float seed, float threshold)
@@ -123,14 +171,64 @@ float getSketch(vec2 pt, float angle, bool shadow, float strength)
             (1.0 - getRain(rotate2(angle2) * pt, angle2, getThreshold(angle, angle2) + (1.0 - strength)));
 }
 
-float getShader(vec2 position, vec3 normal, bool shadow)
+float getAngle(vec3 normal)
 {
-    float angle = atan(normal.y, normal.x);
-    float strength = normal.z > 0.90 ? 0.0 : 
-    				 normal.z < 0.75 ? 1.0 : 
-    								   1.0 - (normal.z - 0.75) / 0.15;
+      vec3 vertices[12];
+      vertices[0] = normalize(vec3(-0.26286500f, 0.0000000f, 0.42532500f));
+      vertices[1] = normalize(vec3(0.26286500f, 0.0000000f, 0.42532500f));
+      vertices[2] = normalize(vec3(-0.26286500f, 0.0000000f, -0.42532500f));
+      vertices[3] = normalize(vec3(0.26286500f, 0.0000000f, -0.42532500f));
+      vertices[4] = normalize(vec3(0.0000000f, 0.42532500f, 0.26286500f));
+      vertices[5] = normalize(vec3(0.0000000f, 0.42532500f, -0.26286500f));
+      vertices[6] = normalize(vec3(0.0000000f, -0.42532500f, 0.26286500f));
+      vertices[7] = normalize(vec3(0.0000000f, -0.42532500f, -0.26286500f));
+      vertices[8] = normalize(vec3(0.42532500f, 0.26286500f, 0.0000000f));
+      vertices[9] = normalize(vec3(-0.42532500f, 0.26286500f, 0.0000000f));
+      vertices[10] = normalize(vec3(0.42532500f, -0.26286500f, 0.0000000f));
+      vertices[11] = normalize(vec3(-0.42532500f, -0.26286500f, 0.0000000f));
+
+      float angles[12];
+      angles[0] = 2.56;
+      angles[1] = 5.11;
+      angles[2] = 0.33;
+      angles[3] = 3.87;
+      angles[4] = 6.03;
+      angles[5] = 2.18;
+      angles[6] = 4.62;
+      angles[7] = 5.96;
+      angles[8] = 1.72;
+      angles[9] = 0.97;
+      angles[10] = 2.12;
+      angles[11] = 0.00;
+
+      int closestIndex = -1;
+      float closestAngle = 100.0;
+      for (int i = 0; i < 12; ++i)
+      {
+            float angle = acos(dot(normal, vertices[i]));
+            if (angle < closestAngle)
+            {
+                  closestAngle = angle;
+                  closestIndex = i;
+            }
+      }
+
+      return angles[closestIndex];
+}
+
+float getShader(vec3 position, vec3 normal, bool shadow)
+{
+    float strength = perlinMixer(position * 10.0);
+	float angle = getAngle(normal);
     
-    return getSketch(position, angle, shadow, strength);
+    return 1.0 - getRain(rotate2(angle) * position.xy, 0.0, strength);
+}
+
+float LinearizeDepth(float depth)
+{
+    float zNear = 0.1;
+    float zFar  = 100.0;
+    return (2.0 * zNear) / (zFar + zNear - depth * (zFar - zNear));
 }
 
 void main()
@@ -139,15 +237,16 @@ void main()
   if ((1.0f - order_vert_out) > draw_percentage)
 	discard;
 
-  vec2 point = gl_FragCoord.xy + gl_SamplePosition; // TODO: manual aliasing, using gl_SamplePosition forces this fragment shader to be ran once per sample instead of once per pixel : https://forum.unity.com/threads/anti-aliasing-does-not-work-when-shapes-are-drawn-from-fragment-shader.264771/
+  vec3 point = gl_FragCoord.xyz + vec3(gl_SamplePosition, 0.0); // TODO: manual aliasing, using gl_SamplePosition forces this fragment shader to be ran once per sample instead of once per pixel : https://forum.unity.com/threads/anti-aliasing-does-not-work-when-shapes-are-drawn-from-fragment-shader.264771/
   point.x = 2.0f * point.x / 1280.0f - 1;
   point.y = 2.0f * point.y / 720.0f - 1;
   point.y = point.y / ratio;
+  point.z = LinearizeDepth(point.z);
   float angle = length(point) * radians(40);
 
-  vec2 position = point;
-  vec3 normal = rotate3(vec3(point.y, -point.x, 0), -angle) * norml_geom_out;
-  //vec3 normal = norml_geom_out;
+  vec3 position = point;
+  //vec3 normal = rotate3(vec3(point.y, -point.x, 0), -angle) * norml_geom_out;
+  vec3 normal = norml_geom_out;
   bool shadow = false; // TODO: shadows
   float val = getShader(position, normal, shadow);
 
