@@ -388,8 +388,9 @@ int main()
 
   int i = 0;
   float iterationsPerSecond = 144.0f;
-  int selected_perlin = 0;
   glm::vec3 view_reference;
+  glm::mat4 reference_projection;
+  glm::mat4 reference_view;
 
   // create the physics world
   auto collisionConfiguration = new btDefaultCollisionConfiguration(); // I don't
@@ -608,12 +609,25 @@ int main()
     glm::mat4 view = cam->getTransform();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 
+    if (!paused)
+    {
+      if (i % 144 == 0)
+      {
+        view_reference = cam->getPosition();
+        reference_projection = projection;
+        reference_view = view;
+      }
+      i++;
+    }
+
     { // render depth
       depthProgram.use();
       depthProgram.setProjection(projection);
       depthProgram.setView(view);
+      depthProgram.setReferenceProjection(reference_projection);
+      depthProgram.setReferenceView(reference_view);
       depthProgram.setRatio((float)SCR_WIDTH / (float)SCR_HEIGHT);
-      depthProgram.setFrame(i / 24);
+      depthProgram.setFrame(i / 144);
       depthProgram.setViewReference(view_reference);
 
       glBindFramebuffer(GL_FRAMEBUFFER, faceFramebuffer.id());
@@ -686,16 +700,6 @@ int main()
 
     glfwSwapBuffers(window);
     logError("any");
-
-    if (!paused)
-    {
-      i++;
-      if (i % 24 == 0)
-      {
-        selected_perlin = (selected_perlin + (rand() % 7) + 1) % 8;
-        view_reference = cam->getPosition();
-      }
-    }
   }
 
   glfwTerminate();

@@ -6,14 +6,16 @@ DepthProgram::DepthProgram(Shader vertexShader, Shader geometryShader, Shader fr
   if (_id == 0)
     return;
 
-  locationProjection     = glGetUniformLocation(_id, "projection");
-  locationView           = glGetUniformLocation(_id, "view");
-  locationViewReference  = glGetUniformLocation(_id, "viewReference");
-  locationRatio          = glGetUniformLocation(_id, "ratio");
-  locationFrame          = glGetUniformLocation(_id, "frame");
-  locationPositions      = glGetUniformLocation(_id, "positions");
-  locationDrawPercentage = glGetUniformLocation(_id, "draw_percentage");
-  locationModel          = glGetUniformLocation(_id, "model");
+  locationProjection          = glGetUniformLocation(_id, "projection");
+  locationView                = glGetUniformLocation(_id, "view");
+  locationReferenceProjection = glGetUniformLocation(_id, "reference_projection");
+  locationReferenceView       = glGetUniformLocation(_id, "reference_view");
+  locationViewReference       = glGetUniformLocation(_id, "viewReference");
+  locationRatio               = glGetUniformLocation(_id, "ratio");
+  locationFrame               = glGetUniformLocation(_id, "frame");
+  locationPositions           = glGetUniformLocation(_id, "positions");
+  locationDrawPercentage      = glGetUniformLocation(_id, "draw_percentage");
+  locationModel               = glGetUniformLocation(_id, "model");
 }
 
 void DepthProgram::setProjection(const glm::mat4& mat) const
@@ -24,6 +26,16 @@ void DepthProgram::setProjection(const glm::mat4& mat) const
 void DepthProgram::setView(const glm::mat4& mat) const
 {
   glUniformMatrix4fv(locationView, 1, GL_FALSE, &mat[0][0]);
+}
+
+void DepthProgram::setReferenceProjection(const glm::mat4& mat) const
+{
+  glUniformMatrix4fv(locationReferenceProjection, 1, GL_FALSE, &mat[0][0]);
+}
+
+void DepthProgram::setReferenceView(const glm::mat4& mat) const
+{
+  glUniformMatrix4fv(locationReferenceView, 1, GL_FALSE, &mat[0][0]);
 }
 
 void DepthProgram::setViewReference(const glm::vec3& vec) const

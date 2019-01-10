@@ -1,10 +1,17 @@
 #version 420 core
 
-in vec3 norml_geom_out;
-in float order_vert_out;
+in vec3  norml_geom_out;
+in float order_geom_out;
+in vec4  rfpos_geom_out;
 
+uniform float frame;
 uniform float ratio;
 uniform float draw_percentage;
+
+uniform mat4 view;
+uniform mat4 projection;
+uniform mat4 reference_view;
+uniform mat4 reference_projection;
 
 const float PI = 3.14159265358979;
 const float PI2 = 2.0 * PI;
@@ -66,7 +73,7 @@ float perlin(vec3 pos)
         );
 }
 
-float perlinMixer(vec3 pos)
+float perlinMixer(vec3 pos, float seed)
 {
 	// The noise function, perlin(), naturally has cyclic properties that we'd
 	// like to avoid. This mixes two perlin() noise values at a half-step off
@@ -75,8 +82,8 @@ float perlinMixer(vec3 pos)
 	// with less overall variation, so this is a balanced result.
 
     float val = mix(
-        perlin(+pos),
-        perlin(-pos + 0.5),
+        perlin(+pos + seed),
+        perlin(-pos + 0.5 - seed),
         0.5);
     
     return smoothstep(0.25, 0.75, val);
@@ -190,10 +197,10 @@ float getAngle(vec3 normal)
 
 float getShader(vec3 position, vec3 normal, bool shadow)
 {
-    float strength = perlinMixer(position * 3.0);
+    float strength = perlinMixer(position * 3.0, frame);
 	float angle = getAngle(normal);
     
-    return 1.0 - getLines(rotate2(angle) * position.xy, 0.0, strength);
+    return 1.0 - getLines(rotate2(angle) * position.xy, frame, strength);
 }
 
 float LinearizeDepth(float depth)
@@ -203,13 +210,63 @@ float LinearizeDepth(float depth)
     return (2.0 * zNear) / (zFar + zNear - depth * (zFar - zNear));
 }
 
+vec3 getReferencePoint()
+{
+	//// gets the gl_FragCoord in the reference space
+	////
+	////   see: https://stackoverflow.com/questions/38938498/how-do-i-convert-gl-fragcoord-to-a-world-space-point-in-a-fragment-shader
+	////
+	
+    const float zNear   = 0.1;
+    const float zFar    = 100.0;
+	const float vWidth  = 1280.0;
+	const float vHeight = 720.0;
+
+	//vec4 old_point = gl_FragCoord; // + vec3(gl_SamplePosition, 0.0); 
+	//vec4 old_ndc = vec4(
+	//	(2.0 * old_point.x / vWidth) - 1.0,
+	//	(2.0 * old_point.y / vHeight) - 1.0,
+	//	(2.0 * old_point.z - zNear - zFar) / (zFar - zNear),
+	//	1.0);
+
+	//vec4 old_clip = old_ndc / old_point.w;
+	//vec4 world = inverse(view) * inverse(projection) * old_clip;
+	//world = world / world.w;
+	//vec4 new_clip = reference_projection * reference_view * world;
+	//vec4 new_ndc = new_clip / new_clip.w;
+	//vec4 new_point = vec4(
+	//	(new_ndc.x + 1.0) * vWidth / 2.0,
+	//	(new_ndc.y + 1.0) * vHeight / 2.0,
+	//	(new_ndc.z * (zFar - zNear) + zFar + zNear) / 2.0,
+	//	1.0);
+
+	////return vec4(new_point.xyz, 1.0 / new_point.w);
+	//return new_point.xyz;
+
+	vec4 ref_point = rfpos_geom_out / rfpos_geom_out.w;
+
+	return vec3(
+		(ref_point.x + 1.0) * vWidth / 2.0,
+		(ref_point.y + 1.0) * vHeight / 2.0,
+		(ref_point.z * (zFar - zNear) + zFar + zNear) / 2.0);
+}
+
 void main()
 {
   // Throw away the fragment if less than the draw percentage
-  if ((1.0f - order_vert_out) > draw_percentage)
+  if ((1.0f - order_geom_out) > draw_percentage)
 	discard;
 
-  vec3 point = gl_FragCoord.xyz + vec3(gl_SamplePosition, 0.0); // TODO: manual aliasing, using gl_SamplePosition forces this fragment shader to be ran once per sample instead of once per pixel : https://forum.unity.com/threads/anti-aliasing-does-not-work-when-shapes-are-drawn-from-fragment-shader.264771/
+  // TODO: manual aliasing
+  // 
+  // using gl_SamplePosition forces this fragment shader to be ran once per
+  // sample instead of once per pixel.
+  // 
+  //   see: https://forum.unity.com/threads/anti-aliasing-does-not-work-when-shapes-are-drawn-from-fragment-shader.264771/
+  // 
+
+  //vec3 point = gl_FragCoord.xyz + vec3(gl_SamplePosition, 0.0); 
+  vec3 point = getReferencePoint();
   point.x = 2.0f * point.x / 1280.0f - 1;
   point.y = 2.0f * point.y / 720.0f - 1;
   point.y = point.y / ratio;

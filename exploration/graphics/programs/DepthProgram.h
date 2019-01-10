@@ -10,6 +10,8 @@ class DepthProgram : public Program
 private:
   GLint locationProjection;
   GLint locationView;
+  GLint locationReferenceProjection;
+  GLint locationReferenceView;
   GLint locationViewReference;
   GLint locationRatio;
   GLint locationFrame;
@@ -23,6 +25,8 @@ public:
 public:
   void setProjection(const glm::mat4 &mat) const;
   void setView(const glm::mat4 &mat) const;
+  void setReferenceProjection(const glm::mat4 &mat) const;
+  void setReferenceView(const glm::mat4 &mat) const;
   void setViewReference(const glm::vec3 &vec) const;
   void setRatio(float val) const;
   void setFrame(float val) const;
