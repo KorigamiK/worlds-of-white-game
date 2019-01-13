@@ -1,0 +1,19 @@
+Changelog (2019-01-10)
+
+
+Sketch-like Shader Testing
+
+  I've spent most of the week testing various methods of creating a sketch-like effect in a fragment shader. I've been testing a lot of shader code at shadertoy.com which has made testing a lot faster. Unfortunately, I've had mixed success so far.
+
+  What I struggle with is how its drawn on in-world objects with a moving camera. Trying to balance several desired properties (lines look straight, far away objects look similar to near objects, no fast-switching, randomized) has proven difficult. I've created system that keeps the sketch texture relative to a fixed camera position for a few frames, but it has a few problems: artifacts appear when turning around between poses, moving a great distance between poses makes lines seem much larger, switching textures (even just once a second) would be too distracting. 
+
+  However, I've gradually found an line-drawing method that I like. I have a method of 3D noise that suits my needs well. I'm slowly getting more familiar with how to structure and organize my shader code, as well as learning some of the tricks to get the effect I want. 
+
+  Learned about fragment shader anti-aliasing too, so thats cool.
+
+
+Future Work
+
+- Continue testing shading methods
+- Better blob character
+- Level features + gameplay mechanics
