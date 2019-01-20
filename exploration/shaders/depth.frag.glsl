@@ -2,11 +2,14 @@
 
 in vec3  norml_geom_out;
 in float order_geom_out;
-in vec4  rfpos_geom_out;
+in vec4  world_geom_out;
+in vec3  world_normal_geom_out;
 
 uniform float frame;
 uniform float ratio;
 uniform float draw_percentage;
+
+uniform vec3 base_camera_direction;
 
 uniform mat4 view;
 uniform mat4 projection;
@@ -223,21 +226,46 @@ void main()
   point.x = 2.0f * point.x / 1280.0f - 1;
   point.y = 2.0f * point.y / 720.0f - 1;
   point.y = point.y / ratio;
-  float angle = length(point.xy) * radians(40);
+  //float angle = length(point.xy) * radians(40);
+  vec2 camera_angle = point.xy * radians(40);
 
-  vec3 normal = rotate3(vec3(point.y, -point.x, 0), -angle) * norml_geom_out;
+  // TODO: pass this direction in through a uniform variable
+  vec3 line_proj_dir = normalize(vec3(1.0f, 2.0f, 3.0f));
+  vec3 line_draw_dir = normalize(vec3(line_proj_dir.y, -line_proj_dir.x, 0.0f));
+  vec3 line_tang_dir = cross(line_proj_dir, line_draw_dir);
+  
+  // gets the camera direction and 
+  vec3 camera_frwd_dir = base_camera_direction;
+  vec3 camera_upwd_dir = vec3(0, 0, 1);
+  vec3 camera_side_dir = cross(camera_frwd_dir, camera_upwd_dir);
+  camera_frwd_dir = rotate3(camera_upwd_dir, camera_angle.x) * rotate3(camera_side_dir, -camera_angle.y) * camera_frwd_dir;
 
-  // TODO: inverted normals don't work
-  // TODO: adjust for texture angle on face
-  // TODO: adjust for camera angle relative to the texture angle
+  float zoom_world_normal = 0.0;
+  {
+    // get zoom difference based on surface-line-dir
+
+	float a = acos(dot(world_normal_geom_out, line_tang_dir));
+	zoom_world_normal = -log2(clamp(sin(a), 0.125, 1.0));
+  }
+
+  float zoom_camera_normal = 0.0;
+  {
+	// get zoom difference based on camera-surface angle
+
+	// TODO: this doesn't seem to work quite right, doesn't seem to work for
+	// shallow angles slightly off from surface_line_tang_dir
+
+	vec3 surface_line_tang_dir = normalize(line_tang_dir - dot(world_normal_geom_out, line_tang_dir) * world_normal_geom_out);
+	float a = acos(dot(camera_frwd_dir, surface_line_tang_dir));
+	zoom_camera_normal = log2(clamp(sin(a), 0.015625, 1.0));
+  }
 
   float zoomd = 10.0 - log2(point.z / gl_FragCoord.w * 10.0); // depth zoom
-  float zoomn = log2(clamp(normal.z, 0.125, 1.0)); // normal zoom
-  float zoom = zoomd + zoomn;
+  float zoom = zoomd + zoom_world_normal + zoom_camera_normal;
 
-  float val = getBanding(rfpos_geom_out.yxz, zoom); // TODO: swap x and y elsewhere
-  //float val = (1.0 - log2(point.z / gl_FragCoord.w * 10.0) / 10.0);
-  //float val = normal.z;
+  vec4 rfpos = reference_projection * reference_view * world_geom_out;
+
+  float val = getBanding(rfpos.yxz, zoom); // TODO: swap x and y elsewhere
 
   gl_FragColor = vec4(val, val, val, 1.0);
 }

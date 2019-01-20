@@ -629,6 +629,7 @@ int main()
       depthProgram.setRatio((float)SCR_WIDTH / (float)SCR_HEIGHT);
       depthProgram.setFrame(i / 144);
       depthProgram.setViewReference(view_reference);
+      depthProgram.setVec3("base_camera_direction", cam->getDirection());
 
       glBindFramebuffer(GL_FRAMEBUFFER, faceFramebuffer.id());
       glEnable(GL_DEPTH_TEST);
