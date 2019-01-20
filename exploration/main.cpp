@@ -390,7 +390,7 @@ int main()
   float iterationsPerSecond = 144.0f;
   glm::vec3 view_reference;
   glm::mat4 reference_projection;
-  glm::mat4 reference_view;
+  glm::mat4 reference_view = glm::lookAt(glm::vec3(1.0f, 2.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
   // create the physics world
   auto collisionConfiguration = new btDefaultCollisionConfiguration(); // I don't
@@ -614,8 +614,8 @@ int main()
       if (i % 144 == 0)
       {
         view_reference = cam->getPosition();
-        reference_projection = projection;
-        reference_view = view;
+        //reference_projection = projection;
+        //reference_view = view;
       }
       i++;
     }

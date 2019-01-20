@@ -50,8 +50,8 @@ void main()
 	// SHADE STRENGTH
 	if (face.x + face.y + face.z != 3.0)
 	{
-		float d = face.z * 2 - 1;
-		d = (1.0f - (1.0f - d) / 4.0f);
+		float d = face.z; // * 2 - 1;
+		//d = (1.0f - (1.0f - d) / 4.0f);
 		face.x = d;
 		face.y = d;
 		face.z = d;
