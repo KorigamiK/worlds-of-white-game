@@ -30,6 +30,11 @@ glm::vec3 FreeCamera::getPosition() const
   return _location;
 }
 
+glm::vec3 FreeCamera::getDirection() const
+{
+  return glm::normalize(_direction);
+}
+
 float FreeCamera::getAngle() const
 {
   return 0.0f;

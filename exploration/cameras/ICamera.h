@@ -11,6 +11,7 @@ public:
   virtual void update(GameState& state, float time) = 0;
   virtual glm::mat4 getTransform() const = 0;
   virtual glm::vec3 getPosition() const = 0;
+  virtual glm::vec3 getDirection() const = 0;
   virtual float getAngle() const = 0;
 };
 

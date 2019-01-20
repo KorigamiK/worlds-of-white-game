@@ -17,6 +17,7 @@ public:
   void update(GameState& state, float time) override;
   glm::mat4 getTransform() const override;
   glm::vec3 getPosition() const override;
+  glm::vec3 getDirection() const override;
   float getAngle() const override;
 };
 

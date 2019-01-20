@@ -65,6 +65,11 @@ glm::vec3 FollowCamera::getPosition() const
   return currentPosition_;
 }
 
+glm::vec3 FollowCamera::getDirection() const
+{
+  return glm::normalize(((*entity_)->position + CAMERA_LOOK_OFFSET) - currentPosition_);
+}
+
 float FollowCamera::getAngle() const
 {
   return desiredXAngle_;
