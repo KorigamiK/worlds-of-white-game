@@ -15,5 +15,3 @@ Sketch-like Shader Testing
 Future Work
 
 - Continue testing shading methods
-- Better blob character
-- Level features + gameplay mechanics
