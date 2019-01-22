@@ -1,0 +1,13 @@
+Changelog (2019-01-17)
+
+
+Sketch-like Shader Testing
+
+  Still working on a shader for a sketch-like texture effect. I think I've got a good method of having multiple levels of detail for the lines on shadertoy. But, a difficult part of it is also getting it applied to surfaces in-game. So I've been a bit demotivated lately because of the difficulty of it and making slow progress.
+
+
+Future Work
+
+- Finish shading method
+- Better blob character
+- Level features + gameplay mechanics
