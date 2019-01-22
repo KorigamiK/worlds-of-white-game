@@ -8,6 +8,8 @@ in vec3  world_normal_geom_out;
 uniform float frame;
 uniform float ratio;
 uniform float draw_percentage;
+uniform float viewport_width;
+uniform float viewport_height;
 
 uniform vec3 base_camera_direction;
 
@@ -21,9 +23,12 @@ const float PI2 = 2.0 * PI;
 
 const float LINE_LENGTH_RATIO = 20.0; // line is N x the period long
 const float LINE_GAP_RATIO    = 0.50; // gap is N x the length
-const float LINE_WIDTH_RATIO  = 0.20; // the width relative to the period
-const float LINE_SCALE        = 2.0; // scaling factor
-const float ZOOM_SCALE        = 120.0; // period of strength noise vs period of lines
+const float LINE_WIDTH_RATIO  = 0.15; // the width relative to the period
+const float LINE_WIDTH_RATIO_MIN= 0.015;
+const float LINE_SCALE        = 2.0;  // scaling factor
+const float ZOOM_SCALE        = 8.0; // period of strength noise vs period of lines
+const float WOBBLE_LENGTH_RATIO = 0.25; // ratio of wobble length to line length
+const float WOBBLE_WIDTH_RATIO  = 0.125; // ratio of wobble width to line period
 
 float rand(vec3 pos)
 {
@@ -68,7 +73,7 @@ float smoothr(float p1, float p2, float d)
 float perlin(vec3 pos, float scale)
 {
     vec3 p1 = floor(pos / scale) * scale;
-    vec3 p2 = p1 + vec3(scale);
+    vec3 p2 = floor(p1 / scale + 1.0001) * scale;
     vec3 p3 = vec3(p1.x, p2.y, p1.z);
     vec3 p4 = vec3(p2.x, p1.y, p1.z);
     vec3 p5 = vec3(p1.x, p1.y, p2.z);
@@ -103,9 +108,18 @@ float normalizeZoom(float zoom)
     return clamp(-pow(zoom - 10.0, 2.0) / 16.0 + 6.0, 0.0, 8.0);
 }
 
+float perlinMixer2(vec3 pos, float zoom)
+{
+    return smoothstep(0.30, 0.70, 
+               mix(
+        	       perlin(+pos, zoom * ZOOM_SCALE),
+        	       perlin(-pos + zoom * 0.5 * ZOOM_SCALE, zoom * ZOOM_SCALE),
+        	       0.5));
+}
+
 float perlinMixer(vec3 pos, float zoom)
 {
-    zoom = normalizeZoom(zoom);
+    //zoom = normalizeZoom(zoom);
     
     float zoom1 = floor(-zoom);
     float zoom2 = zoom1 + 1.0;
@@ -156,49 +170,55 @@ float drawLine(vec2 pos, vec4 box)
     return abs(pos.x) / halfw;
 }
 
-float getVal(vec2 pos, float period, float size)
+float getVal(vec3 pos, float period, float size)
 {
     if (size > period / 2.0)
         return 1.0;
     
     float s = (floor(pos.x / period) + 0.5) * period;
     float t = randInRange(s, 0.0, 0.33); // randomizes the line thickness
-    float len = period * LINE_LENGTH_RATIO * randInRange(s, 0.8, 1.25); // randomizes the line line length
+    float len = period * LINE_LENGTH_RATIO * randInRange(s, 0.667, 1.500); // randomizes the line line length
     pos.y += randInRange(s, -len, len); // randomizes the line y offset
+    pos.x += sin(pos.y / len / WOBBLE_LENGTH_RATIO) * period * WOBBLE_WIDTH_RATIO;
     size *= randInRange(s, 0.66, 1.50); // randomizes the time the line pops in
     
     vec2 b = vec2(period, len);
-    vec2 p = mod(pos, b);
-    vec2 f = (floor(pos / b) + 0.5) * b;
+    vec2 p = mod(pos.xy, b);
+    vec2 f = (floor(pos.xy / b) + 0.5) * b;
     vec2 o = vec2(randInRange(f.y, -0.025, +0.025) * b.x, randInRange(f.x, -0.1, +0.1) * b.y);
     
     float width  = size;
     float height = len * (1.0 - LINE_GAP_RATIO);
     float ratio  = size / period;
     float val    = drawLine(p, vec4(b / 2.0 + o, width, height));
-    float scale  = (ratio > LINE_WIDTH_RATIO) ? (ratio / LINE_WIDTH_RATIO - 1.0) * 2.0 : (0.0);
+    float scale  = (ratio > LINE_WIDTH_RATIO) ? (ratio / LINE_WIDTH_RATIO - 1.0) * 2.0 
+    			 : (ratio < LINE_WIDTH_RATIO_MIN) ? (1.0 - (ratio - LINE_WIDTH_RATIO_MIN / 2.0) / (LINE_WIDTH_RATIO_MIN / 2.0))
+                 : (0.0);
     
-    return clamp(val + scale + t, 0.0, 1.0);
+	float ret = clamp(val + scale + t, 0.0, 1.0);
+    
+    // strength determines how much of the lines to draw at this point
+    float strength = perlinMixer2(pos, period);
+    
+	// gives pseudo-aliased edges
+	// TODO: make this dependent on pixel size
+	return clamp(1.0 - (strength - ret) * 2.0, 0.0, 1.0);
 }
 
 float getBanding(vec3 pos, float zoom)
 {
     zoom = clamp(zoom, 0.0, 10.0);
 	pos = pos * LINE_SCALE;
-
+    
     // scale determines the width of the lines
     float scale = 1.0 / pow(2.0, zoom);
-    
-    // strength determines how much of the lines to draw at this point
-    //float strength = perlinMixer(pos, zoom);
-	float strength = 1.0;
     
     // need about 10 to get the scaling desired for 0.1 (near) to 100.0 (far) scaling
     float val = 1.0;
     for (int i = 0; i < 10; ++i)
-        val *= getVal(pos.xy, 32.0 / pow(2.0, float(i)), scale);
+        val *= getVal(pos, 8.0 / pow(2.0, float(i)), scale);
     
-    return (val < strength) ? 0.0 : 1.0;
+    return val;
 }
 
 float LinearizeDepth(float depth)
@@ -223,11 +243,13 @@ void main()
   // 
 
   vec3 point = gl_FragCoord.xyz; // + vec3(gl_SamplePosition, 0.0);
-  point.x = 2.0f * point.x / 1280.0f - 1;
-  point.y = 2.0f * point.y / 720.0f - 1;
+  point.x = 2.0f * point.x / viewport_width - 1.0;
+  point.y = 2.0f * point.y / viewport_height - 1.0;
   point.y = point.y / ratio;
-  //float angle = length(point.xy) * radians(40);
+
   vec2 camera_angle = point.xy * radians(40);
+
+  vec3 local_surf_normal = rotate3(vec3(point.y, -point.x, 0), -length(camera_angle)) * norml_geom_out;
 
   // TODO: pass this direction in through a uniform variable
   vec3 line_proj_dir = normalize(vec3(1.0f, 2.0f, 3.0f));
