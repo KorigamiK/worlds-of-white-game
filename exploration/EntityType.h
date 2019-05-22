@@ -25,7 +25,7 @@ private:
 public:
   EntityType(std::string filename)
     : filename{ filename }
-    , model{ nullptr }
+    , model{ new TModel() }
   { }
 
 public:
@@ -38,7 +38,7 @@ public:
     std::string type;
     file >> type;
 
-    model = (TModel*)TModel::read(file);
+    model->read(file);
   }
 
   void load() override

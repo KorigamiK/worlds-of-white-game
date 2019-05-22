@@ -95,12 +95,10 @@ Entity* Model::spawn(const EntitySpawnInfo& info)
   return new Entity(this, info);
 }
 
-Model* Model::read(std::ifstream& file)
+void Model::read(std::ifstream& file)
 {
-  auto model = new Model();
-
   // get rotations
-  model->transform = glm::scale(glm::mat4(), { 1.0f, 1.0f, 1.0f });
+  transform = glm::scale(glm::mat4(), { 1.0f, 1.0f, 1.0f });
 
   // read version
   int version;
@@ -108,12 +106,10 @@ Model* Model::read(std::ifstream& file)
 
   switch (version)
   {
-  case 1: readVersion1(*model, file); break;
-  case 2: readVersion2(*model, file); break;
-  case 3: readVersion3(*model, file); break;
+  case 1: readVersion1(*this, file); break;
+  case 2: readVersion2(*this, file); break;
+  case 3: readVersion3(*this, file); break;
   }
-
-  return model;
 }
 
 void Model::readVersion1(Model& model, std::ifstream& file)

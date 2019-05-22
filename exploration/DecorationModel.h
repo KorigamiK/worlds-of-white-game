@@ -22,12 +22,10 @@ public:
     return new DecorationEntity(this, info);
   }
 
-  static Model* read(std::ifstream& file)
+  void read(std::ifstream& file)
   {
-    auto model = new DecorationModel();
-
     // get rotations
-    model->transform = glm::scale(glm::mat4(), { 1.0f, 1.0f, 1.0f });
+    transform = glm::scale(glm::mat4(), { 1.0f, 1.0f, 1.0f });
 
     // read version
     int version;
@@ -35,28 +33,26 @@ public:
 
     switch (version)
     {
-    case 1: 
-      Model::readVersion1(*model, file);
+    case 1:
+      Model::readVersion1(*this, file);
       break;
 
-    case 2: 
-      Model::readVersion2(*model, file);
+    case 2:
+      Model::readVersion2(*this, file);
       break;
 
     case 3:
-      file >> model->farHideDistance  >> model->farDrawDistance  >> model->farDrawRate;
-      file >> model->nearHideDistance >> model->nearDrawDistance >> model->nearDrawRate;
-      Model::readVersion2(*model, file);
+      file >> farHideDistance >> farDrawDistance >> farDrawRate;
+      file >> nearHideDistance >> nearDrawDistance >> nearDrawRate;
+      Model::readVersion2(*this, file);
       break;
 
     case 4:
-      file >> model->farHideDistance >> model->farDrawDistance >> model->farDrawRate;
-      file >> model->nearHideDistance >> model->nearDrawDistance >> model->nearDrawRate;
-      Model::readVersion3(*model, file);
+      file >> farHideDistance >> farDrawDistance >> farDrawRate;
+      file >> nearHideDistance >> nearDrawDistance >> nearDrawRate;
+      Model::readVersion3(*this, file);
       break;
     }
-
-    return model;
   }
 };
 

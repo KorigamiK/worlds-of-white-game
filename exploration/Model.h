@@ -30,6 +30,7 @@ public:
   glm::vec3 boundingB = glm::vec3(1, 1, 1);
 
 public:
+  void read(std::ifstream& file);
   void load();
 
   glm::mat4 makeEntityTransform(glm::vec3 position, glm::vec3 rotation, float scale);
@@ -40,7 +41,6 @@ public:
   virtual Entity* spawn(const EntitySpawnInfo& info);
 
 public:
-  static Model* read(std::ifstream& file);
   static void readVersion1(Model& model, std::ifstream& file);
   static void readVersion2(Model& model, std::ifstream& file);
   static void readVersion3(Model& model, std::ifstream& file);
