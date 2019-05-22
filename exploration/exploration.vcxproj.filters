@@ -33,6 +33,7 @@
     <ClCompile Include="graphics\programs\DebugProgram.cpp" />
     <ClCompile Include="graphics\programs\LineProgram.cpp" />
     <ClCompile Include="entities\TerrainEntity.cpp" />
+    <ClCompile Include="cameras\IdleCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="utilities">
@@ -86,5 +87,6 @@
     <ClInclude Include="graphics\programs\DebugProgram.h" />
     <ClInclude Include="graphics\programs\LineProgram.h" />
     <ClInclude Include="entities\TerrainEntity.h" />
+    <ClInclude Include="cameras\IdleCamera.h" />
   </ItemGroup>
 </Project>

@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="cameras\FollowCamera.cpp" />
     <ClCompile Include="cameras\FreeCamera.cpp" />
+    <ClCompile Include="cameras\IdleCamera.cpp" />
     <ClCompile Include="cameras\TrackCamera.cpp" />
     <ClCompile Include="entities\SmashEffectEntity.cpp" />
     <ClCompile Include="entities\TerrainEntity.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="cameras\FollowCamera.h" />
     <ClInclude Include="cameras\FreeCamera.h" />
     <ClInclude Include="cameras\ICamera.h" />
+    <ClInclude Include="cameras\IdleCamera.h" />
     <ClInclude Include="cameras\TrackCamera.h" />
     <ClInclude Include="entities\TerrainEntity.h" />
     <ClInclude Include="EntityType.h" />

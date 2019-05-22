@@ -43,6 +43,7 @@
 #include "cameras/FollowCamera.h"
 #include "cameras/TrackCamera.h"
 #include "cameras/FreeCamera.h"
+#include "cameras/IdleCamera.h"
 #include "entities/Entity.h"
 #include "entities/PlayerEntity.h"
 #include "entities/SpiritEntity.h"
@@ -436,7 +437,9 @@ int main()
     return -1;
 
   // load physics objects
+  bool physicsEnabled = true;
   TerrainEntity* terrain = nullptr;
+  btBvhTriangleMeshShape* terrainShape = nullptr;
   for (auto entity : entities)
   {
     auto physicsEntity = dynamic_cast<PhysicsEntity*>(entity);
@@ -448,8 +451,9 @@ int main()
       terrain = terrainEntity;
   }
   if (terrain == nullptr)
-    return -1;
-  auto terrainShape = (btBvhTriangleMeshShape*)terrain->getBody()->getCollisionShape();
+    physicsEnabled = false;
+  else
+    terrainShape = (btBvhTriangleMeshShape*)terrain->getBody()->getCollisionShape();
 
   // load camera
   int entityIndex = 0;
@@ -457,7 +461,8 @@ int main()
   FreeCamera* freeCam = new FreeCamera();
   TrackCamera* trackCam = new TrackCamera(&player);
   FollowCamera* followCam = new FollowCamera(&player);
-  ICamera* cam = followCam;
+  IdleCamera* idleCam = new IdleCamera(&player);
+  ICamera* cam = idleCam;
 
   auto printJoystickInfo = [&](int joystickId)
   {
@@ -581,13 +586,16 @@ int main()
     if (!paused)
     {
       // physics
-      for (auto entity : entities)
+      if (physicsEnabled)
       {
-        auto physicsEntity = dynamic_cast<PhysicsEntity*>(entity);
-        if (physicsEntity)
-          physicsEntity->resetContactPoints();
+        for (auto entity : entities)
+        {
+          auto physicsEntity = dynamic_cast<PhysicsEntity*>(entity);
+          if (physicsEntity)
+            physicsEntity->resetContactPoints();
+        }
+        dynamicsWorld->stepSimulation(1.0f / 144.0f, 2, 1.0f / 120.0f);
       }
-      dynamicsWorld->stepSimulation(1.0f / 144.0f, 2, 1.0f / 120.0f);
 
       // entities
       for (auto& entity : entities)
