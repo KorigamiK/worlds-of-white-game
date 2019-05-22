@@ -354,8 +354,8 @@ int main()
   // read in levels
   //auto level = Level::read("levels/testing_level.txt");
   //auto level = Level::read("levels/floating_level.txt");
-  //auto level = Level::read("levels/temp_level.txt");
-  auto level = Level::read("levels/level_1_level.txt");
+  auto level = Level::read("levels/temp_level.txt");
+  //auto level = Level::read("levels/level_1_level.txt");
 
   // read in entityTypes
   std::map<std::string, IEntityType*> entityTypes;
@@ -370,13 +370,13 @@ int main()
   entityTypes["testbox"]        = new EntityType<TestBoxEntity, Model>{ "models/testbox_model.txt" };
   entityTypes["floatingisland"] = new EntityType<TerrainEntity, Model>{ "models/floatingisland_model.txt" };
   entityTypes["level_1"]        = new EntityType<TerrainEntity, Model>{ "models/level_1_model.txt" };
-  //entityTypes["temp"]           = new EntityType<Entity, Model>{ "models/temp_model.txt" };
+  entityTypes["temp"]           = new EntityType<Entity, Model>{ "models/temp_model.txt" };
   for (auto& [name, type] : entityTypes)
     type->read();
 
-  level.entities.push_back({ "testbox", { 0, 0, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
-  level.entities.push_back({ "testbox", { 4, 1, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
-  level.entities.push_back({ "testbox", {-2, 3, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
+  //level.entities.push_back({ "testbox", { 0, 0, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
+  //level.entities.push_back({ "testbox", { 4, 1, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
+  //level.entities.push_back({ "testbox", {-2, 3, 1 }, { 0, 0, 0 }, { 1, 1, 1 } });
 
   auto entities = std::vector<Entity*>();
   entities.reserve(100);
@@ -530,12 +530,22 @@ int main()
   auto currFrameTime = std::chrono::high_resolution_clock::now();
 
   auto debugViewEnabled = false;
+  
+  auto fileCheckInterval = std::chrono::seconds(2);
+  auto lastFileCheckTime = std::chrono::high_resolution_clock::now();
 
   while (!glfwWindowShouldClose(window))
   {
     float time = i / 144.0f;
     lastFrameTime = currFrameTime;
     currFrameTime = std::chrono::high_resolution_clock::now();
+
+    if (lastFileCheckTime + fileCheckInterval < currFrameTime)
+    {
+      for (auto&[name, type] : entityTypes)
+        type->reload();
+      lastFileCheckTime = currFrameTime;
+    }
 
     // input
     inputManager.update();

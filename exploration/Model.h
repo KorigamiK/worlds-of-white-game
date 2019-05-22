@@ -32,6 +32,7 @@ public:
 public:
   void read(std::ifstream& file);
   void load();
+  void unload();
 
   glm::mat4 makeEntityTransform(glm::vec3 position, glm::vec3 rotation, float scale);
 

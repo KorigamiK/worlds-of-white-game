@@ -39,6 +39,14 @@ void Model::load()
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void Model::unload()
+{
+  glDeleteBuffers(1, &lineIndexesID);
+  glDeleteBuffers(1, &faceIndexesID);
+  glDeleteBuffers(1, &vertexDataVBO);
+  glDeleteVertexArrays(1, &vertexDataVAO);
+}
+
 glm::mat4 Model::makeEntityTransform(glm::vec3 position, glm::vec3 rotation, float scale)
 {
   // apparently this way is very slow
