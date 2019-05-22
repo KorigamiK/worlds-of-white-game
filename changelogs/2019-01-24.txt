@@ -1,0 +1,11 @@
+Changelog (2019-01-24)
+
+
+Sketch-like Shader
+
+  I've finally got my sketch shader working how I'd like. Detail pops in and out smoothly, it has enough variation and character to still look realistic, and it doesn't dramatically change at any point so that it isn't a distraction. It also properly adjusts based on the surface direction and camera angle to keep things proportional. I of course still have some tweaking to do as development continues, but I'm very happy to have the hard part done. 
+
+
+Future Work
+
+- 
