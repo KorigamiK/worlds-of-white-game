@@ -1,0 +1,7 @@
+Changelog (2019-05-23)
+
+
+Automatic file reloading
+
+  I want to do more modeling, but some of the design work will depend on how it looks in-engine. So I've added logic such that file changes can trigger models to reload from file. I also added a slightly different camera that lets the controller move it around, but when left idle will slowly rotate around; good for showing off stuff.
+
