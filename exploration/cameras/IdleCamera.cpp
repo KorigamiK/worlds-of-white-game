@@ -6,10 +6,11 @@
 
 const auto CAMERA_DEADZONE = 0.12f;
 const auto CAMERA_ROTATION_RATE = 0.05f;
+const auto CAMERA_ZOOM_RATE = 0.05f;
 const auto CAMERA_DISTANCE = 7.0f;
 const auto CAMERA_DRIFT_MAX = 0.5f;
 const auto CAMERA_DRIFT_CORRECTION_RATE = 0.1f;
-const auto CAMERA_LOOK_OFFSET = glm::vec3(0, 0, 1);
+const auto CAMERA_LOOK_OFFSET = glm::vec3(0, 0, 0);
 const auto CAMERA_HEIGHT_ANGLE = 0.5f;
 const auto CAMERA_IDLE_TIME = std::chrono::seconds(3);
 const auto CAMERA_IDLE_RATE = 0.001f;
@@ -38,12 +39,12 @@ void IdleCamera::update(GameState& state, float time)
   { // keyboard
     if (state.input->isKeyHeld(InputManager::KEY_UP))
     {
-      desiredDistance_ -= CAMERA_ROTATION_RATE;
+      desiredDistance_ *= (1.0f - CAMERA_ROTATION_RATE);
       lastInputTime = now;
     }
     if (state.input->isKeyHeld(InputManager::KEY_DOWN))
     {
-      desiredDistance_ += CAMERA_ROTATION_RATE;
+      desiredDistance_ *= (1.0f + CAMERA_ROTATION_RATE);
       lastInputTime = now;
     }
     if (state.input->isKeyHeld(InputManager::KEY_RIGHT))
@@ -70,6 +71,17 @@ void IdleCamera::update(GameState& state, float time)
     if (std::abs(cameraYAxis) >= CAMERA_DEADZONE)
     {
       desiredYAngle_ -= cameraYAxis * CAMERA_ROTATION_RATE;
+      lastInputTime = now;
+    }
+
+    if (state.input->isButtonHeld(4))
+    {
+      desiredDistance_ *= (1.0f + CAMERA_ROTATION_RATE);
+      lastInputTime = now;
+    }
+    if (state.input->isButtonHeld(5))
+    {
+      desiredDistance_ *= (1.0f - CAMERA_ROTATION_RATE);
       lastInputTime = now;
     }
   }
