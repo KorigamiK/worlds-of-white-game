@@ -87,5 +87,5 @@ void main()
 	gl_Position = projection * view * pos;
 	order_vert_out = order;
 	randm_vert_out = rand();
-	world_vert_out = pos;
+	world_vert_out = vec4(aPos, 1.0);
 }
