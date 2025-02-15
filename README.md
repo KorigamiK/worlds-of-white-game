@@ -8,7 +8,7 @@ prevalent rendition was to be a simple puzzle platformer with a hand-drawn-like
 rendering technique. The below video demonstrates what it most recently looked
 like:
 
-https://github.com/kmdreko/worlds-of-white-game/raw/refs/heads/master/demo/demo.mp4
+https://github.com/user-attachments/assets/c4684443-827e-41b3-9928-03b3a5a0cc09
 
 There is more history of the development way back in my Twitter posts:
 [@kmdreko_](https://x.com/kmdreko_)
