@@ -354,8 +354,8 @@ int main()
   // read in levels
   //auto level = Level::read("levels/testing_level.txt");
   //auto level = Level::read("levels/floating_level.txt");
-  auto level = Level::read("levels/temp_level.txt");
-  //auto level = Level::read("levels/level_1_level.txt");
+  //auto level = Level::read("levels/temp_level.txt");
+  auto level = Level::read("levels/level_1_level.txt");
 
   // read in entityTypes
   std::map<std::string, IEntityType*> entityTypes;
@@ -370,7 +370,7 @@ int main()
   entityTypes["testbox"]        = new EntityType<TestBoxEntity, Model>{ "models/testbox_model.txt" };
   entityTypes["floatingisland"] = new EntityType<TerrainEntity, Model>{ "models/floatingisland_model.txt" };
   entityTypes["level_1"]        = new EntityType<TerrainEntity, Model>{ "models/level_1_model.txt" };
-  entityTypes["temp"]           = new EntityType<Entity, Model>{ "models/temp_model.txt" };
+  entityTypes["temp"]           = new EntityType<Entity, DecorationModel>{ "models/temp_model.txt" };
   for (auto& [name, type] : entityTypes)
     type->read();
 
@@ -390,8 +390,11 @@ int main()
   int i = 0;
   float iterationsPerSecond = 144.0f;
   glm::vec3 view_reference;
-  glm::mat4 reference_projection;
+  glm::mat4 reference_projection; // always identity
   glm::mat4 reference_view = glm::lookAt(glm::vec3(1.0f, 2.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  unsigned int zcode = 0;
+  unsigned int xcode = 0;
+  unsigned int ycode = 0;
 
   // create the physics world
   auto collisionConfiguration = new btDefaultCollisionConfiguration(); // I don't
@@ -552,8 +555,8 @@ int main()
     glfwPollEvents();
     processInput(window);
 
-    //if (i % 15 == 0)
-    //  printJoystickInfo(selectedJoystickId);
+    if (i % 15 == 0)
+      printJoystickInfo(selectedJoystickId);
 
     auto fps = 1000000000.0f / (currFrameTime - lastFrameTime).count();
     totFPS += fps;
@@ -578,6 +581,8 @@ int main()
       cam = trackCam;
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
       cam = freeCam;
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+      cam = idleCam;
     if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
     {
       entityIndex = (entityIndex != entities.size() - 1) ? entityIndex + 1 : 0;
@@ -591,6 +596,18 @@ int main()
     if (glfwGetKey(window, GLFW_KEY_GRAVE_ACCENT) == GLFW_PRESS)
     {
       debugViewEnabled = !debugViewEnabled;
+    }
+    if (inputManager.isKeyTriggered(GLFW_KEY_8))
+    {
+      zcode += 1;
+    }
+    if (inputManager.isKeyTriggered(GLFW_KEY_9))
+    {
+      ycode += 1;
+    }
+    if (inputManager.isKeyTriggered(GLFW_KEY_0))
+    {
+      xcode += 1;
     }
 
     if (!paused)
@@ -650,6 +667,9 @@ int main()
       depthProgram.setVec3("base_camera_direction", cam->getDirection());
       depthProgram.setFloat("viewport_width", SCR_WIDTH);
       depthProgram.setFloat("viewport_height", SCR_HEIGHT);
+
+      int code = ((zcode & 0x07) << 5) | ((xcode & 0x03) << 3) | ((ycode & 0x07) << 0);
+      depthProgram.setInt("code", code);
 
       glBindFramebuffer(GL_FRAMEBUFFER, faceFramebuffer.id());
       glEnable(GL_DEPTH_TEST);

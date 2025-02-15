@@ -17,6 +17,7 @@ uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 reference_view;
 uniform mat4 reference_projection;
+uniform int code;
 
 const float PI = 3.14159265358979;
 const float PI2 = 2.0 * PI;
@@ -97,7 +98,7 @@ float perlin(vec3 pos, float scale)
 }
 
 float normalizeZoom(float zoom)
-{;
+{
     //const float ZOOM_RATIO = 0.80;
     //return clamp(zoom * ZOOM_RATIO, 0.0, 8.0);
     
@@ -226,6 +227,64 @@ float LinearizeDepth(float depth)
     float zNear = 0.1;
     float zFar  = 100.0;
     return (2.0 * zNear) / (zFar + zNear - depth * (zFar - zNear));
+}
+
+mat4 rotateX(float x)
+{
+	float s = sin(x);
+	float c = cos(x);
+
+	return mat4(
+		1.0, 0.0, 0.0, 0.0,
+		0.0,   c,  -s, 0.0,
+		0.0,   s,   c, 0.0,
+		0.0, 0.0, 0.0, 1.0
+	);
+}
+
+mat4 rotateY(float y)
+{
+	float s = sin(y);
+	float c = cos(y);
+	
+	return mat4(
+		  c, 0.0,   s, 0.0,
+		0.0, 1.0, 0.0, 0.0,
+		 -s, 0.0,   c, 0.0,
+		0.0, 0.0, 0.0, 1.0
+	);
+}
+
+mat4 rotateZ(float z)
+{
+	float s = sin(z);
+	float c = cos(z);
+	
+	return mat4(
+		  c,  -s, 0.0, 0.0,
+		  s,   c, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0
+	);
+}
+
+mat4 rotateZXY(float z, float x, float y)
+{
+	return rotateZ(z) * rotateX(x) * rotateY(y) * rotateZ(radians(90.0));
+}
+
+mat4 calculateAngle(float value)
+{
+	uint code = uint(value);
+	uint zcode = (code & 0xE0) >> 5;
+	uint xcode = (code & 0x18) >> 3;
+	uint ycode = (code & 0x07) >> 0;
+
+	float zvalue = radians(float(zcode) * 45.0 + 0.0); // 22.5);
+	float xvalue = radians(float(xcode) * 22.5 + 0.0);
+	float yvalue = radians(float(ycode) * 22.5 + 0.0);
+
+	return rotateZXY(zvalue, yvalue, xvalue);
 }
 
 void main()
