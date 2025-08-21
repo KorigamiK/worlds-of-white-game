@@ -19,8 +19,7 @@ inline bool StreamLogger::log(LoggingLevel level, const char* source, const char
 
   std::time_t s = ns / 1000000000;
   int ms = (ns % 1000000000) / 1000000;
-  std::tm time;
-  gmtime_s(&time, &s);
+  std::tm time = *std::gmtime(&s);
 
   // YYYY-MM-DDTHH:MM:SS [?] Source: Message
   auto fill = _stream.fill();

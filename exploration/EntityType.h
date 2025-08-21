@@ -1,9 +1,9 @@
 #ifndef WILT_ENTITYTYPE_H
 #define WILT_ENTITYTYPE_H
 
-#include <chrono>
 #include <filesystem>
 #include <iostream>
+#include <fstream>
 
 class Model;
 class Entity;

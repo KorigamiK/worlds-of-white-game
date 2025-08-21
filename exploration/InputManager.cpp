@@ -31,18 +31,26 @@ void InputManager::update()
   }
 
   { // buttons
-    auto buttonsCount = 0;
-    auto buttonsRaw = glfwGetJoystickButtons(joystickId, &buttonsCount);
-
     buttonsPrevious = std::move(buttonsCurrent);
-    buttonsCurrent = std::vector<unsigned char>(buttonsRaw, buttonsRaw + buttonsCount); // TODO: reuse vector space
+    buttonsCurrent.clear();
+    
+    if (joystickId >= GLFW_JOYSTICK_1 && glfwJoystickPresent(joystickId))
+    {
+      auto buttonsCount = 0;
+      auto buttonsRaw = glfwGetJoystickButtons(joystickId, &buttonsCount);
+      buttonsCurrent = std::vector<unsigned char>(buttonsRaw, buttonsRaw + buttonsCount); // TODO: reuse vector space
+    }
   }
 
   { // axes
-    auto axesCount = 0;
-    auto axesRaw = glfwGetJoystickAxes(joystickId, &axesCount);
-
-    axes = std::vector<float>(axesRaw, axesRaw + axesCount); // TODO: reuse vector space
+    axes.clear();
+    
+    if (joystickId >= GLFW_JOYSTICK_1 && glfwJoystickPresent(joystickId))
+    {
+      auto axesCount = 0;
+      auto axesRaw = glfwGetJoystickAxes(joystickId, &axesCount);
+      axes = std::vector<float>(axesRaw, axesRaw + axesCount); // TODO: reuse vector space
+    }
   }
 }
 
@@ -87,6 +95,9 @@ bool InputManager::isButtonReleased(int button)
 
 float InputManager::getAxis(int axis)
 {
+  if (axis < 0 || axis >= axes.size())
+    return 0.0f;
+    
   return axes[axis];
 }
 

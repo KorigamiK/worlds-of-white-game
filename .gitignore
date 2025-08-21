@@ -10,3 +10,7 @@ exploration/nsight_profiler.cfg
 
 # blender
 *.blend1
+build/
+out/
+.cache/
+compile_commands.json

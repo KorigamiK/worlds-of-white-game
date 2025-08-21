@@ -25,8 +25,11 @@ void LineProgram::use()
 {
   Program::use();
 
-  glUniform3fv(locationBurstLocations, burstLocations.size(), &burstLocations[0][0]);
-  glUniform1fv(locationBurstRanges, burstRanges.size(), &burstRanges[0]);
+  if (!burstLocations.empty())
+  {
+    glUniform3fv(locationBurstLocations, burstLocations.size(), &burstLocations[0][0]);
+    glUniform1fv(locationBurstRanges, burstRanges.size(), &burstRanges[0]);
+  }
   glUniform1ui(locationBurstCount, burstLocations.size());
 }
 

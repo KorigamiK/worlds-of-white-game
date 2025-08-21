@@ -23,13 +23,25 @@ uniform uint  burst_count;
 // any manipulations, then put it back into the projection space. This might be 
 // supplied later through a unifrom variable.
 
-const mat4 to_screen_space = mat4(
-	1, 0,       0, 0,
-	0, 1/ratio, 0, 0,
-	0, 0,       1, 0,
-	0, 0,       0, 1
-);
-const mat4 from_screen_space = inverse(to_screen_space);
+mat4 to_screen_space()
+{
+	return mat4(
+		1, 0,       0, 0,
+		0, 1/ratio, 0, 0,
+		0, 0,       1, 0,
+		0, 0,       0, 1
+	);
+}
+mat4 from_screen_space()
+{
+	// Inverse of to_screen_space: diag(1, ratio, 1, 1)
+	return mat4(
+		1, 0,    0, 0,
+		0, ratio,0, 0,
+		0, 0,    1, 0,
+		0, 0,    0, 1
+	);
+}
 
 // Always has this shape:
 // 
@@ -130,11 +142,11 @@ bool is_hidden_end()
 void _draw_segment(vec4 p, vec4 perp, float thickness)
 {
 	gl_Position = p + perp * (EDGE_OFFSET + thickness * EDGE_OFFSET_VARIANCE) * p.w;
-	gl_Position = from_screen_space * gl_Position;
+	gl_Position = from_screen_space() * gl_Position;
 	EmitVertex();
 
 	gl_Position = p - perp * (EDGE_OFFSET + thickness * EDGE_OFFSET_VARIANCE) * p.w;
-	gl_Position = from_screen_space * gl_Position;
+	gl_Position = from_screen_space() * gl_Position;
 	EmitVertex();
 }
 
@@ -143,11 +155,11 @@ void _draw_start_endcap(vec4 p, vec4 perp)
 	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
 
 	gl_Position = p - para * EDGE_OFFSET * 0.66f * p.w + perp * EDGE_OFFSET / 2 * p.w;
-	gl_Position = from_screen_space * gl_Position;
+	gl_Position = from_screen_space() * gl_Position;
 	EmitVertex();
 	
 	gl_Position = p - para * EDGE_OFFSET * 0.66f * p.w - perp * EDGE_OFFSET / 2 * p.w;
-	gl_Position = from_screen_space * gl_Position;
+	gl_Position = from_screen_space() * gl_Position;
 	EmitVertex();
 }
 
@@ -156,11 +168,11 @@ void _draw_end_endcap(vec4 p, vec4 perp)
 	vec4 para = vec4(perp.y, -perp.x, 0.0f, 0.0f);
 
 	gl_Position = p + para * EDGE_OFFSET * 0.66f * p.w + perp * EDGE_OFFSET / 2 * p.w;
-	gl_Position = from_screen_space * gl_Position;
+	gl_Position = from_screen_space() * gl_Position;
 	EmitVertex();
 	
 	gl_Position = p + para * EDGE_OFFSET * 0.66f * p.w - perp * EDGE_OFFSET / 2 * p.w;
-	gl_Position = from_screen_space * gl_Position;
+	gl_Position = from_screen_space() * gl_Position;
 	EmitVertex();
 }
 
@@ -195,8 +207,8 @@ float transform1(float v)
 
 void draw_segment(vec4 p1, vec4 p2)
 {
-	p1 = to_screen_space * p1;
-	p2 = to_screen_space * p2;
+	p1 = to_screen_space() * p1;
+	p2 = to_screen_space() * p2;
 
 	vec4 perp = normalize(vec4(p1.y / p1.w - p2.y / p2.w, p2.x / p2.w - p1.x / p1.w, 0.0f, 0.0f));
 	
@@ -227,7 +239,7 @@ void draw_segment(vec4 p1, vec4 p2)
 	vec4 totalBurst = vec4(0, 0, 0, 0);
 	for (int i = 0; i < burst_count; ++i)
 	{
-		vec4 burstPosition = to_screen_space * projection * view * vec4(burst_locations[i], 1.0f);
+		vec4 burstPosition = to_screen_space() * projection * view * vec4(burst_locations[i], 1.0f);
 		vec2 burstDirection = center.xy / center.w - burstPosition.xy / burstPosition.w;
 		float burstDistance = length(burstDirection) * burstPosition.w;
 		if (burstDistance < burst_ranges[i])

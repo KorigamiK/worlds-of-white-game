@@ -15,7 +15,7 @@ const auto CAMERA_HEIGHT_ANGLE = 0.5f;
 const auto CAMERA_IDLE_TIME = std::chrono::seconds(3);
 const auto CAMERA_IDLE_RATE = 0.001f;
 
-glm::vec3 calcPosition(float xangle, float yangle, float distance);
+static glm::vec3 calcPosition(float xangle, float yangle, float distance);
 
 IdleCamera::IdleCamera(Entity** entity)
   : entity_{ entity }

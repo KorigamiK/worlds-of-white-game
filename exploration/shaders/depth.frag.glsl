@@ -1,5 +1,7 @@
 #version 420 core
 
+layout(location = 0) out vec4 FragColor;
+
 in vec3  norml_geom_out;
 in float order_geom_out;
 in vec4  world_geom_out;
@@ -348,5 +350,5 @@ void main()
 
   float val = getBanding(rfpos.yxz, zoom); // TODO: swap x and y elsewhere
 
-  gl_FragColor = vec4(val, val, val, 1.0);
+  FragColor = vec4(val, val, val, 1.0);
 }

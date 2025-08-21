@@ -1,12 +1,11 @@
 #ifndef WILT_ENTITY_H
 #define WILT_ENTITY_H
 
-#include <vector>
 
 #include <glm/glm.hpp>
 
 #include "../EntitySpawnInfo.h"
-#include "../GameState.h"
+#include "GameState.h"
 
 class IAnimator;
 class Model;
@@ -32,7 +31,7 @@ public:
 
 }; // class Entity
 
-#include "../model.h"
+#include "Model.h"
 #include "../graphics/programs/DepthProgram.h"
 #include "../graphics/programs/LineProgram.h"
 #include "../graphics/programs/DebugProgram.h"

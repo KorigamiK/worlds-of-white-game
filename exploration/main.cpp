@@ -12,12 +12,11 @@
 #include <btBulletDynamicsCommon.h>
 
 #include <iostream>
+#include <algorithm>
 #include <string>
 #include <fstream>
 #include <vector>
-#include <set>
 #include <map>
-#include <numeric>
 #include <cmath>
 #include <iomanip>
 
@@ -39,7 +38,6 @@
 #include "graphics/joint.h"
 #include "graphics/jointPose.h"
 #include "graphics/IAnimator.h"
-#include "utilities/narray/narray.hpp"
 #include "cameras/FollowCamera.h"
 #include "cameras/TrackCamera.h"
 #include "cameras/FreeCamera.h"
@@ -398,7 +396,7 @@ int main()
 
   // create the physics world
   auto collisionConfiguration = new btDefaultCollisionConfiguration(); // I don't
-  auto dispatcher = new	btCollisionDispatcher(collisionConfiguration); // know what
+  auto dispatcher = new  btCollisionDispatcher(collisionConfiguration); // know what
   auto broadphase = new btDbvtBroadphase();                            // these things
   auto solver = new btSequentialImpulseConstraintSolver;               // fucking do
 
@@ -469,22 +467,32 @@ int main()
 
   auto printJoystickInfo = [&](int joystickId)
   {
+    // Validate joystick ID before making any GLFW calls
+    if (joystickId < GLFW_JOYSTICK_1 || joystickId > GLFW_JOYSTICK_LAST)
+    {
+      std::cout << joystickId << " <invalid>" << std::endl;
+      return;
+    }
+
     const char* name = glfwJoystickPresent(joystickId) ? glfwGetJoystickName(joystickId) : "<none>";
     std::cout << joystickId << ' ' << name << std::endl;
 
-    auto buttonsCount = 0;
-    auto buttons = glfwGetJoystickButtons(joystickId, &buttonsCount);
-    std::cout << "  buttons:";
-    for (int i = 0; i < buttonsCount; ++i)
-      std::cout << ' ' << (int)buttons[i];
-    std::cout << std::endl;
+    if (glfwJoystickPresent(joystickId))
+    {
+      auto buttonsCount = 0;
+      auto buttons = glfwGetJoystickButtons(joystickId, &buttonsCount);
+      std::cout << "  buttons:";
+      for (int i = 0; i < buttonsCount; ++i)
+        std::cout << ' ' << (int)buttons[i];
+      std::cout << std::endl;
 
-    auto axesCount = 0;
-    auto axes = glfwGetJoystickAxes(joystickId, &axesCount);
-    std::cout << "  axis   :";
-    for (int i = 0; i < axesCount; ++i)
-      std::cout << ' ' << axes[i];
-    std::cout << std::endl;
+      auto axesCount = 0;
+      auto axes = glfwGetJoystickAxes(joystickId, &axesCount);
+      std::cout << "  axis   :";
+      for (int i = 0; i < axesCount; ++i)
+        std::cout << ' ' << axes[i];
+      std::cout << std::endl;
+    }
   };
 
   //printJoystickInfo(GLFW_JOYSTICK_1);
@@ -512,9 +520,7 @@ int main()
     return selectedJoystickId;
   } ();
 
-  if (selectedJoystickId == -1)
-    return -1;
-
+  // Allow keyboard-only input if no controller is connected
   auto inputManager = InputManager(selectedJoystickId);
   globalInputManager = &inputManager;
   glfwSetKeyCallback(window, +[](GLFWwindow* window, int key, int scancode, int action, int modifiers)
@@ -533,7 +539,7 @@ int main()
   auto currFrameTime = std::chrono::high_resolution_clock::now();
 
   auto debugViewEnabled = false;
-  
+
   auto fileCheckInterval = std::chrono::seconds(2);
   auto lastFileCheckTime = std::chrono::high_resolution_clock::now();
 
@@ -555,7 +561,8 @@ int main()
     glfwPollEvents();
     processInput(window);
 
-    if (i % 15 == 0)
+    // Don't print joystick info if no controller is connected
+    if (i % 15 == 0 && selectedJoystickId >= GLFW_JOYSTICK_1)
       printJoystickInfo(selectedJoystickId);
 
     auto fps = 1000000000.0f / (currFrameTime - lastFrameTime).count();
@@ -757,7 +764,7 @@ void processInput(GLFWwindow *window)
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-  // make sure the viewport matches the new window dimensions; note that width and 
+  // make sure the viewport matches the new window dimensions; note that width and
   // height will be significantly larger than specified on retina displays.
   glViewport(0, 0, width, height);
 

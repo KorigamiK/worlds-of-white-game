@@ -1280,7 +1280,7 @@ wilt::NArray<typename wilt::add_ret<T, U>::type, N> operator+ (const wilt::NArra
 template <class T, class U, dim_t N>
 wilt::NArray<typename wilt::add_ret<T, U>::type, N> operator+ (wilt::NArray<T, N>&& lhs, const wilt::NArray<U, N>& rhs)
 {
-  return wilt::add<typename wilt::add_ret<T, U>::type>(std::forward<NArray<T, N>>(lhs), rhs);
+  return wilt::add<typename wilt::add_ret<T, U>::type>(std::forward<wilt::NArray<T, N>>(lhs), rhs);
 }
 template <class T, class U, dim_t N>
 wilt::NArray<typename wilt::add_ret<T, U>::type, N> operator+ (const wilt::NArray<T, N>& lhs, wilt::NArray<U, N>&& rhs)
